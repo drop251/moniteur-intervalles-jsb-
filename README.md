@@ -10,4 +10,11 @@ Application mobile de minuteur pour séances Tabata, HIIT, EMOM, AMRAP, boxe et 
 ## État
 - `prototype/moniteur.html` : maquette interactive (HTML autonome, sans réseau).
 - Test Luc Léger : protocole standard (20 m, départ 8,5 km/h, +0,5 km/h par palier, paliers d'environ 60 s). Le nombre de navettes par palier reste à vérifier contre la table imprimée.
-- Application Flutter : à venir.
+- Application Flutter, début :
+  - `lib/domain/` : séances, protocole Luc Léger (logique pure, sans Flutter).
+  - `lib/engine/` : planification des bips et horloge sans dérive (logique pure).
+  - `test/` : tests unitaires de ces deux couches.
+  - Interface et couche audio native : à venir.
+
+## Tests
+`flutter test` depuis la racine du projet. Non exécutés dans la session de création : la compilation et les tests restent à lancer sur un poste avec Flutter installé.
