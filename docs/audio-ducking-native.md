@@ -10,8 +10,8 @@ Lors d'une séance judo / Taïso / PPG (randori, Golden Score, Tabata, HIIT) :
 
 1. Le pratiquant lance une playlist dans Apple Music ou Spotify.
 2. Il revient à Moniteur JSB et démarre son minuteur.
-3. Au signal de préparation, de début, de changement ou au gong final, le système **demande d'atténuer temporairement la musique externe** ; Moniteur JSB joue un son net au volume interne choisi (90 % par défaut).
-4. Après la lecture du son, le système libère la priorité audio et la musique revient à son niveau habituel.
+3. **Trois secondes avant** chaque signal prévisible, le système **demande d'atténuer temporairement la musique externe** ; Moniteur JSB joue ensuite un son net au volume interne choisi (90 % par défaut).
+4. **Trois secondes après la fin du dernier son** d'une séquence, le système libère la priorité audio et la musique revient à son niveau habituel.
 5. En pause ou à l'arrêt, aucune priorité audio ne demeure détenue.
 
 **Attention : 90 % de volume JSB / 10 % de musique externe est une préférence de rendu, pas une garantie technique.** Aucun des systèmes ne permet de fixer précisément le gain de Spotify ou Apple Music à 10 % sans coopération de l'application tierce. Le taux réel dépend d'iOS/Android, de la sortie audio (haut-parleurs, Bluetooth), de la version des autres applications et du type de média.
@@ -32,7 +32,7 @@ Lors d'une séance judo / Taïso / PPG (randori, Golden Score, Tabata, HIIT) :
 - Au moment précis d'un signal, définir la catégorie `playback` avec les options `mixWithOthers` et `duckOthers` **uniquement si l'atténuation est activée**.
 - Si l'atténuation est désactivée, utiliser `playback` + `mixWithOthers` : le son JSB coexiste avec la musique sans demander de réduction.
 - Activer l'audio session avant lecture ; utiliser `AVAudioPlayer` avec un échantillon de son synthétisé par l'application.
-- Dès la fin du signal, **désactiver** l'audio session (`notifyOthersOnDeactivation`) pour que la musique retrouve son volume. Ne jamais garder `duckOthers` actif pendant tout le chronomètre.
+- Trois secondes après la fin du dernier signal d'une séquence, **désactiver** l'audio session (`notifyOthersOnDeactivation`) pour que la musique retrouve son volume. Ne jamais garder `duckOthers` actif pendant tout le chronomètre.
 - En cas d'erreur, désactiver la session et transmettre l'état à Flutter.
 - Référence : https://developer.apple.com/documentation/avfaudio/avaudiosession/categoryoptions-swift.struct/duckothers
 
@@ -68,3 +68,11 @@ Lors d'une séance judo / Taïso / PPG (randori, Golden Score, Tabata, HIIT) :
 La version web GitHub Pages n'a pas accès au mixage audio système inter-applications et ne peut pas appliquer cette fonction.
 
 Le dépôt Flutter actuel peut ne pas posséder les projets Xcode/Gradle générés : créer le squelette natif avec `flutter create --platforms=ios,android .` avant compilation. Le code Swift/Kotlin natif est livré comme source ; il doit être compilé et validé sur iPhone / iPad et appareils Android avant de prétendre que l'application installable est opérationnelle.
+
+## Réglage iOS testé à partir d’octobre 2026
+
+- Début d’atténuation : 3 secondes avant chaque bip planifié, si l’horloge dispose de cette avance.
+- Fin d’atténuation : 3 secondes après la durée réelle du bip ; toute alerte intermédiaire prolonge la fenêtre.
+- Décompte 3–2–1 : maintien continu pour éviter une remontée entre les bips.
+- Pause et arrêt : libération immédiate de la session de ducking. Fin de séance : attendre la fin du gong et sa fenêtre de 3 secondes.
+- Limite matérielle : le système règle l’ampleur de l’atténuation de Spotify / Apple Music, pas l’application.
