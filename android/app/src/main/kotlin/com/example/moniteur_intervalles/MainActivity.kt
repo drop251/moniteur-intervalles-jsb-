@@ -31,6 +31,12 @@ class MainActivity : FlutterActivity() {
     private var track: AudioTrack? = null
     private var focusRequest: AudioFocusRequest? = null
     private var legacyFocus = false
+    private val legacyListener = AudioManager.OnAudioFocusChangeListener { change ->
+        if (change == AudioManager.AUDIOFOCUS_LOSS ||
+            change == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
+            handler.post { stopCurrent() }
+        }
+    }
     private var finishTask: Runnable? = null
     private var playbackToken = 0
 
@@ -124,12 +130,7 @@ class MainActivity : FlutterActivity() {
         } else {
             @Suppress("DEPRECATION")
             val granted = audioManager.requestAudioFocus(
-                { change ->
-                    if (change == AudioManager.AUDIOFOCUS_LOSS ||
-                        change == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
-                        handler.post { stopCurrent() }
-                    }
-                }, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
+                legacyListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
             ) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
             legacyFocus = granted
             granted
@@ -142,7 +143,7 @@ class MainActivity : FlutterActivity() {
             focusRequest = null
         } else if (legacyFocus) {
             @Suppress("DEPRECATION")
-            audioManager.abandonAudioFocus(null)
+            audioManager.abandonAudioFocus(legacyListener)
             legacyFocus = false
         }
     }
