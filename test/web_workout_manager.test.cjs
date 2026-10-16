@@ -1,0 +1,18 @@
+const assert=require('node:assert/strict');
+const {makeCopy,upsertCustom,removeCustom}=require('../workout_manager.js');
+const preset={id:'tabata',name:'Tabata classique',kind:'tabata',prep:10,work:20,rest:10,cycles:8};
+const copy=makeCopy(preset,'custom-1');
+assert.equal(copy.id,'custom-1');
+assert.equal(copy.name,'Tabata classique (copie)');
+assert.equal(preset.id,'tabata');
+let customs=upsertCustom([],copy);
+assert.equal(customs.length,1);
+customs=upsertCustom(customs,{...copy,name:'Mon Tabata'},'custom-1');
+assert.equal(customs.length,1);
+assert.equal(customs[0].name,'Mon Tabata');
+assert.equal(customs[0].id,'custom-1');
+assert.equal(preset.name,'Tabata classique');
+customs=removeCustom(customs,'custom-1');
+assert.equal(customs.length,0);
+assert.throws(()=>upsertCustom(customs,copy,'missing'),/introuvable/);
+console.log('Gestion des minuteurs : tests réussis');
