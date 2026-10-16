@@ -15,6 +15,7 @@ class _AudioSettingsScreenState extends State<AudioSettingsScreen> {
   NativeAudioSettings settings = const NativeAudioSettings();
   bool loading = true;
   String feedback = 'Réglages natifs à vérifier sur un appareil physique.';
+  String audioDiagnostics = '';
 
   @override
   void initState() {
@@ -37,10 +38,20 @@ class _AudioSettingsScreenState extends State<AudioSettingsScreen> {
   }
 
   Future<void> _preview(TrainingCue cue) async {
-    final response = await service.playCue(cue, settings: settings);
+    final response = await service.playCue(cue, settings: settings, preview: true);
     if (!mounted) return;
-    setState(() => feedback = response.message ??
-        (response.played ? 'Signal joué.' : 'Son indisponible.'));
+    setState(() {
+      feedback = response.message ??
+          (response.played ? 'Signal joué.' : 'Son indisponible.');
+      audioDiagnostics = [
+        if (response.duckConfigured != null)
+          'Atténuation configurée par iOS : ${response.duckConfigured! ? "oui" : "non"}',
+        if (response.otherAudioPlaying != null)
+          'Autre audio détecté : ${response.otherAudioPlaying! ? "oui" : "non"}',
+        if (response.outputRoute != null)
+          'Sortie audio : ${response.outputRoute}',
+      ].join('\n');
+    });
   }
 
   @override
@@ -84,7 +95,7 @@ class _AudioSettingsScreenState extends State<AudioSettingsScreen> {
         FilledButton.icon(
           onPressed: () => _preview(TrainingCue.effort),
           icon: const Icon(Icons.volume_up),
-          label: const Text('Tester le signal de combat'),
+          label: const Text('Tester le signal et l’atténuation (3 s)'),
         ),
         const SizedBox(height: 12),
         OutlinedButton.icon(
@@ -94,6 +105,10 @@ class _AudioSettingsScreenState extends State<AudioSettingsScreen> {
         ),
         const SizedBox(height: 18),
         Semantics(liveRegion: true, child: Text(feedback)),
+        if (audioDiagnostics.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          SelectableText(audioDiagnostics),
+        ],
         const SizedBox(height: 18),
         const Text(
           'Objectif : signal à 90 % et musique en fond très atténuée. '
