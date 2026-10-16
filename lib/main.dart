@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'domain/interval_plan.dart' as domain;
 import 'engine/interval_session_controller.dart' as engine;
+import 'audio/native_audio_service.dart';
 
 void main() => runApp(const MoniteurApp());
 
@@ -80,8 +81,8 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     await _save();
   }
-  @override Widget build(BuildContext context)=>DefaultTabController(length:2,child:Scaffold(
-    appBar:AppBar(title:const Text('Moniteur JSB'),bottom:const TabBar(tabs:[Tab(text:'Séances',icon:Icon(Icons.timer)),Tab(text:'Historique',icon:Icon(Icons.history))])),
+  @override Widget build(BuildContext context)=>DefaultTabController(length:3,child:Scaffold(
+    appBar:AppBar(title:const Text('Moniteur JSB'),bottom:const TabBar(tabs:[Tab(text:'Séances',icon:Icon(Icons.timer)),Tab(text:'Historique',icon:Icon(Icons.history)),Tab(text:'Audio',icon:Icon(Icons.volume_up))])),
     body:TabBarView(children:[
       ListView(padding:const EdgeInsets.all(16),children:[
         for(final w in workouts) Card(child:ListTile(
@@ -90,6 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap:()=>_start(w))),
       ]),
       history.isEmpty?const Center(child:Text('Aucune séance enregistrée')):ListView(children:[for(final h in history)ListTile(title:Text(h))]),
+      const AudioSettingsScreen(),
     ]),
     floatingActionButton:FloatingActionButton.extended(onPressed:()=>_edit(),icon:const Icon(Icons.add),label:const Text('Nouvelle séance')),
   ));
@@ -134,6 +136,9 @@ class _TimerScreenState extends State<TimerScreen> {
   Timer? ticker;
   late engine.SessionSnapshot current;
   bool leaving = false;
+  final NativeAudioService audioService = NativeAudioService();
+  NativeAudioSettings audioSettings = const NativeAudioSettings();
+  bool settingsLoaded = false;
 
   @override
   void initState() {
@@ -147,17 +152,36 @@ class _TimerScreenState extends State<TimerScreen> {
     session.start();
     current = session.sample().snapshot;
     ticker = Timer.periodic(const Duration(milliseconds: 80), (_) => _tick());
+    _loadAudioSettings();
+  }
+
+  Future<void> _loadAudioSettings() async {
+    final settings = await NativeAudioSettings.load();
+    if (!mounted || leaving) return;
+    audioSettings = settings;
+    settingsLoaded = true;
   }
 
   void _tick() {
     if (!mounted || leaving) return;
     final update = session.sample();
-    if (update.dueCues.isNotEmpty) {
-      // Signal provisoire. Le Lot audio natif planifiera les bips en avance.
-      SystemSound.play(SystemSoundType.click);
-      HapticFeedback.mediumImpact();
+    if (settingsLoaded && update.dueCues.isNotEmpty) {
+      for (final cue in update.dueCues) {
+        final kind = cue.frequencyHz == 800
+            ? TrainingCue.countdown
+            : cue.frequencyHz == 600
+                ? TrainingCue.recovery
+                : cue.frequencyHz == 900
+                    ? TrainingCue.preparation
+                    : TrainingCue.effort;
+        unawaited(audioService.playCue(kind, settings: audioSettings));
+        HapticFeedback.mediumImpact();
+      }
     }
     if (update.snapshot.status == engine.SessionStatus.completed) {
+      if (settingsLoaded) {
+        unawaited(audioService.playCue(TrainingCue.finish, settings: audioSettings));
+      }
       _finish(true);
       return;
     }
