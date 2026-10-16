@@ -166,6 +166,10 @@ class _TimerScreenState extends State<TimerScreen> {
   void _tick() {
     if (!mounted || leaving) return;
     final update = session.sample();
+    if (settingsLoaded && update.dueDuckLeads.isNotEmpty) {
+      // Request music ducking ahead of the scheduled sound, not after it.
+      unawaited(audioService.prepareDuck(settings: audioSettings));
+    }
     if (settingsLoaded && update.dueCues.isNotEmpty) {
       for (final cue in update.dueCues) {
         final kind = cue.frequencyHz == 800
@@ -193,7 +197,11 @@ class _TimerScreenState extends State<TimerScreen> {
     if (leaving) return;
     leaving = true;
     ticker?.cancel();
-    if (!completed) session.stop();
+    if (!completed) {
+      session.stop();
+      unawaited(audioService.releaseDuck());
+    }
+    // On completion, allow the finish gong to retain its own audio focus.
     Navigator.pop(context, completed);
   }
 
@@ -277,8 +285,12 @@ class _TimerScreenState extends State<TimerScreen> {
                           setState(() {
                             if (paused) {
                               session.resume();
+                              if (settingsLoaded && session.hasCueWithinDuckLead) {
+                                unawaited(audioService.prepareDuck(settings: audioSettings));
+                              }
                             } else {
                               session.pause();
+                              unawaited(audioService.releaseDuck());
                             }
                             current = session.snapshot;
                           });
