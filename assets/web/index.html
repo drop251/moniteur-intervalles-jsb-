@@ -55,6 +55,142 @@ header{background:transparent}
 .prog{background:#36445b}.prog>span{background:#dbae6b}
 input[type="checkbox"],input[type="range"]{accent-color:#dbae6b}
 button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3cd93}
+
+/* MONITEUR JSB — Affichage minuteur en paysage sur smartphone
+   Le temps est prioritaire; les commandes restent visibles et tactiles.
+   Les encoches / safe areas iOS sont respectées à gauche et à droite. */
+.timer .clock{
+  white-space:nowrap;
+  max-width:100%;
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum";
+  line-height:1.08;
+}
+@media (orientation:landscape) and (max-height:600px) and (min-width:560px){
+  .timer.active{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(185px,30%);
+    grid-template-rows:auto minmax(0,1fr);
+    gap:3px clamp(12px,2.5vw,28px);
+    box-sizing:border-box;
+    padding:
+      max(7px,env(safe-area-inset-top,0px))
+      max(16px,env(safe-area-inset-right,0px))
+      max(7px,env(safe-area-inset-bottom,0px))
+      max(16px,env(safe-area-inset-left,0px));
+    overflow:hidden;
+  }
+  .timer-head{
+    grid-column:1/-1;
+    grid-row:1;
+    min-width:0;
+    align-items:center;
+    gap:10px;
+  }
+  .timer-head strong{font-size:12px}
+  .timer-head small{font-size:11px}
+  #timerTitle{
+    max-width:50vw;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+  }
+  .timer-main{
+    grid-column:1;
+    grid-row:2;
+    min-width:0;
+    min-height:0;
+    justify-content:center;
+    align-items:center;
+    overflow:hidden;
+    gap:0;
+  }
+  .timer .phase-chip{
+    flex:none;
+    font-size:clamp(11px,2.8vh,15px);
+    letter-spacing:.1em;
+    padding:5px 13px;
+  }
+  .timer .clock{
+    font-size:clamp(62px,min(17vw,31vh),152px);
+    letter-spacing:-.055em;
+    line-height:1.02;
+    margin:clamp(3px,1.4vh,12px) 0;
+    flex:none;
+  }
+  .timer .clock[data-digits="6"],
+  .timer .clock[data-digits="7"],
+  .timer .clock[data-digits="8"]{
+    font-size:clamp(50px,min(13vw,26vh),122px);
+  }
+  .timer .cycle{
+    font-size:clamp(13px,3vh,19px);
+    text-align:center;
+  }
+  .timer .paused{
+    flex:none;
+    margin-top:5px;
+    font-size:10px;
+    padding:4px 10px;
+  }
+  .timer .amrap-counter{
+    margin-top:5px;
+    font-size:12px;
+  }
+  .timer .amrap-counter>div{margin-top:4px;gap:12px}
+  .timer .amrap-counter strong{font-size:24px}
+  .timer .amrap-counter button{min-width:48px;min-height:48px;width:48px;height:48px}
+  .timer-controls{
+    grid-column:2;
+    grid-row:2;
+    min-width:0;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:clamp(4px,1.5vh,10px);
+  }
+  .timer-controls .prog{
+    flex:none;
+    height:8px;
+    margin:0;
+  }
+  .timer-controls .next{
+    flex:none;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    margin:0;
+    font-size:12px;
+    line-height:1.2;
+    color:#faf9f5;
+  }
+  .timer-controls .timer-actions{
+    flex:none;
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    gap:8px;
+  }
+  .timer-controls .timer-actions button{
+    flex:none;
+    min-height:48px;
+    font-size:15px;
+    padding:6px 10px;
+  }
+  .timer-controls .caption{display:none}
+}
+/* Sur les très petits écrans paysage, tout tient sans réduire les cibles
+   tactiles en dessous de 48px. */
+@media (orientation:landscape) and (max-height:340px) and (min-width:560px){
+  .timer.active{gap:0 12px}
+  .timer-head small{font-size:10px}
+  .timer .clock{font-size:clamp(58px,min(15vw,28vh),120px);margin:2px 0}
+  .timer .phase-chip{padding:4px 10px}
+  .timer-controls{gap:4px}
+  .timer-controls .next{font-size:11px;gap:2px}
+  .timer-controls .timer-actions{gap:5px}
+}
+
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style>
 
@@ -83,7 +219,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
 <nav class="nav" aria-label="Navigation principale"><button data-nav="sessions" aria-current="page"><span class="ni" aria-hidden="true">◷</span><span class="nl">Séances</span></button><button data-nav="tests"><span class="ni" aria-hidden="true">♢</span><span class="nl">Tests</span></button><button data-nav="history"><span class="ni" aria-hidden="true">▤</span><span class="nl">Historique</span></button><button data-nav="settings"><span class="ni" aria-hidden="true">⚙</span><span class="nl">Réglages</span></button></nav>
 </div>
 <div class="modal" id="editorModal" role="dialog" aria-modal="true" aria-labelledby="editorTitle"><div class="sheet"><header><h2 id="editorTitle">Nouvelle séance</h2><button class="icon-btn" id="closeEditor" aria-label="Fermer l'éditeur">×</button></header><form id="editorForm"><div class="fields"><div class="field wide"><label for="workoutMode">Mode d’entraînement</label><select id="workoutMode"><option value="randori">Randori</option><option value="golden">Golden Score</option><option value="random">Bips aléatoires</option><option value="tabata">Tabata</option><option value="hiit">HIIT / Intervalles</option><option value="boxe">Boxe</option></select></div><div class="field wide"><label for="workoutName">Nom de la séance</label><input id="workoutName" maxlength="50" required placeholder="Ex. HIIT Judo" /></div><div class="field wide duration-field" id="preparationField"><div class="duration-title">Préparation</div><div class="duration-pickers"><div><label for="preparationMinutes">Minutes</label><select id="preparationMinutes" aria-label="Préparation : minutes"></select></div><div><label for="preparationSeconds">Secondes</label><select id="preparationSeconds" aria-label="Préparation : secondes"></select></div></div><input type="hidden" id="preparation" value="10" /><small class="duration-help">Choisis séparément les minutes et les secondes.</small></div><div class="field wide duration-field" id="effortField"><div class="duration-title" id="effortLabel">Effort</div><div class="duration-pickers"><div><label for="effortMinutes">Minutes</label><select id="effortMinutes" aria-label="Effort : minutes"></select></div><div><label for="effortSeconds">Secondes</label><select id="effortSeconds" aria-label="Effort : secondes"></select></div></div><input type="hidden" id="effort" value="30" /><small class="duration-help">Choisis séparément les minutes et les secondes.</small></div><div class="field wide duration-field" id="restField"><div class="duration-title">Repos</div><div class="duration-pickers"><div><label for="reposMinutes">Minutes</label><select id="reposMinutes" aria-label="Repos : minutes"></select></div><div><label for="reposSeconds">Secondes</label><select id="reposSeconds" aria-label="Repos : secondes"></select></div></div><input type="hidden" id="repos" value="15" /><small class="duration-help">Choisis séparément les minutes et les secondes.</small></div><div class="field wide" id="randomOptions" hidden><label for="randomFrequency">Fréquence des bips</label><select id="randomFrequency"><option value="low">Espacés</option><option value="medium" selected>Modérés</option><option value="high">Fréquents</option></select><label class="random-progressive"><input type="checkbox" id="randomProgressive" checked /> Rapprocher progressivement les bips</label><small>Exemple : faire un burpee à chaque bip.</small></div><div class="field" id="cyclesField"><label for="cycles" id="cyclesLabel">Cycles</label><input id="cycles" type="number" inputmode="numeric" min="1" max="200" value="8" required /></div></div><p class="caption" id="modeHint" aria-live="polite">Alternance d’effort et de récupération.</p><div class="actions"><button type="button" class="secondary" id="cancelEditor">Annuler</button><button type="submit" class="primary">Enregistrer</button></div></form></div></div>
-<section class="timer" id="timer" data-phase="prep" aria-label="Séance en cours"><div class="timer-head"><div><strong>MONITEUR JSB</strong><div style="margin-top:5px;font-size:12px;color:#b4c8d1" id="timerTitle"></div></div><small id="totalRemaining">Temps total restant</small></div><div class="timer-main"><span class="phase-chip" id="phaseLabel">PRÉPARATION</span><div class="clock" id="clockText" aria-label="Temps restant">00:10</div><div class="cycle" id="cycleLabel">Cycle 1 / 8</div><div class="paused" id="pausedFlag">EN PAUSE</div><div id="amrapCounter" class="amrap-counter" hidden><span>Tours validés</span><div><button type="button" id="amrapMinus" aria-label="Retirer un tour">−</button><strong id="amrapCount" aria-live="polite">0</strong><button type="button" id="amrapPlus" aria-label="Ajouter un tour">+</button></div></div></div><div><div class="prog" role="progressbar" aria-label="Progression de la phase" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress"><span id="progressBar"></span></div><div class="next"><span id="upNext">Ensuite : EFFORT</span><span id="percentLabel">0 %</span></div><div class="timer-actions"><button class="primary" id="pauseBtn">❚❚ &nbsp; Pause</button><button class="secondary danger" id="stopBtn">■ &nbsp; Arrêter</button></div><div class="caption">Les sons sont déclenchés par cette page : ils peuvent être retardés lorsque Safari est en arrière-plan.</div></div></section>
+<section class="timer" id="timer" data-phase="prep" aria-label="Séance en cours"><div class="timer-head"><div><strong>MONITEUR JSB</strong><div style="margin-top:5px;font-size:12px;color:#b4c8d1" id="timerTitle"></div></div><small id="totalRemaining">Temps total restant</small></div><div class="timer-main"><span class="phase-chip" id="phaseLabel">PRÉPARATION</span><div class="clock" id="clockText" aria-label="Temps restant">00:10</div><div class="cycle" id="cycleLabel">Cycle 1 / 8</div><div class="paused" id="pausedFlag">EN PAUSE</div><div id="amrapCounter" class="amrap-counter" hidden><span>Tours validés</span><div><button type="button" id="amrapMinus" aria-label="Retirer un tour">−</button><strong id="amrapCount" aria-live="polite">0</strong><button type="button" id="amrapPlus" aria-label="Ajouter un tour">+</button></div></div></div><div class="timer-controls"><div class="prog" role="progressbar" aria-label="Progression de la phase" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress"><span id="progressBar"></span></div><div class="next"><span id="upNext">Ensuite : EFFORT</span><span id="percentLabel">0 %</span></div><div class="timer-actions"><button class="primary" id="pauseBtn">❚❚ &nbsp; Pause</button><button class="secondary danger" id="stopBtn">■ &nbsp; Arrêter</button></div><div class="caption">Signaux audio natifs · musique atténuée avant et après les alertes.</div></div></section>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="./interaction_gate.js"></script>
 <script src="./workout_manager.js"></script>
@@ -297,6 +433,7 @@ function updateTimer(){
  $('phaseLabel').textContent=p.label;
  const display=growing?pretty((t-p.start)/1000):pretty(remain/1000);
  $('clockText').textContent=display;
+ $('clockText').dataset.digits=String(display.length);
  $('clockText').setAttribute('aria-label',growing?'Temps écoulé '+display:'Temps restant '+display);
  $('cycleLabel').textContent=p.cycle?(session.workout.kind==='golden'?'Temps supplémentaire':session.workout.kind==='random'?'Réagis à chaque bip':session.workout.kind==='randori'?'Randori '+p.cycle+' / '+session.workout.cycles:session.workout.kind==='boxe'?'Round '+p.cycle+' / '+session.workout.cycles:'Cycle '+p.cycle+' / '+session.workout.cycles):'Préparation';
  $('totalRemaining').textContent=session.workout.kind==='golden'?(growing?'Chronomètre libre':'Départ dans '+pretty(remain/1000)):pretty((session.total-t)/1000)+' restantes';
