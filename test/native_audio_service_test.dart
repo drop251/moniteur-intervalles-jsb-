@@ -67,6 +67,34 @@ void main() {
     messenger.setMockMethodCallHandler(channel, null);
   });
 
+  test('les WAV originaux de l’interface restaurée arrivent au moteur natif', () async {
+    const channel = MethodChannel('jsb/native_audio_wav_test');
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    MethodCall? captured;
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      captured = call;
+      return <String, Object>{
+        'played': true,
+        'focusGranted': true,
+        'duckConfigured': true,
+      };
+    });
+    final service = NativeAudioService(channel: channel);
+    final result = await service.playCue(
+      TrainingCue.finish,
+      settings: const NativeAudioSettings(alertVolume: 85),
+      wavBase64: 'UklGRg==',
+    );
+    expect(captured!.method, 'playCue');
+    final args = captured!.arguments as Map<dynamic, dynamic>;
+    expect(args['cue'], 'finish');
+    expect(args['volume'], 85);
+    expect(args['wavBase64'], 'UklGRg==');
+    expect(result.played, isTrue);
+    messenger.setMockMethodCallHandler(channel, null);
+  });
+
   test('zéro volume ne demande aucune priorité audio', () async {
     const channel = MethodChannel('jsb/native_audio_mute_test');
     final service = NativeAudioService(channel: channel);
