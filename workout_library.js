@@ -4,7 +4,7 @@
 (function(root){
   'use strict';
 
-  const MODES = Object.freeze(['all','hiit','tabata','emom','amrap','boxe']);
+  const MODES = Object.freeze(['all','randori','golden','random','tabata','hiit','boxe']);
 
   function normalizeFavorites(saved, availableIds) {
     const allowed = availableIds == null ? null : new Set(availableIds);
