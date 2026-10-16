@@ -8,6 +8,7 @@ import 'domain/interval_plan.dart' as domain;
 import 'engine/interval_session_controller.dart' as engine;
 import 'audio/native_audio_service.dart';
 import 'audio/audio_settings_screen.dart';
+import 'app/jsb_web_home_screen.dart';
 
 void main() => runApp(const MoniteurApp());
 
@@ -38,7 +39,7 @@ class MoniteurApp extends StatelessWidget {
   @override Widget build(BuildContext context)=> MaterialApp(
     title:'Moniteur JSB',debugShowCheckedModeBanner:false,
     theme:ThemeData(colorScheme:ColorScheme.fromSeed(seedColor:const Color(0xFF0369A1),brightness:Brightness.dark),useMaterial3:true),
-    home:const HomeScreen(),
+    home:const JsbWebHomeScreen(),
   );
 }
 
