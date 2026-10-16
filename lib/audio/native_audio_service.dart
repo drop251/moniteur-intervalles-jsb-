@@ -122,6 +122,7 @@ class NativeAudioService {
     TrainingCue cue, {
     required NativeAudioSettings settings,
     bool preview = false,
+    String? wavBase64,
   }) async {
     if (settings.alertVolume == 0) {
       return const NativeAudioPlayback(
@@ -140,6 +141,7 @@ class NativeAudioService {
           'volume': settings.alertVolume,
           'duckOthers': settings.duckExternalMusic,
           'preview': preview,
+          if (wavBase64 != null) 'wavBase64': wavBase64,
         },
       );
       return NativeAudioPlayback.fromResponse(
