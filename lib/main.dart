@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'domain/interval_plan.dart' as domain;
 import 'engine/interval_session_controller.dart' as engine;
 import 'audio/native_audio_service.dart';
+import 'audio/audio_settings_screen.dart';
 
 void main() => runApp(const MoniteurApp());
 
