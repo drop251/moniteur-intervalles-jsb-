@@ -94,7 +94,8 @@ class NativeAudioService {
   final MethodChannel _channel;
 
   /// Pre-activate the native ducking session before a scheduled cue.
-  /// iOS maintains a 3-second failsafe to avoid leaving external music quiet.
+  /// iOS maintains a short failsafe; each cue extends ducking to 3 seconds
+  /// after its end, and the controller prepares it 3 seconds beforehand.
   Future<void> prepareDuck({required NativeAudioSettings settings}) async {
     if (!settings.duckExternalMusic || settings.alertVolume == 0) return;
     try {
