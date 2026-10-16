@@ -52,7 +52,7 @@ class IntervalSessionController {
     required List<Phase> phases,
     PhaseClock? clock,
     this.maxCueDelayMs = 180,
-  })  : assert(phases.length > 0),
+  })  : assert(phases.isNotEmpty),
         assert(maxCueDelayMs >= 0),
         _phases = List.unmodifiable(phases),
         _clock = clock ?? PhaseClock(),
