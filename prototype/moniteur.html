@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Moniteur d'intervalles</title>
+<style>
+/* ---------- Tokens ---------- */
+:root{
+  color-scheme: light dark;
+  --bg:#f4f6f8; --surface:#ffffff; --text:#111418; --muted:#5b6573; --line:#dfe4ea;
+  --accent:#0369a1; --warn-bg:#fff7e6; --warn-text:#7a4300;
+  --effort:#16a34a; --prep:#d97706; --rest:#dc2626; --end:#4b5563;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1116; --surface:#171b22; --text:#f5f7fa; --muted:#9aa4b2; --line:#2a313c;
+    --accent:#38bdf8; --warn-bg:#2a2112; --warn-text:#fcd34d;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1116; --surface:#171b22; --text:#f5f7fa; --muted:#9aa4b2; --line:#2a313c;
+  --accent:#38bdf8; --warn-bg:#2a2112; --warn-text:#fcd34d;
+}
+
+/* ---------- Base ---------- */
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+button{font:inherit;border:0;border-radius:14px;cursor:pointer;touch-action:manipulation}
+.hidden{display:none!important}
+
+/* ---------- Accueil ---------- */
+#home{display:none;max-width:520px;margin:0 auto;padding:16px 16px 40px}
+#home.active{display:block}
+#home h1{font-size:26px;margin:12px 0 4px}
+#home h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:24px 0 4px}
+.notice{background:var(--warn-bg);color:var(--warn-text);border:1px solid var(--prep);
+  border-radius:12px;padding:12px;font-size:14px}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:4px;width:100%;min-height:56px;
+  padding:16px;margin:8px 0;background:var(--surface);color:var(--text);border:1px solid var(--line);text-align:left}
+.card span{color:var(--muted);font-size:14px}
+
+/* ---------- Écrans plein écran (séance, test) ---------- */
+.stage{--stage-bg:#0b0e13;--stage-fg:#f5f7fa;
+  display:none;position:fixed;inset:0;flex-direction:column;align-items:center;justify-content:space-between;
+  padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 16px);
+  background:var(--stage-bg);color:var(--stage-fg);
+  transition:background-color 100ms linear,color 100ms linear;overflow:hidden}
+.stage.active{display:flex}
+#session[data-phase="effort"]{--stage-bg:var(--effort);--stage-fg:#04110a}
+#session[data-phase="prep"]{--stage-bg:var(--prep);--stage-fg:#1a0f00}
+#session[data-phase="rest"]{--stage-bg:var(--rest);--stage-fg:#ffffff}
+#session[data-phase="end"]{--stage-bg:var(--end);--stage-fg:#ffffff}
+#test.flash{--stage-bg:#f8fafc;--stage-fg:#0b0e13}
+
+.topbar{display:flex;justify-content:space-between;align-items:center;width:100%;gap:8px}
+.ghost{background:rgba(255,255,255,.14);color:inherit;min-height:44px;padding:0 14px;font-size:16px}
+.info{font-size:16px;font-weight:600;opacity:.9}
+.phase{font-size:clamp(22px,5vh,32px);font-weight:800;letter-spacing:.08em;text-align:center}
+.count{font-size:min(44vh,62vw,260px);line-height:1;font-weight:800;
+  font-variant-numeric:tabular-nums;text-align:center}
+.speed{font-size:clamp(28px,6vh,40px);font-weight:700;text-align:center}
+.speed b{font-size:min(20vh,30vw,120px);font-variant-numeric:tabular-nums;font-weight:800}
+.row{display:flex;justify-content:space-around;width:100%;font-size:18px;text-align:center}
+.row b{display:block;font-size:clamp(28px,6vh,40px);font-variant-numeric:tabular-nums}
+.track{width:100%;height:14px;border-radius:99px;background:rgba(255,255,255,.2);overflow:hidden}
+.fill{height:100%;width:0;background:currentColor;border-radius:99px}
+.foot{font-size:18px;text-align:center;min-height:24px;opacity:.95}
+.controls{display:flex;gap:12px;width:100%}
+.big{flex:1;min-height:76px;font-size:20px;font-weight:700;background:rgba(255,255,255,.2);color:inherit;position:relative;overflow:hidden}
+.hold::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.35);
+  transform:scaleX(var(--p,0));transform-origin:left;pointer-events:none}
+.band{position:absolute;right:0;top:0;bottom:0;width:22px;background:rgba(255,255,255,.12)}
+.band div{position:absolute;left:0;right:0;bottom:0;height:0;background:#38bdf8;transition:height 100ms linear}
+.result{width:100%;background:rgba(0,0,0,.25);border-radius:14px;padding:12px;font-size:16px;text-align:center}
+.result strong{display:block;font-size:20px;margin-bottom:4px}
+</style>
+</head>
+<body>
+
+<!-- ============ ACCUEIL ============ -->
+<section id="home" class="active">
+  <h1>Intervalles &amp; tests</h1>
+  <div class="notice">Mode démonstration : la table du test Luc Léger n'est pas encore validée. Les vitesses et paliers affichés sont fictifs.</div>
+
+  <h2>Séances</h2>
+  <div id="presets"></div>
+
+  <h2>Tests</h2>
+  <button class="card" id="testCard"><strong>Test Luc Léger</strong><span>Course navette 20 m · démo</span></button>
+</section>
+
+<!-- ============ SÉANCE ============ -->
+<section id="session" class="stage" data-phase="prep">
+  <div class="topbar">
+    <button class="ghost" id="backSession">‹ Retour</button>
+    <span class="info" id="cycleInfo"></span>
+  </div>
+  <div class="phase" id="phaseLabel">PRÉPA</div>
+  <div class="count" id="count">0</div>
+  <div class="track"><div class="fill" id="bar"></div></div>
+  <div class="foot" id="nextInfo"></div>
+  <div class="controls">
+    <button class="big" id="playBtn">▶ Démarrer</button>
+    <button class="big hold" id="stopBtn">Maintenir · arrêter</button>
+  </div>
+</section>
+
+<!-- ============ TEST LUC LÉGER ============ -->
+<section id="test" class="stage">
+  <div class="band"><div id="tBand"></div></div>
+  <div class="topbar">
+    <button class="ghost" id="backTest">‹ Retour</button>
+    <span class="info">Luc Léger · démo</span>
+  </div>
+  <div class="phase">PALIER</div>
+  <div class="count" id="tLevel">–</div>
+  <div class="speed"><b id="tSpeed">–</b> km/h</div>
+  <div class="row">
+    <div>Navette<b id="tShuttle">–</b></div>
+    <div>Validées<b id="tCum">0</b></div>
+  </div>
+  <div class="track"><div class="fill" id="tBip"></div></div>
+  <div class="foot">Prochain bip : la barre se remplit jusqu'à la ligne</div>
+  <div class="result hidden" id="tResult"><strong id="tResultTitle"></strong><span id="tResultText"></span></div>
+  <div class="controls">
+    <button class="big" id="testPlay">▶ Démarrer</button>
+    <button class="big hold" id="testStop">Maintenir · arrêter</button>
+  </div>
+</section>
+
+<script>
+/* =========================================================
+   DONNÉES
+   ========================================================= */
+
+// Présets de séance. Durées en secondes.
+const PRESETS = [
+  {name:'Tabata classique', detail:'20 s effort / 10 s repos × 8', prep:10, work:20, rest:10, cycles:8},
+  {name:'HIIT 40/20',       detail:'40 s effort / 20 s repos × 10', prep:10, work:40, rest:20, cycles:10},
+  {name:'EMOM 10 min',      detail:'1 minute par minute × 10',      prep:5,  work:60, rest:0,  cycles:10},
+  {name:'AMRAP 5 min',      detail:'Un bloc continu de 5 minutes',   prep:5,  work:300,rest:0,  cycles:1},
+  {name:'Boxe 3 × 3 min',   detail:'Rounds 180 s / repos 60 s',      prep:10, work:180,rest:60, cycles:3},
+];
+
+// Test Luc Léger : DONNÉES DE DÉMONSTRATION UNIQUEMENT (non validées).
+// À remplacer par la table versionnée issue de la bande sonore de référence.
+// Protocole standard : 20 m, départ 8,5 km/h, +0,5 km/h par palier, paliers d'environ 60 s.
+// Nombre de navettes = arrondi de 60 s / durée d'une navette (72 / v). À vérifier palier par palier
+// contre la table imprimée du protocole.
+const LEGER_DEMO = Array.from({length:21},(_,i)=>{
+  const speed = 8.5 + 0.5*i;
+  return { level: i+1, speed, shuttles: Math.max(1, Math.round(60/(72/speed))) };
+});
+
+// Fréquences des bips par type de phase (Hz)
+const FREQ = {prep:900, effort:1500, rest:600, end:1200};
+
+/* =========================================================
+   HORLOGE : temps monotone, échéances absolues, planification audio
+   ========================================================= */
+const Clock = {
+  t0:0, paused:null, timer:null, running:false, started:false, ended:false,
+  total:0, events:[], nodes:[], ctx:null, wake:null, onTick:null, onEnd:null,
+
+  // Temps écoulé depuis le départ, horloge monotone (performance.now)
+  elapsed(){ return this.paused!==null ? this.paused : performance.now()-this.t0; },
+
+  load({total, events, onTick, onEnd}){
+    this.halt();
+    this.total=total;
+    this.events=events.map(e=>({...e, done:false}));
+    this.onTick=onTick; this.onEnd=onEnd;
+    this.paused=null; this.t0=0; this.ended=false; this.started=false;
+  },
+
+  start(){
+    this.ensureAudio();
+    if(this.paused!==null){ this.t0=performance.now()-this.paused; this.paused=null; }
+    else { this.t0=performance.now(); }
+    this.running=true; this.started=true;
+    this.acquireWake();
+    clearInterval(this.timer);
+    this.timer=setInterval(()=>this.tick(), 50);
+    this.tick();
+  },
+
+  pause(){
+    if(!this.running) return;
+    this.paused=this.elapsed();
+    this.running=false;
+    clearInterval(this.timer);
+    this.stopNodes();
+    // Les bips futurs seront re-planifiés à la reprise
+    this.events.forEach(ev=>{ if(ev.t>this.paused) ev.done=false; });
+    this.releaseWake();
+  },
+
+  // Arrêt volontaire : renvoie le temps écoulé
+  stop(){
+    if(!this.started) return 0;
+    const e=this.elapsed();
+    this.halt();
+    this.paused=e; this.started=false;
+    return e;
+  },
+
+  halt(){
+    this.running=false;
+    clearInterval(this.timer);
+    this.stopNodes();
+    this.releaseWake();
+  },
+
+  tick(){
+    if(!this.running) return;
+    const e=this.elapsed();
+    if(e>=this.total){
+      this.halt();
+      this.ended=true; this.paused=this.total;
+      this.onTick && this.onTick(this.total);
+      this.onEnd && this.onEnd();
+      return;
+    }
+    // Planification 200 ms à l'avance sur l'horloge audio
+    for(const ev of this.events){
+      if(!ev.done && ev.t<=e+200){
+        ev.done=true;
+        if(ev.t>=e-150) this.play(ev.f, ev.d, ev.t-e);
+      }
+    }
+    this.onTick && this.onTick(e);
+  },
+
+  ensureAudio(){
+    if(!this.ctx){
+      try{ const AC=window.AudioContext||window.webkitAudioContext; this.ctx=new AC(); }
+      catch(_){ this.ctx=null; }
+    }
+    if(this.ctx && this.ctx.state==='suspended'){ this.ctx.resume().catch(()=>{}); }
+  },
+
+  play(freq, dur, offsetMs){
+    if(!this.ctx) return;
+    const when=this.ctx.currentTime+Math.max(0,offsetMs)/1000;
+    const o=this.ctx.createOscillator(), g=this.ctx.createGain();
+    o.type='square'; o.frequency.value=freq;
+    g.gain.setValueAtTime(0.0001, when);
+    g.gain.exponentialRampToValueAtTime(0.4, when+0.01);
+    g.gain.setValueAtTime(0.4, when+Math.max(0.011, dur-0.02));
+    g.gain.exponentialRampToValueAtTime(0.0001, when+dur);
+    o.connect(g); g.connect(this.ctx.destination);
+    o.start(when); o.stop(when+dur+0.02);
+    this.nodes.push(o);
+    o.onended=()=>{ this.nodes=this.nodes.filter(n=>n!==o); };
+  },
+
+  stopNodes(){
+    this.nodes.forEach(n=>{ try{ n.stop(); }catch(_){} });
+    this.nodes=[];
+  },
+
+  async acquireWake(){
+    try{ if('wakeLock' in navigator){ this.wake=await navigator.wakeLock.request('screen'); } }
+    catch(_){}
+  },
+  releaseWake(){
+    try{ if(this.wake) this.wake.release(); }catch(_){}
+    this.wake=null;
+  }
+};
+
+function buzz(pattern){ try{ navigator.vibrate && navigator.vibrate(pattern); }catch(_){} }
+
+/* Appui long pour arrêter : évite les arrêts accidentels */
+function holdToStop(btn, onDone){
+  let timeout=null, raf=0, t0=0;
+  const reset=()=>{ clearTimeout(timeout); cancelAnimationFrame(raf); btn.style.setProperty('--p',0); };
+  btn.addEventListener('pointerdown', ev=>{
+    ev.preventDefault(); t0=performance.now();
+    const step=()=>{
+      const p=Math.min(1,(performance.now()-t0)/900);
+      btn.style.setProperty('--p',p);
+      if(p<1) raf=requestAnimationFrame(step);
+    };
+    step();
+    timeout=setTimeout(()=>{ reset(); onDone(); }, 900);
+  });
+  ['pointerup','pointerleave','pointercancel'].forEach(t=>btn.addEventListener(t,reset));
+}
+
+function showHome(){
+  Clock.stop();
+  document.querySelectorAll('.stage').forEach(s=>s.classList.remove('active'));
+  document.getElementById('home').classList.add('active');
+}
+function showStage(id){
+  document.getElementById('home').classList.remove('active');
+  document.querySelectorAll('.stage').forEach(s=>s.classList.toggle('active', s.id===id));
+}
+
+/* =========================================================
+   SÉANCE
+   ========================================================= */
+let preset=null, phases=[], starts=[], phaseIdx=-1;
+
+function buildPhases(p){
+  const list=[];
+  if(p.prep>0) list.push({type:'prep', label:'PRÉPA', dur:p.prep*1000, cycle:0, total:p.cycles});
+  for(let i=1;i<=p.cycles;i++){
+    list.push({type:'effort', label:'EFFORT', dur:p.work*1000, cycle:i, total:p.cycles});
+    if(i<p.cycles && p.rest>0) list.push({type:'rest', label:'REPOS', dur:p.rest*1000, cycle:i, total:p.cycles});
+  }
+  list.push({type:'end', label:'FIN', dur:1500, cycle:p.cycles, total:p.cycles});
+  return list;
+}
+
+function openSession(p){
+  preset=p;
+  phases=buildPhases(p);
+  starts=[]; let t=0;
+  phases.forEach(ph=>{ starts.push(t); t+=ph.dur; });
+
+  // Bips : début de chaque phase, compte à rebours 3-2-1 avant chaque effort ou prépa
+  const events=[];
+  phases.forEach((ph,i)=>{
+    const s=starts[i];
+    if(ph.type==='effort' || ph.type==='prep'){
+      [3,2,1].forEach(k=>{ const tk=s-k*1000; if(tk>=0) events.push({t:tk, f:800, d:0.12}); });
+    }
+    events.push({t:s, f:FREQ[ph.type], d: ph.type==='effort'?0.45:0.25});
+  });
+
+  phaseIdx=-1;
+  document.getElementById('session').dataset.phase='prep';
+  Clock.load({
+    total:t, events,
+    onTick: renderSession,
+    onEnd: ()=>{ renderSession(t); setPlayLabel('session'); }
+  });
+  renderSession(0);
+  showStage('session');
+  setPlayLabel('session');
+}
+
+function renderSession(e){
+  let i=0;
+  for(let k=0;k<phases.length;k++){ if(e>=starts[k]) i=k; }
+  const ph=phases[i];
+  if(i!==phaseIdx){
+    phaseIdx=i;
+    document.getElementById('session').dataset.phase=ph.type;
+    buzz(ph.type==='effort' ? [120,60,120] : 120);
+  }
+  const remain=Math.max(0, starts[i]+ph.dur-e);
+  document.getElementById('count').textContent=Math.ceil(remain/1000);
+  document.getElementById('phaseLabel').textContent=ph.label;
+  document.getElementById('cycleInfo').textContent= ph.cycle ? `Cycle ${ph.cycle} / ${ph.total}` : '';
+  const pct = ph.dur ? 1-remain/ph.dur : 1;
+  document.getElementById('bar').style.width=(pct*100)+'%';
+  const nx=phases[i+1];
+  document.getElementById('nextInfo').textContent = nx
+    ? `Suivant : ${nx.label}${nx.dur ? ' · '+Math.round(nx.dur/1000)+' s' : ''}`
+    : '';
+}
+
+function setPlayLabel(which){
+  const btn=document.getElementById(which==='session'?'playBtn':'testPlay');
+  const C=Clock;
+  btn.textContent = C.ended ? '↺ Recommencer'
+    : C.running ? '❚❚ Pause'
+    : C.paused!==null ? '▶ Reprendre'
+    : '▶ Démarrer';
+}
+
+document.getElementById('playBtn').onclick=()=>{
+  if(Clock.ended){ openSession(preset); return; }
+  Clock.running ? Clock.pause() : Clock.start();
+  setPlayLabel('session');
+};
+document.getElementById('backSession').onclick=showHome;
+holdToStop(document.getElementById('stopBtn'), showHome);
+
+/* =========================================================
+   TEST LUC LÉGER
+   ========================================================= */
+let shuttles=[], testDone=false;
+
+function openTest(){
+  // Chaque navette dure 72 / v secondes (20 m à v km/h)
+  shuttles=[]; let t=0;
+  LEGER_DEMO.forEach((lv,li)=>{
+    const dur=72/lv.speed*1000;
+    for(let k=1;k<=lv.shuttles;k++){
+      shuttles.push({start:t, end:t+dur, dur, li, k, last:k===lv.shuttles});
+      t+=dur;
+    }
+  });
+  const events=shuttles.map(s=>({t:s.end, f:s.last?1400:1000, d:s.last?0.35:0.15}));
+  events.push({t:0, f:1000, d:0.2});
+
+  testDone=false;
+  document.getElementById('tResult').classList.add('hidden');
+  document.getElementById('test').classList.remove('flash');
+  Clock.load({
+    total:t, events,
+    onTick: renderTest,
+    onEnd: ()=>{ finishTest(t); setPlayLabel('test'); }
+  });
+  renderTest(0);
+  showStage('test');
+  setPlayLabel('test');
+}
+
+let lastCum=0;
+function renderTest(e){
+  let j=shuttles.length-1;
+  for(let k=0;k<shuttles.length;k++){ if(e<shuttles[k].end){ j=k; break; } }
+  const s=shuttles[j];
+  const lv=LEGER_DEMO[s.li];
+  document.getElementById('tLevel').textContent=lv.level;
+  document.getElementById('tSpeed').textContent=lv.speed.toFixed(1);
+  document.getElementById('tShuttle').textContent=`${s.k} / ${lv.shuttles}`;
+  const cum=shuttles.filter(x=>x.end<=e).length;
+  document.getElementById('tCum').textContent=cum;
+  // Bande de progression du palier : monte du début à la fin du palier
+  const lvl=shuttles.filter(x=>x.li===s.li);
+  const lvStart=lvl[0].start, lvEnd=lvl[lvl.length-1].end;
+  const bp=Math.min(1, Math.max(0, (e-lvStart)/(lvEnd-lvStart)));
+  document.getElementById('tBand').style.height=(bp*100)+'%';
+  const p=Math.min(1, Math.max(0, (e-s.start)/s.dur));
+  document.getElementById('tBip').style.width=(p*100)+'%';
+
+  // Flash visuel à chaque bip
+  if(cum!==lastCum){
+    lastCum=cum;
+    const el=document.getElementById('test');
+    el.classList.add('flash');
+    setTimeout(()=>el.classList.remove('flash'), 120);
+  }
+}
+
+function finishTest(e){
+  testDone=true;
+  const completed=LEGER_DEMO.filter((lv,li)=>shuttles.some(x=>x.li===li && x.last && x.end<=e));
+  const last=completed[completed.length-1];
+  document.getElementById('tResultTitle').textContent = last
+    ? `Dernier palier complet : ${last.level}`
+    : 'Aucun palier complet';
+  document.getElementById('tResultText').textContent = last
+    ? `${last.speed.toFixed(1)} km/h · ${shuttles.filter(x=>x.end<=e).length} navettes validées · données de démonstration`
+    : 'Données de démonstration';
+  document.getElementById('tResult').classList.remove('hidden');
+}
+
+document.getElementById('testPlay').onclick=()=>{
+  if(testDone || Clock.ended){ openTest(); return; }
+  Clock.running ? Clock.pause() : Clock.start();
+  setPlayLabel('test');
+};
+document.getElementById('backTest').onclick=showHome;
+holdToStop(document.getElementById('testStop'), ()=>{
+  if(!Clock.started){ showHome(); return; }
+  const e=Clock.stop();
+  finishTest(e);
+  setPlayLabel('test');
+});
+
+/* =========================================================
+   INITIALISATION
+   ========================================================= */
+const presetsEl=document.getElementById('presets');
+PRESETS.forEach(p=>{
+  const b=document.createElement('button');
+  b.className='card';
+  b.innerHTML='<strong></strong><span></span>';
+  b.querySelector('strong').textContent=p.name;
+  b.querySelector('span').textContent=p.detail;
+  b.onclick=()=>openSession(p);
+  presetsEl.appendChild(b);
+});
+document.getElementById('testCard').onclick=openTest;
+</script>
+</body>
+</html>
