@@ -1,4 +1,4 @@
-/* Catalogue local des minuteurs : favoris, tri et filtres.
+/* Catalogue local des minuteurs : recherche, favoris ordonnés et filtres.
  * Les données restent sur l'appareil ; aucune requête réseau.
  */
 (function(root){
@@ -28,19 +28,50 @@
       : [...favorites, id];
   }
 
-  function filterWorkouts(workouts, options = {}) {
-    const mode = MODES.includes(options.mode) ? options.mode : 'all';
-    const onlyFavorites = options.onlyFavorites === true;
-    const favoriteSet = new Set(normalizeFavorites(options.favorites));
-    // Sort stable : favoris en haut, puis ordre original des présets et créations.
-    return workouts
-      .filter(w => w && typeof w.id === 'string'
-        && (mode === 'all' || w.kind === mode)
-        && (!onlyFavorites || favoriteSet.has(w.id)))
-      .sort((a,b) => Number(favoriteSet.has(b.id)) - Number(favoriteSet.has(a.id)));
+  /* Déplacement d'une place. Utiliser -1 pour monter, +1 pour descendre. */
+  function moveFavorite(saved, id, direction) {
+    const favorites = normalizeFavorites(saved);
+    if(direction !== -1 && direction !== 1) return favorites;
+    const from = favorites.indexOf(id);
+    const to = from + direction;
+    if(from < 0 || to < 0 || to >= favorites.length) return favorites;
+    [favorites[from],favorites[to]] = [favorites[to],favorites[from]];
+    return favorites;
   }
 
-  const api = { MODES, normalizeFavorites, toggleFavorite, filterWorkouts };
+  function normalizedSearch(text) {
+    return String(text == null ? '' : text)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .toLocaleLowerCase('fr')
+      .trim();
+  }
+
+  function filterWorkouts(workouts, options = {}) {
+    const mode = MODES.includes(options.mode) ? options.mode : 'all';
+    const query = normalizedSearch(options.query);
+    const onlyFavorites = options.onlyFavorites === true;
+    const favorites = normalizeFavorites(options.favorites);
+    const favoriteOrder = new Map(favorites.map((id,index) => [id,index]));
+    // Favoris dans l'ordre choisi, puis non-favoris dans l'ordre du catalogue.
+    return workouts
+      .map((workout,index) => ({workout,index}))
+      .filter(({workout:w}) => w && typeof w.id === 'string'
+        && (mode === 'all' || w.kind === mode)
+        && (!query || normalizedSearch(w.name).includes(query))
+        && (!onlyFavorites || favoriteOrder.has(w.id)))
+      .sort((a,b) => {
+        const aRank = favoriteOrder.has(a.workout.id)
+          ? favoriteOrder.get(a.workout.id) : Infinity;
+        const bRank = favoriteOrder.has(b.workout.id)
+          ? favoriteOrder.get(b.workout.id) : Infinity;
+        return aRank - bRank || a.index - b.index;
+      })
+      .map(({workout}) => workout);
+  }
+
+  const api = { MODES, normalizeFavorites, toggleFavorite, moveFavorite,
+    normalizedSearch, filterWorkouts };
   if(typeof module !== 'undefined' && module.exports) module.exports = api;
   root.JSBWorkoutLibrary = api;
 })(typeof window !== 'undefined' ? window : globalThis);
