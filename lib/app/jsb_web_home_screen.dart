@@ -70,7 +70,9 @@ class _JsbWebHomeScreenState extends State<JsbWebHomeScreen> {
           await _audio.releaseDuck();
           break;
         case 'cue':
-          final volume = (message['volume'] as num?)?.round().clamp(0, 100) ?? 90;
+          final volume = ((message['volume'] as num?)?.round() ?? 90)
+              .clamp(0, 100)
+              .toInt();
           final event = message['event'] as String? ?? 'effort';
           final settings = NativeAudioSettings(
             alertVolume: volume,
