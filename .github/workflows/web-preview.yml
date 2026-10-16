@@ -1,0 +1,34 @@
+name: Web preview validation
+on:
+  push:
+    branches: [main]
+    paths:
+      - index.html
+      - manifest.webmanifest
+      - sw.js
+      - .github/workflows/web-preview.yml
+  pull_request:
+    paths:
+      - index.html
+      - manifest.webmanifest
+      - sw.js
+      - .github/workflows/web-preview.yml
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check inline JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          html=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',html,re.S|re.I)
+          assert scripts, 'No inline JavaScript found'
+          Path('/tmp/moniteur-inline.js').write_text('\n'.join(scripts),encoding='utf-8')
+          PY
+          node --check /tmp/moniteur-inline.js
+          node --check sw.js
+      - name: Validate manifest
+        run: python3 -m json.tool manifest.webmanifest >/dev/null
