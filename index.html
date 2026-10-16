@@ -175,12 +175,12 @@ function closeEditor(){$('editorModal').classList.remove('active');editingWorkou
 function phases(w){return trainingModes.phasePlan(w)}
 function armAudio(){if(!settings.audio)return;try{ctx??=new(window.AudioContext||window.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume().catch(()=>{});}catch{ctx=null;}}
 function beep(kind,preview=false){
-if(!preview&&settings.vibrate&&navigator.vibrate){try{navigator.vibrate(kind==='effort'?[65,40,65]:65)}catch{}}
+if(!preview&&settings.vibrate&&navigator.vibrate){try{navigator.vibrate(kind==='effort'||kind==='random'?[65,40,65]:65)}catch{}}
 const level=settings.volume/100;
 if(!settings.audio||level<=0||!ctx||ctx.state!=='running')return;
 try{
  const osc=ctx.createOscillator(),gain=ctx.createGain(),now=ctx.currentTime;
- osc.type='sine';osc.frequency.value=kind==='effort'?950:kind==='rest'?580:750;
+ osc.type='sine';osc.frequency.value=kind==='random'?1200:kind==='effort'?950:kind==='rest'?580:750;
  const peak=.18*level*level;
  gain.gain.setValueAtTime(0,now);
  gain.gain.linearRampToValueAtTime(peak,now+.018);
@@ -190,11 +190,53 @@ try{
 }
 async function requestWakeLock(){if(!settings.keepAwake||!('wakeLock' in navigator))return;try{wakeLock=await navigator.wakeLock.request('screen')}catch{notice('Maintien de l’écran indisponible dans ce navigateur.')}}
 function releaseWakeLock(){if(wakeLock){wakeLock.release().catch(()=>{});wakeLock=null;}}
-function startWorkout(w){if(session||!gate.allow('start-workout',600))return;clearInterval(frame);frame=null;armAudio();const seq=phases(w);let acc=0;for(const p of seq){p.start=acc;acc+=p.ms;}session={workout:w,seq,total:acc,elapsed:0,base:performance.now(),paused:false,index:-1,finished:false,rounds:0};$('amrapCounter').hidden=w.kind!=='amrap';$('amrapCount').textContent='0';$('timerTitle').textContent=w.name;$('timer').classList.add('active');document.querySelector('.nav').style.visibility='hidden';requestWakeLock();updateTimer();frame=setInterval(updateTimer,75);}
+function startWorkout(w){
+ if(session||!trainingModes.isAvailable(w.kind)||!gate.allow('start-workout',600))return;
+ clearInterval(frame);frame=null;armAudio();
+ const seq=phases(w);let acc=0;
+ for(const p of seq){p.start=acc;acc+=p.ms;}
+ const signals=w.kind==='random'?randomSignals.createSignals({workMs:w.work*1000,frequency:w.frequency||'medium',progressive:w.progressive!==false}).map(ms=>ms+w.prep*1000):[];
+ session={workout:w,seq,total:acc,elapsed:0,base:performance.now(),paused:false,index:-1,finished:false,rounds:0,signals,nextSignal:0,signalsPlayed:0};
+ $('amrapCounter').hidden=true;$('amrapCount').textContent='0';
+ $('timerTitle').textContent=w.name;$('timer').classList.add('active');
+ document.querySelector('.nav').style.visibility='hidden';
+ requestWakeLock();updateTimer();frame=setInterval(updateTimer,75);
+}
 function currentMs(){if(!session)return 0;return session.paused?session.elapsed:session.elapsed+(performance.now()-session.base)}
-function updateTimer(){if(!session||session.finished)return;const t=currentMs();if(t>=session.total){finish(true);return;}let idx=session.seq.length-1;for(let i=0;i<session.seq.length;i++){if(t<session.seq[i].start+session.seq[i].ms){idx=i;break;}}const p=session.seq[idx];if(idx!==session.index){const previous=session.index;session.index=idx;if(previous<0||t-p.start<=180)beep(p.kind);}const remain=Math.max(0,p.ms-(t-p.start));$('timer').dataset.phase=p.kind;$('phaseLabel').textContent=p.label;$('clockText').textContent=pretty(remain/1000);$('clockText').setAttribute('aria-label',Math.ceil(remain/1000)+' secondes restantes');$('cycleLabel').textContent=p.cycle?(session.workout.kind==='boxe'?'Round ':session.workout.kind==='emom'?'Départ ':'Cycle ')+p.cycle+' / '+session.workout.cycles:'Préparation';$('totalRemaining').textContent=pretty((session.total-t)/1000)+' restantes';const percent=Math.min(100,Math.max(0,Math.round(100*(t-p.start)/p.ms)));$('progressBar').style.width=percent+'%';$('progress').setAttribute('aria-valuenow',percent);$('percentLabel').textContent=percent+' %';const next=session.seq[idx+1];$('upNext').textContent=next?'Ensuite : '+next.label:'Dernière phase';$('pausedFlag').classList.toggle('on',session.paused);$('pauseBtn').textContent=session.paused?'▶  Reprendre':'❚❚  Pause';}
+function updateTimer(){
+ if(!session||session.finished)return;
+ const t=currentMs();
+ if(t>=session.total){finish(true);return;}
+ let idx=session.seq.length-1;
+ for(let i=0;i<session.seq.length;i++){if(t<session.seq[i].start+session.seq[i].ms){idx=i;break;}}
+ const p=session.seq[idx];
+ if(idx!==session.index){const previous=session.index;session.index=idx;if(!session.paused&&(previous<0||t-p.start<=180))beep(p.kind);}
+ if(session.workout.kind==='random'&&!session.paused){
+  while(session.nextSignal<session.signals.length&&t>=session.signals[session.nextSignal]){
+   const target=session.signals[session.nextSignal++];
+   if(t-target<=180){beep('random');session.signalsPlayed++;}
+  }
+ }
+ const growing=session.workout.kind==='golden'&&p.kind==='effort';
+ const remain=Math.max(0,p.ms-(t-p.start));
+ $('timer').dataset.phase=p.kind;
+ $('phaseLabel').textContent=p.label;
+ const display=growing?pretty((t-p.start)/1000):pretty(remain/1000);
+ $('clockText').textContent=display;
+ $('clockText').setAttribute('aria-label',growing?'Temps écoulé '+display:'Temps restant '+display);
+ $('cycleLabel').textContent=p.cycle?(session.workout.kind==='golden'?'Temps supplémentaire':session.workout.kind==='random'?'Réagis à chaque bip':session.workout.kind==='randori'?'Randori '+p.cycle+' / '+session.workout.cycles:session.workout.kind==='boxe'?'Round '+p.cycle+' / '+session.workout.cycles:'Cycle '+p.cycle+' / '+session.workout.cycles):'Préparation';
+ $('totalRemaining').textContent=session.workout.kind==='golden'?(growing?'Chronomètre libre':'Départ dans '+pretty(remain/1000)):pretty((session.total-t)/1000)+' restantes';
+ const percent=growing?0:Math.min(100,Math.max(0,Math.round(100*(t-p.start)/p.ms)));
+ $('progressBar').style.width=percent+'%';
+ $('progress').setAttribute('aria-valuenow',percent);
+ $('percentLabel').textContent=growing?'Temps libre':percent+' %';
+ const next=session.seq[idx+1];
+ $('upNext').textContent=session.workout.kind==='random'?'Bips émis : '+session.signalsPlayed:next?'Ensuite : '+next.label:growing?'Arrêt manuel':'Dernière phase';
+ $('pausedFlag').classList.toggle('on',session.paused);
+ $('pauseBtn').textContent=session.paused?'▶  Reprendre':'❚❚  Pause';
+}
 function pauseResume(){if(!session||session.finished||modalBusy||!gate.allow('pause-toggle',400))return;if(session.paused){session.base=performance.now();session.paused=false;armAudio();requestWakeLock()}else{session.elapsed=currentMs();session.paused=true;releaseWakeLock()}updateTimer()}
-function finish(completed){if(!session||session.finished)return;session.finished=true;modalBusy=false;clearInterval(frame);frame=null;releaseWakeLock();const s=session;const entry={name:s.workout.name,date:new Date().toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}),elapsed:Math.floor(Math.min(currentMs(),s.total)/1000),completed,...(s.workout.kind==='amrap'?{rounds:s.rounds}:{})};history.unshift(entry);history=history.slice(0,60);safeWrite('jsb_preview_history',history);$('timer').classList.remove('active');document.querySelector('.nav').style.visibility='visible';session=null;renderHistory();notice(completed?'Séance terminée !':'Séance interrompue');}
+function finish(completed){if(!session||session.finished)return;session.finished=true;modalBusy=false;clearInterval(frame);frame=null;releaseWakeLock();const s=session;const entry={name:s.workout.name,date:new Date().toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}),elapsed:Math.floor(Math.min(currentMs(),s.total)/1000),completed,...(s.workout.kind==='random'?{signals:s.signalsPlayed}:{}) ,...(s.workout.kind==='amrap'?{rounds:s.rounds}:{})};history.unshift(entry);history=history.slice(0,60);safeWrite('jsb_preview_history',history);$('timer').classList.remove('active');document.querySelector('.nav').style.visibility='visible';session=null;renderHistory();notice(completed?'Séance terminée !':'Séance interrompue');}
 $('workoutSearch').addEventListener('input',()=>{workoutSearch=$('workoutSearch').value;closeWorkoutMenus();renderWorkouts()});
 $('reorderFavorites').addEventListener('click',()=>{
   reorderFavorites=!reorderFavorites;
