@@ -13,9 +13,7 @@ on:
       - training_modes.js
       - random_signals.js
       - sound_engine.js
-      - music_player.js
       - audio_cues.js
-      - test/web_music_player.test.cjs
       - test/web_audio_cues.test.cjs
       - test/web_sound_engine.test.cjs
       - test/web_training_modes.test.cjs
@@ -37,9 +35,7 @@ on:
       - training_modes.js
       - random_signals.js
       - sound_engine.js
-      - music_player.js
       - audio_cues.js
-      - test/web_music_player.test.cjs
       - test/web_audio_cues.test.cjs
       - test/web_sound_engine.test.cjs
       - test/web_training_modes.test.cjs
@@ -73,7 +69,6 @@ jobs:
           node --check training_modes.js
           node --check random_signals.js
           node --check sound_engine.js
-          node --check music_player.js
           node --check audio_cues.js
       - name: Test repeated tap guard
         run: |
@@ -84,7 +79,6 @@ jobs:
           node test/web_training_modes.test.cjs
           node test/web_random_signals.test.cjs
           node test/web_sound_engine.test.cjs
-          node test/web_music_player.test.cjs
           node test/web_audio_cues.test.cjs
       - name: Validate manifest
         run: python3 -m json.tool manifest.webmanifest >/dev/null
