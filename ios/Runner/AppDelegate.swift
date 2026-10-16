@@ -80,11 +80,12 @@ import AVFoundation
         try audio.setActive(true)
         activeDuckingMode = true
       }
-      // A failsafe ensures Spotify is never left ducked if Flutter misses
-      // the cue or the user pauses immediately after arming audio focus.
+      // Failsafe longer than the 3 s lead-in plus a cue and its 3 s tail.
+      // Flutter explicitly releases audio on pause/stop; this watchdog covers
+      // unexpected missed callbacks without cutting the scheduled beep.
       cueToken += 1
       let token = cueToken
-      DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+      DispatchQueue.main.asyncAfter(deadline: .now() + 7.0) { [weak self] in
         guard let self = self, self.cueToken == token else { return }
         self.releaseAudio()
       }
@@ -155,11 +156,11 @@ import AVFoundation
       player = sound
       let token = cueToken
 
-      // Long diagnostic window makes system ducking objectively audible.
-      // Normal cues release focus quickly; countdown cues keep a short
-      // overlap to prevent a volume up/down pulse for every 3-2-1 beep.
+      // Keep Spotify attenuated for 3 s AFTER the cue has finished.
+      // Each subsequent cue extends this window, so a 3-2-1 countdown does
+      // not cause volume pumping between short successive beeps.
       let holdSeconds: Double = preview ? max(4.0, duration + 0.15) :
-        (cue == "countdown" ? 1.10 : duration + 0.25)
+        duration + 3.0
       DispatchQueue.main.asyncAfter(deadline: .now() + holdSeconds) { [weak self] in
         guard let self = self, token == self.cueToken else { return }
         self.releaseAudio()
