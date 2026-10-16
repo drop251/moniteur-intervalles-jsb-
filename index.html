@@ -4,6 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <meta name="theme-color" content="#0b111b" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="icon" href="./icon.svg" type="image/svg+xml" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Moniteur JSB" />
 <title>Moniteur JSB · Aperçu interactif</title>
 <style>
 :root{--bg:#0a1019;--surface:#121c29;--surface2:#192636;--line:#2c3c4e;--text:#f3f7fb;--muted:#afbfce;--cyan:#60d4ed;--green:#34d89b;--orange:#f9bc62;--red:#ff8484;--nav:75px;--safe:env(safe-area-inset-bottom,0px);color-scheme:dark;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -56,5 +60,6 @@ for(const n of document.querySelectorAll('[data-nav]'))n.addEventListener('click
 for(const [id,key] of [['audioEnabled','audio'],['vibrateEnabled','vibrate'],['keepAwake','keepAwake']]){const el=$(id);el.checked=Boolean(settings[key]);el.addEventListener('change',()=>{settings[key]=el.checked;safeWrite('jsb_preview_settings',settings);if(key==='keepAwake'&&!el.checked)releaseWakeLock();});}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&session&&!session.paused){requestWakeLock();updateTimer();}});renderWorkouts();renderHistory();})();
 </script>
+<script>if ("serviceWorker" in navigator && location.protocol === "https:") { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {})); }</script>
 </body>
 </html>
