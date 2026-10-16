@@ -23,6 +23,14 @@ import AVFoundation
     )
     audioChannel = channel
     channel.setMethodCallHandler { [weak self] call, result in
+      // The coach can keep the timer visible while supervising the tatami.
+      // This setting is independent of the music/Spotify audio session.
+      if call.method == "setKeepAwake" {
+        let enabled = (call.arguments as? [String: Any])?["enabled"] as? Bool ?? false
+        UIApplication.shared.isIdleTimerDisabled = enabled
+        result(nil)
+        return
+      }
       if call.method == "releaseDuck" {
         self?.releaseAudio()
         result(nil)
@@ -244,6 +252,7 @@ import AVFoundation
   }
 
   override func applicationWillTerminate(_ application: UIApplication) {
+    UIApplication.shared.isIdleTimerDisabled = false
     releaseAudio()
     super.applicationWillTerminate(application)
   }
