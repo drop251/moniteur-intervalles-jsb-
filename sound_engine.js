@@ -20,7 +20,8 @@
     {id:'triple',label:'Triple bip',description:'Trois signaux successifs'},
     {id:'whistle',label:'Sifflet électronique',description:'Signal montant'},
     {id:'bell',label:'Cloche',description:'Signal harmonique'},
-    {id:'digital',label:'Signal digital',description:'Trois notes électroniques'}
+    {id:'digital',label:'Signal digital',description:'Trois notes électroniques'},
+    {id:'countdown',label:'Top décompte',description:'Bip sec 3-2-1, puis départ'}
   ]);
   const FINISH_SOUNDS = Object.freeze([
     {id:'gong',label:'Gong japonais',description:'Impact métallique et résonance longue'},
@@ -66,6 +67,7 @@
       case 'airhorn':
         notes=[n(0,.50,430,'sawtooth',450,.48),n(0,.50,650,'sawtooth',660,.40),n(.04,.43,830,'square',820,.18)];
         break;
+      case 'countdown':notes=[n(0,.095,1320,'square',1240,.43),n(0,.085,1870,'triangle',1500,.14)];break;
       case 'double':notes=[n(0,.13,850),n(.20,.13,850)];break;
       case 'triple':notes=[n(0,.11,960),n(.17,.11,960),n(.34,.11,960)];break;
       case 'whistle':notes=[n(0,.42,900,'sine',1750)];break;
