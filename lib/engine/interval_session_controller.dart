@@ -82,11 +82,11 @@ class IntervalSessionController {
   int get totalMs => _totalMs;
 
   /// Called when resuming, so the UI can re-arm a duck window already
-  /// entered before the user paused the workout.
+  /// entered before the user paused the workout (3-second lead-in).
   bool get hasCueWithinDuckLead {
     if (_status != SessionStatus.running) return false;
     final now = _clock.elapsedMs;
-    return _cues.any((cue) => cue.atMs >= now && cue.atMs - now <= 2000);
+    return _cues.any((cue) => cue.atMs >= now && cue.atMs - now <= 3000);
   }
 
   void start() {
