@@ -1,0 +1,16 @@
+const assert=require('node:assert/strict');
+const {normalizeFavorites,toggleFavorite,filterWorkouts}=require('../workout_library.js');
+const all=[{id:'tabata',kind:'tabata'},{id:'hiit',kind:'hiit'},{id:'amrap',kind:'amrap'},{id:'custom-1',kind:'hiit'}];
+assert.deepEqual(normalizeFavorites(['hiit','hiit','missing',null,''],all.map(w=>w.id)),['hiit']);
+let favorites=toggleFavorite([], 'hiit');
+assert.deepEqual(favorites,['hiit']);
+favorites=toggleFavorite(favorites,'tabata');
+assert.deepEqual(favorites,['hiit','tabata']);
+assert.deepEqual(filterWorkouts(all,{favorites}).map(w=>w.id),['tabata','hiit','amrap','custom-1']);
+assert.deepEqual(filterWorkouts(all,{mode:'hiit',favorites}).map(w=>w.id),['hiit','custom-1']);
+assert.deepEqual(filterWorkouts(all,{onlyFavorites:true,favorites}).map(w=>w.id),['tabata','hiit']);
+assert.deepEqual(filterWorkouts(all,{mode:'amrap',onlyFavorites:true,favorites}),[]);
+favorites=toggleFavorite(favorites,'hiit');
+assert.deepEqual(favorites,['tabata']);
+assert.deepEqual(normalizeFavorites(favorites,['hiit']),[]);
+console.log('Favoris et filtres: tests réussis');
