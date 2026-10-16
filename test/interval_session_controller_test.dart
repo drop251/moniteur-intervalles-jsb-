@@ -4,18 +4,18 @@ import 'package:moniteur_intervalles/engine/interval_session_controller.dart';
 import 'package:moniteur_intervalles/engine/phase_clock.dart';
 
 class FakeStopwatch implements Stopwatch {
-  int elapsed = 0;
+  int elapsedValueMs = 0;
   bool running = false;
-  void advance(int milliseconds) { if (running) elapsed += milliseconds; }
-  @override int get elapsedMilliseconds => elapsed;
-  @override int get elapsedMicroseconds => elapsed * 1000;
-  @override int get elapsedTicks => elapsed * 1000;
+  void advance(int milliseconds) { if (running) elapsedValueMs += milliseconds; }
+  @override int get elapsedMilliseconds => elapsedValueMs;
+  @override int get elapsedMicroseconds => elapsedValueMs * 1000;
+  @override int get elapsedTicks => elapsedValueMs * 1000;
   @override Duration get elapsed => Duration(milliseconds: elapsedMilliseconds);
   @override bool get isRunning => running;
   @override int get frequency => 1000000;
   @override void start() { running = true; }
   @override void stop() { running = false; }
-  @override void reset() { elapsed = 0; }
+  @override void reset() { elapsedValueMs = 0; }
 }
 
 void main() {
