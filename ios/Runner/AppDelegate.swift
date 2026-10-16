@@ -121,7 +121,7 @@ import AVFoundation
       // Long diagnostic window makes system ducking objectively audible.
       // Normal cues release focus quickly; countdown cues keep a short
       // overlap to prevent a volume up/down pulse for every 3-2-1 beep.
-      let holdSeconds: Double = preview ? max(3.0, duration + 0.15) :
+      let holdSeconds: Double = preview ? max(4.0, duration + 0.15) :
         (cue == "countdown" ? 1.10 : duration + 0.25)
       DispatchQueue.main.asyncAfter(deadline: .now() + holdSeconds) { [weak self] in
         guard let self = self, token == self.cueToken else { return }
@@ -134,7 +134,7 @@ import AVFoundation
       } else if !duckConfigured {
         status = "iOS n'a pas conservé l'option duckOthers."
       } else if preview {
-        status = "DuckOthers configuré pendant 3 secondes (niveau réel non garanti)."
+        status = "Atténuation iOS active pendant 4 secondes (intensité contrôlée par iOS)."
       } else {
         status = "DuckOthers configuré sur la session audio."
       }
@@ -191,7 +191,9 @@ import AVFoundation
       default:
         sample = 0.70 * sin(2 * .pi * 300 * t) + 0.30 * sin(2 * .pi * 450 * t)
       }
-      let value = Int16(max(-32767, min(32767, Int(sample * envelope * 23000))))
+      // Preserve headroom for overlapping partials while making JSB cues
+      // more prominent. This gain affects only JSB, not Spotify.
+      let value = Int16(max(-32767, min(32767, Int(sample * envelope * 28500))))
       appendU16(UInt16(bitPattern: value))
     }
     return wav
