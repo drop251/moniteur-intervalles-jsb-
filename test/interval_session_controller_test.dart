@@ -76,17 +76,17 @@ void main() {
     expect(controller.sample().dueCues, isEmpty);
   });
 
-  test('pré-atténuation avant le décompte d\'effort', () {
+  test('pré-atténuation 3 s avant le décompte d\'effort', () {
     controller.start();
     controller.sample();
-    stopwatch.advance(4900);
+    stopwatch.advance(3900);
     controller.sample();
     // Le deuxième effort débute à 10 s; premier décompte à 7 s.
-    // La préparation de ce premier bip arrive à 5 s.
+    // La préparation de ce premier bip arrive à 4 s (3 s avant).
     stopwatch.advance(80);
     expect(controller.sample().dueDuckLeads, isEmpty);
     stopwatch.advance(40);
-    expect(controller.sample().dueDuckLeads, [5000]);
+    expect(controller.sample().dueDuckLeads, [4000]);
     expect(controller.sample().dueDuckLeads, isEmpty);
   });
 
