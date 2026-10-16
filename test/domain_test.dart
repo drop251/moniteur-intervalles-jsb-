@@ -86,6 +86,34 @@ void main() {
     });
   });
 
+  group('Atténuation anticipée', () {
+    test('la musique est baissée 2 secondes avant les signaux prévisibles', () {
+      final cues = [
+        const Cue(atMs: 0, frequencyHz: 900, durationMs: 250),
+        const Cue(atMs: 3000, frequencyHz: 800, durationMs: 120),
+        const Cue(atMs: 4000, frequencyHz: 800, durationMs: 120),
+        const Cue(atMs: 5000, frequencyHz: 1500, durationMs: 450),
+      ];
+      expect(duckLeadTimes(cues), [1000, 2000, 3000]);
+    });
+
+    test('les instants négatifs sont évités et les doublons éliminés', () {
+      final cues = [
+        const Cue(atMs: 500, frequencyHz: 900, durationMs: 250),
+        const Cue(atMs: 2000, frequencyHz: 800, durationMs: 120),
+        const Cue(atMs: 2000, frequencyHz: 1500, durationMs: 450),
+      ];
+      expect(duckLeadTimes(cues), [0]);
+    });
+
+    test('les signaux restent ordonnés lorsque les phases sont courtes', () {
+      const preset = Preset(name: 'court', prepSec: 2, workSec: 2, restSec: 2, cycles: 2);
+      final cues = buildCues(buildPhases(preset));
+      final times = cues.map((cue) => cue.atMs).toList();
+      expect(times, orderedEquals([...times]..sort()));
+    });
+  });
+
   group('phaseIndexAt', () {
     test('Renvoie la phase active aux frontières', () {
       final starts = [0, 1000, 3000];
