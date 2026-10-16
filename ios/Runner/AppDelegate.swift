@@ -43,7 +43,8 @@ import AVFoundation
       let volume = min(100, max(0, args["volume"] as? Int ?? 90))
       let duck = args["duckOthers"] as? Bool ?? true
       let preview = args["preview"] as? Bool ?? false
-      result(self?.playCue(cue: cue, volume: volume, duck: duck, preview: preview) ??
+      let wavBase64 = args["wavBase64"] as? String
+      result(self?.playCue(cue: cue, volume: volume, duck: duck, preview: preview, wavBase64: wavBase64) ??
         ["played": false, "focusGranted": false, "message": "Audio indisponible."])
     }
   }
@@ -98,7 +99,7 @@ import AVFoundation
     }
   }
 
-  private func playCue(cue: String, volume: Int, duck: Bool, preview: Bool) -> [String: Any] {
+  private func playCue(cue: String, volume: Int, duck: Bool, preview: Bool, wavBase64: String?) -> [String: Any] {
     guard volume > 0 else {
       releaseAudio()
       return ["played": false, "focusGranted": false, "message": "Son coupé."]
@@ -134,7 +135,11 @@ import AVFoundation
         try audio.setCategory(.playback, mode: .default, options: options)
       }
 
-      let sound = try AVAudioPlayer(data: synthesize(cue: cue, duration: duration))
+      // The restored JSB UI sends its original synthesized sound as WAV.
+      // When absent, fall back to the validated iOS cue generator.
+      let bytes = wavBase64.flatMap { Data(base64Encoded: $0) }
+        ?? synthesize(cue: cue, duration: duration)
+      let sound = try AVAudioPlayer(data: bytes)
       sound.volume = Float(volume) / 100.0
       sound.prepareToPlay()
 
@@ -159,8 +164,9 @@ import AVFoundation
       // Keep Spotify attenuated for 3 s AFTER the cue has finished.
       // Each subsequent cue extends this window, so a 3-2-1 countdown does
       // not cause volume pumping between short successive beeps.
-      let holdSeconds: Double = preview ? max(4.0, duration + 0.15) :
-        duration + 3.0
+      let realDuration = sound.duration
+      let holdSeconds: Double = preview ? max(4.0, realDuration + 0.15) :
+        realDuration + 3.0
       DispatchQueue.main.asyncAfter(deadline: .now() + holdSeconds) { [weak self] in
         guard let self = self, token == self.cueToken else { return }
         self.releaseAudio()
