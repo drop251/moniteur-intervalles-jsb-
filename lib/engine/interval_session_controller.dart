@@ -103,10 +103,10 @@ class IntervalSessionController {
   SessionSnapshot get snapshot => _snapshot();
 
   SessionSnapshot _snapshot() {
-    final elapsed = _clock.elapsedMs.clamp(0, _totalMs);
+    final elapsed = _clock.elapsedMs.clamp(0, _totalMs).toInt();
     final phaseIndex = phaseIndexAt(_starts, elapsed);
     final phase = _phases[phaseIndex];
-    final phaseElapsed = (elapsed - _starts[phaseIndex]).clamp(0, phase.durationMs);
+    final phaseElapsed = (elapsed - _starts[phaseIndex]).clamp(0, phase.durationMs).toInt();
     return SessionSnapshot(
       status: _status,
       phase: phase,
@@ -129,7 +129,7 @@ class IntervalSessionController {
 
     final now = _clock.elapsedMs;
     final newlyEntered = <Phase>[];
-    final nextPhase = phaseIndexAt(_starts, now.clamp(0, _totalMs));
+    final nextPhase = phaseIndexAt(_starts, now.clamp(0, _totalMs).toInt());
     if (nextPhase > _lastPhaseIndex) {
       for (var i = _lastPhaseIndex + 1; i <= nextPhase; i++) {
         newlyEntered.add(_phases[i]);
