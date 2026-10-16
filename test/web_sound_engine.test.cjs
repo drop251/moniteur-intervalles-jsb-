@@ -4,7 +4,7 @@ assert.ok(SOUNDS.length>=13);
 assert.equal(FINISH_SOUNDS.length,5);
 assert.equal(normalizeFinish('gong'),'gong');
 assert.equal(normalizeFinish('invalid'),'gong');
-assert.equal(new Set(SOUNDS.map(s=>s.id)).size,6);
+assert.equal(new Set(SOUNDS.map(s=>s.id)).size,SOUNDS.length);
 assert.equal(normalize('unknown'),'short');
 assert.equal(normalizeVolume(105),100);
 assert.equal(normalizeVolume(-3),0);
