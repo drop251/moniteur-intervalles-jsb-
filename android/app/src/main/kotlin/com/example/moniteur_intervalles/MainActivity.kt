@@ -88,7 +88,12 @@ class MainActivity : FlutterActivity() {
         return try {
             val duration = durationMs(kind)
             val originalSamples = decodeWav(originalWav)
-            val samples = originalSamples ?: makeSamples(kind, volume, duration)
+            val samples = if (originalSamples != null) {
+                ShortArray(originalSamples.size) { i ->
+                    (originalSamples[i] * (volume / 100.0)).toInt()
+                        .coerceIn(-32767, 32767).toShort()
+                }
+            } else makeSamples(kind, volume, duration)
             val realDurationMs = samples.size * 1000 / audioRate
             val attributes = AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
