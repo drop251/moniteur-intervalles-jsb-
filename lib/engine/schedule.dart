@@ -64,12 +64,13 @@ List<Cue> buildCues(List<Phase> phases) {
 
 /// Moments at which the native system should start ducking music BEFORE a cue.
 /// Multiple cues may share a preparation instant; always dispatch it once.
+/// When a cue falls within the lead-in at workout start, duck from t=0.
 /// At t=0 no earlier preparation is possible without delaying the workout.
-List<int> duckLeadTimes(List<Cue> cues, {int leadMs = 2000}) {
+List<int> duckLeadTimes(List<Cue> cues, {int leadMs = 3000}) {
   assert(leadMs >= 0);
   final times = <int>{
     for (final cue in cues)
-      if (cue.atMs >= leadMs) cue.atMs - leadMs,
+      if (cue.atMs > 0) (cue.atMs - leadMs).clamp(0, cue.atMs),
   };
   return times.toList()..sort();
 }
