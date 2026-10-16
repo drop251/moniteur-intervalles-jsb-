@@ -25,7 +25,20 @@
     if(remainder===0) return minutes+' min';
     return minutes+' min '+remainder+' s';
   }
-  const api={presetsForMode,hasPreset,formatDuration};
+  /* Conversion fiable pour les deux sélecteurs minutes / secondes. */
+  function splitDuration(value, maxSeconds=3600){
+    const n=Number(value);
+    const total=Number.isFinite(n)?Math.max(0,Math.min(maxSeconds,Math.floor(n))):0;
+    return {minutes:Math.floor(total/60),seconds:total%60};
+  }
+  function combineDuration(minutes,seconds,maxSeconds=3600,minSeconds=0){
+    const m=Number(minutes),s=Number(seconds);
+    if(!Number.isInteger(m)||!Number.isInteger(s)||m<0||s<0||s>59)return null;
+    const total=m*60+s;
+    if(total>maxSeconds||total<minSeconds)return null;
+    return total;
+  }
+  const api={presetsForMode,hasPreset,formatDuration,splitDuration,combineDuration};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
   root.JSBDurationPresets=api;
 })(typeof window!=='undefined'?window:globalThis);
