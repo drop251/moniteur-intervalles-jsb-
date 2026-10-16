@@ -8,6 +8,7 @@ import android.media.AudioTrack
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.view.WindowManager
 import android.util.Base64
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -49,6 +50,15 @@ class MainActivity : FlutterActivity() {
         MethodChannel(engine.dartExecutor.binaryMessenger, channelName)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
+                    "setKeepAwake" -> {
+                        val enabled = call.argument<Boolean>("enabled") ?: false
+                        if (enabled) {
+                            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                        } else {
+                            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                        }
+                        result.success(null)
+                    }
                     "prepareDuck" -> {
                         val enabled = call.argument<Boolean>("duckOthers") ?: true
                         val granted = enabled && (hasFocus() || requestTemporaryDuck())
@@ -254,6 +264,7 @@ class MainActivity : FlutterActivity() {
     }
 
     override fun onDestroy() {
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         stopCurrent()
         super.onDestroy()
     }
