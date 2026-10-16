@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict');
-const {normalizeFavorites,toggleFavorite,filterWorkouts}=require('../workout_library.js');
+const {normalizeFavorites,toggleFavorite,moveFavorite,filterWorkouts}=require('../workout_library.js');
 const all=[{id:'tabata',kind:'tabata'},{id:'hiit',kind:'hiit'},{id:'amrap',kind:'amrap'},{id:'custom-1',kind:'hiit'}];
 assert.deepEqual(normalizeFavorites(['hiit','hiit','missing',null,''],all.map(w=>w.id)),['hiit']);
 let favorites=toggleFavorite([], 'hiit');
@@ -13,4 +13,21 @@ assert.deepEqual(filterWorkouts(all,{mode:'amrap',onlyFavorites:true,favorites})
 favorites=toggleFavorite(favorites,'hiit');
 assert.deepEqual(favorites,['tabata']);
 assert.deepEqual(normalizeFavorites(favorites,['hiit']),[]);
-console.log('Favoris et filtres: tests réussis');
+
+const accent=[{id:'a',kind:'hiit',name:'Échauffement Judo'},{id:'b',kind:'boxe',name:'Rounds de Boxe'},{id:'c',kind:'tabata',name:'Tabata intensif'}];
+assert.deepEqual(filterWorkouts(accent,{query:'echauffement'}).map(w=>w.id),['a']);
+assert.deepEqual(filterWorkouts(accent,{query:'  BOXE  '}).map(w=>w.id),['b']);
+assert.deepEqual(filterWorkouts(accent,{mode:'hiit',query:'tabata'}),[]);
+assert.deepEqual(filterWorkouts(accent,{query:'absent'}),[]);
+assert.deepEqual(filterWorkouts(accent,{favorites:['c','a'],query:'a'}).map(w=>w.id),['c','a']);
+let order=['hiit','tabata','amrap'];
+order=moveFavorite(order,'amrap',-1);
+assert.deepEqual(order,['hiit','amrap','tabata']);
+order=moveFavorite(order,'amrap',-1);
+assert.deepEqual(order,['amrap','hiit','tabata']);
+assert.deepEqual(moveFavorite(order,'amrap',-1),order);
+assert.deepEqual(moveFavorite(order,'tabata',1),order);
+assert.deepEqual(moveFavorite(order,'missing',-1),order);
+assert.deepEqual(moveFavorite(order,'hiit',0),order);
+assert.deepEqual(filterWorkouts(all,{favorites:order}).map(w=>w.id),['amrap','hiit','tabata','custom-1']);
+console.log('Favoris, recherche et classement: tests réussis');
