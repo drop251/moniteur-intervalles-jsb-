@@ -8,6 +8,9 @@ import android.media.AudioTrack
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.util.Base64
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -46,25 +49,37 @@ class MainActivity : FlutterActivity() {
         MethodChannel(engine.dartExecutor.binaryMessenger, channelName)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
+                    "prepareDuck" -> {
+                        val enabled = call.argument<Boolean>("duckOthers") ?: true
+                        val granted = enabled && (hasFocus() || requestTemporaryDuck())
+                        if (granted) scheduleRelease(7000)
+                        result.success(mapOf("prepared" to granted))
+                    }
+                    "releaseDuck" -> {
+                        stopCurrent()
+                        result.success(null)
+                    }
                     "playCue" -> {
                         val kind = call.argument<String>("cue") ?: "effort"
                         val volume = (call.argument<Int>("volume") ?: 90).coerceIn(0, 100)
                         val duck = call.argument<Boolean>("duckOthers") ?: true
-                        result.success(playCue(kind, volume, duck))
+                        val originalWav = call.argument<String>("wavBase64")
+                        result.success(playCue(kind, volume, duck, originalWav))
                     }
                     else -> result.notImplemented()
                 }
             }
     }
 
-    private fun playCue(kind: String, volume: Int, duck: Boolean): Map<String, Any> {
-        stopCurrent()
+    private fun playCue(kind: String, volume: Int, duck: Boolean, originalWav: String?): Map<String, Any> {
+        // Preserve previously requested ducking while replacing a countdown beep.
+        stopCurrent(releaseAudioFocus = !duck)
         if (volume == 0) return mapOf(
             "played" to false, "focusGranted" to false,
             "message" to "Volume réglé à zéro."
         )
 
-        val focusGranted = if (duck) requestTemporaryDuck() else true
+        val focusGranted = if (duck) (hasFocus() || requestTemporaryDuck()) else true
         if (!focusGranted) return mapOf(
             "played" to false, "focusGranted" to false,
             "message" to "Priorité audio refusée par Android."
@@ -72,7 +87,9 @@ class MainActivity : FlutterActivity() {
 
         return try {
             val duration = durationMs(kind)
-            val samples = makeSamples(kind, volume, duration)
+            val originalSamples = decodeWav(originalWav)
+            val samples = originalSamples ?: makeSamples(kind, volume, duration)
+            val realDurationMs = samples.size * 1000 / audioRate
             val attributes = AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
@@ -100,7 +117,7 @@ class MainActivity : FlutterActivity() {
             val token = ++playbackToken
             val task = Runnable { if (token == playbackToken) stopCurrent() }
             finishTask = task
-            handler.postDelayed(task, duration.toLong() + 120)
+            handler.postDelayed(task, realDurationMs.toLong() + 3000)
             mapOf("played" to true, "focusGranted" to focusGranted,
                 "message" to if (duck) "Atténuation temporaire demandée." else "Sans atténuation.")
         } catch (error: Exception) {
@@ -108,6 +125,42 @@ class MainActivity : FlutterActivity() {
             mapOf("played" to false, "focusGranted" to false,
                 "message" to (error.localizedMessage ?: "Son indisponible."))
         }
+    }
+
+    private fun hasFocus(): Boolean = focusRequest != null || legacyFocus
+
+    private fun scheduleRelease(afterMs: Long) {
+        finishTask?.let { handler.removeCallbacks(it) }
+        val token = ++playbackToken
+        val task = Runnable { if (token == playbackToken) stopCurrent() }
+        finishTask = task
+        handler.postDelayed(task, afterMs)
+    }
+
+    /** Original audio templates arrive as mono RIFF/WAV 16-bit, 22050 Hz. */
+    private fun decodeWav(encoded: String?): ShortArray? {
+        if (encoded.isNullOrEmpty()) return null
+        val bytes = try { Base64.decode(encoded, Base64.DEFAULT) }
+            catch (_: IllegalArgumentException) { return null }
+        if (bytes.size < 44 || bytes.size > audioRate * 2 * 15 + 44) return null
+        if (String(bytes, 0, 4, Charsets.US_ASCII) != "RIFF" ||
+            String(bytes, 8, 4, Charsets.US_ASCII) != "WAVE") return null
+        val b = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
+        if (b.getShort(20).toInt() != 1 || b.getShort(22).toInt() != 1 ||
+            b.getInt(24) != audioRate || b.getShort(34).toInt() != 16) return null
+        var offset = 12
+        while (offset + 8 <= bytes.size) {
+            val length = b.getInt(offset + 4)
+            if (length < 0 || offset + 8L + length > bytes.size) return null
+            if (String(bytes, offset, 4, Charsets.US_ASCII) == "data") {
+                if (length == 0 || length % 2 != 0) return null
+                val pcm = ShortArray(length / 2)
+                for (i in pcm.indices) pcm[i] = b.getShort(offset + 8 + i * 2)
+                return pcm
+            }
+            offset += 8 + length + length % 2
+        }
+        return null
     }
 
     private fun requestTemporaryDuck(): Boolean {
@@ -148,7 +201,7 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun stopCurrent() {
+    private fun stopCurrent(releaseAudioFocus: Boolean = true) {
         playbackToken++
         finishTask?.let { handler.removeCallbacks(it) }
         finishTask = null
@@ -157,7 +210,7 @@ class MainActivity : FlutterActivity() {
             try { player.release() } catch (_: Exception) {}
         }
         track = null
-        releaseFocus()
+        if (releaseAudioFocus) releaseFocus()
     }
 
     private fun durationMs(cue: String) = when (cue) {
