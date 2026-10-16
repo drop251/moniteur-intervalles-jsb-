@@ -1,6 +1,6 @@
 // Cache minimal pour la démonstration web, limité aux ressources locales.
-const CACHE = 'moniteur-jsb-preview-v7';
-const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon.svg', './interaction_gate.js', './workout_manager.js', './workout_library.js', './duration_presets.js'];
+const CACHE = 'moniteur-jsb-preview-v8';
+const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon.svg', './interaction_gate.js', './workout_manager.js', './workout_library.js', './duration_presets.js', './training_modes.js', './random_signals.js'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
 });
