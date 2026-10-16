@@ -190,11 +190,11 @@ function startWorkout(w){
  if(session||!trainingModes.isAvailable(w.kind)||!gate.allow('start-workout',600))return;
  clearInterval(frame);frame=null;
  // L'activation doit commencer dans le geste direct de démarrage sur iOS.
- if(settings.audio&&settings.volume>0)void soundEngine.activateAndPlay(settings.sound,'prep',settings.volume);
+ if(settings.audio&&settings.volume>0)void soundEngine.activateAndPlay(settings.sound,(w.prep>0?'prep':'effort'),settings.volume);
  const seq=phases(w);let acc=0;
  for(const p of seq){p.start=acc;acc+=p.ms;}
  const signals=w.kind==='random'?randomSignals.createSignals({workMs:w.work*1000,frequency:w.frequency||'medium',progressive:w.progressive!==false}).map(ms=>ms+w.prep*1000):[];
- session={workout:w,seq,total:acc,elapsed:0,base:performance.now(),paused:false,index:-1,finished:false,rounds:0,signals,nextSignal:0,signalsPlayed:0};
+ session={workout:w,seq,total:acc,elapsed:0,base:performance.now(),paused:false,index:-1,finished:false,rounds:0,signals,nextSignal:0,signalsPlayed:0,initialAudio:settings.audio&&settings.volume>0};
  $('amrapCounter').hidden=true;$('amrapCount').textContent='0';
  $('timerTitle').textContent=w.name;$('timer').classList.add('active');
  document.querySelector('.nav').style.visibility='hidden';
@@ -208,7 +208,7 @@ function updateTimer(){
  let idx=session.seq.length-1;
  for(let i=0;i<session.seq.length;i++){if(t<session.seq[i].start+session.seq[i].ms){idx=i;break;}}
  const p=session.seq[idx];
- if(idx!==session.index){const previous=session.index;session.index=idx;if(!session.paused&&(previous<0||t-p.start<=180))beep(p.kind);}
+ if(idx!==session.index){const previous=session.index;session.index=idx;if(!session.paused&&!(previous<0&&session.initialAudio)&&(previous<0||t-p.start<=180))beep(p.kind);}
  if(session.workout.kind==='random'&&!session.paused){
   while(session.nextSignal<session.signals.length&&t>=session.signals[session.nextSignal]){
    const target=session.signals[session.nextSignal++];
