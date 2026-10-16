@@ -36,3 +36,25 @@ jobs:
         run: flutter pub get
       - name: Build Android debug APK with native audio
         run: flutter build apk --debug
+
+  ios-native:
+    # Compile Swift/Flutter on macOS; this is not an iPhone/TestFlight build.
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Generate iOS project
+        run: flutter create --platforms=ios --org com.example .
+      - name: Resolve dependencies
+        run: flutter pub get
+      - name: Build iOS simulator without signing
+        run: flutter build ios --simulator --debug
+      - name: Upload simulator build
+        uses: actions/upload-artifact@v4
+        with:
+          name: moniteur-jsb-ios-simulator
+          path: build/ios/iphonesimulator/Runner.app
+          retention-days: 7
