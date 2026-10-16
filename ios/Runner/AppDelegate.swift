@@ -3,27 +3,41 @@ import UIKit
 import AVFoundation
 
 @main
-@objc class AppDelegate: FlutterAppDelegate {
+@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   private var player: AVAudioPlayer?
   private var cueToken = 0
   private let audio = AVAudioSession.sharedInstance()
+  private var audioChannel: FlutterMethodChannel?
+
+  // Flutter 3.41+ uses UIScene: AppDelegate.window can be nil during launch.
+  // Register both plugins and the JSB channel only after the implicit engine
+  // has been initialized, using the engine's own binary messenger.
+  func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+    GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    let channel = FlutterMethodChannel(
+      name: "jsb/native_audio",
+      binaryMessenger: engineBridge.applicationRegistrar.messenger()
+    )
+    audioChannel = channel
+    channel.setMethodCallHandler { [weak self] call, result in
+      guard call.method == "playCue" else {
+        result(FlutterMethodNotImplemented)
+        return
+      }
+      let args = call.arguments as? [String: Any] ?? [:]
+      let cue = args["cue"] as? String ?? "effort"
+      let volume = min(100, max(0, args["volume"] as? Int ?? 90))
+      let duck = args["duckOthers"] as? Bool ?? true
+      result(self?.playCue(cue: cue, volume: volume, duck: duck) ??
+        ["played": false, "focusGranted": false, "message": "Audio indisponible."])
+    }
+  }
 
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    let controller = window?.rootViewController as! FlutterViewController
-    FlutterMethodChannel(name: "jsb/native_audio", binaryMessenger: controller.binaryMessenger)
-      .setMethodCallHandler { [weak self] call, result in
-        guard call.method == "playCue" else { result(FlutterMethodNotImplemented); return }
-        let args = call.arguments as? [String: Any] ?? [:]
-        let cue = args["cue"] as? String ?? "effort"
-        let volume = min(100, max(0, args["volume"] as? Int ?? 90))
-        let duck = args["duckOthers"] as? Bool ?? true
-        result(self?.playCue(cue: cue, volume: volume, duck: duck) ??
-          ["played": false, "focusGranted": false, "message": "Audio indisponible."])
-      }
-    GeneratedPluginRegistrant.register(with: self)
+    // The engine and its messenger are not yet necessarily available here.
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
