@@ -129,6 +129,7 @@ function renderHistory(){const el=$('historyList');el.replaceChildren();if(!hist
 function openEditor(workout=null){
  if(!gate.allow('editor-open',350)||session||$('editorModal').classList.contains('active'))return;
  closeWorkoutMenus();$('editorForm').reset();editingWorkoutId=workout?workout.id:null;
+ if(!workout){const defaults=trainingModes.DEFAULTS[$('workoutMode').value];$('preparation').value=String(defaults.prep);$('effort').value=String(defaults.work);$('repos').value=String(defaults.rest);$('cycles').value=String(defaults.cycles);}
  $('editorTitle').textContent=workout?'Modifier le minuteur':'Nouveau minuteur';
  if(workout){
    if(!trainingModes.isAvailable(workout.kind)){notice('Mode en cours d’analyse');return;}
