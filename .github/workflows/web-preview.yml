@@ -12,6 +12,8 @@ on:
       - duration_presets.js
       - training_modes.js
       - random_signals.js
+      - sound_engine.js
+      - test/web_sound_engine.test.cjs
       - test/web_training_modes.test.cjs
       - test/web_random_signals.test.cjs
       - test/web_duration_presets.test.cjs
@@ -30,6 +32,8 @@ on:
       - duration_presets.js
       - training_modes.js
       - random_signals.js
+      - sound_engine.js
+      - test/web_sound_engine.test.cjs
       - test/web_training_modes.test.cjs
       - test/web_random_signals.test.cjs
       - test/web_duration_presets.test.cjs
@@ -60,6 +64,7 @@ jobs:
           node --check duration_presets.js
           node --check training_modes.js
           node --check random_signals.js
+          node --check sound_engine.js
       - name: Test repeated tap guard
         run: |
           node test/web_interaction_gate.test.cjs
@@ -68,5 +73,6 @@ jobs:
           node test/web_duration_presets.test.cjs
           node test/web_training_modes.test.cjs
           node test/web_random_signals.test.cjs
+          node test/web_sound_engine.test.cjs
       - name: Validate manifest
         run: python3 -m json.tool manifest.webmanifest >/dev/null
