@@ -87,14 +87,14 @@ void main() {
   });
 
   group('Atténuation anticipée', () {
-    test('la musique est baissée 2 secondes avant les signaux prévisibles', () {
+    test('la musique est baissée 3 secondes avant les signaux prévisibles', () {
       final cues = [
         const Cue(atMs: 0, frequencyHz: 900, durationMs: 250),
         const Cue(atMs: 3000, frequencyHz: 800, durationMs: 120),
         const Cue(atMs: 4000, frequencyHz: 800, durationMs: 120),
         const Cue(atMs: 5000, frequencyHz: 1500, durationMs: 450),
       ];
-      expect(duckLeadTimes(cues), [1000, 2000, 3000]);
+      expect(duckLeadTimes(cues), [0, 1000, 2000]);
     });
 
     test('les instants négatifs sont évités et les doublons éliminés', () {
@@ -104,6 +104,7 @@ void main() {
         const Cue(atMs: 2000, frequencyHz: 1500, durationMs: 450),
       ];
       expect(duckLeadTimes(cues), [0]);
+      expect(duckLeadTimes([const Cue(atMs: 100, frequencyHz: 900, durationMs: 250)]), [0]);
     });
 
     test('les signaux restent ordonnés lorsque les phases sont courtes', () {
