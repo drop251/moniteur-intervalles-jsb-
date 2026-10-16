@@ -7,6 +7,8 @@ on:
       - manifest.webmanifest
       - sw.js
       - interaction_gate.js
+      - workout_manager.js
+      - test/web_workout_manager.test.cjs
       - test/web_interaction_gate.test.cjs
       - .github/workflows/web-preview.yml
   pull_request:
@@ -15,6 +17,8 @@ on:
       - manifest.webmanifest
       - sw.js
       - interaction_gate.js
+      - workout_manager.js
+      - test/web_workout_manager.test.cjs
       - test/web_interaction_gate.test.cjs
       - .github/workflows/web-preview.yml
 jobs:
@@ -35,7 +39,10 @@ jobs:
           node --check /tmp/moniteur-inline.js
           node --check sw.js
           node --check interaction_gate.js
+          node --check workout_manager.js
       - name: Test repeated tap guard
-        run: node test/web_interaction_gate.test.cjs
+        run: |
+          node test/web_interaction_gate.test.cjs
+          node test/web_workout_manager.test.cjs
       - name: Validate manifest
         run: python3 -m json.tool manifest.webmanifest >/dev/null
