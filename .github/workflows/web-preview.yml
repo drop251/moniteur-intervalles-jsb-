@@ -9,6 +9,8 @@ on:
       - interaction_gate.js
       - workout_manager.js
       - workout_library.js
+      - duration_presets.js
+      - test/web_duration_presets.test.cjs
       - test/web_workout_library.test.cjs
       - test/web_workout_manager.test.cjs
       - test/web_interaction_gate.test.cjs
@@ -21,6 +23,8 @@ on:
       - interaction_gate.js
       - workout_manager.js
       - workout_library.js
+      - duration_presets.js
+      - test/web_duration_presets.test.cjs
       - test/web_workout_library.test.cjs
       - test/web_workout_manager.test.cjs
       - test/web_interaction_gate.test.cjs
@@ -45,10 +49,12 @@ jobs:
           node --check interaction_gate.js
           node --check workout_manager.js
           node --check workout_library.js
+          node --check duration_presets.js
       - name: Test repeated tap guard
         run: |
           node test/web_interaction_gate.test.cjs
           node test/web_workout_manager.test.cjs
           node test/web_workout_library.test.cjs
+          node test/web_duration_presets.test.cjs
       - name: Validate manifest
         run: python3 -m json.tool manifest.webmanifest >/dev/null
