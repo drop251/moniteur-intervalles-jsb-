@@ -93,6 +93,30 @@ class NativeAudioService {
 
   final MethodChannel _channel;
 
+  /// Pre-activate the native ducking session before a scheduled cue.
+  /// iOS maintains a 3-second failsafe to avoid leaving external music quiet.
+  Future<void> prepareDuck({required NativeAudioSettings settings}) async {
+    if (!settings.duckExternalMusic || settings.alertVolume == 0) return;
+    try {
+      await _channel.invokeMethod<dynamic>('prepareDuck',
+          <String, Object>{'duckOthers': true});
+    } on MissingPluginException {
+      // Platform without the anticipatory native implementation.
+    } on PlatformException {
+      // Audio must never block the clock or prevent a cue.
+    }
+  }
+
+  Future<void> releaseDuck() async {
+    try {
+      await _channel.invokeMethod<dynamic>('releaseDuck');
+    } on MissingPluginException {
+      // Legacy build: no preparatory session is present.
+    } on PlatformException {
+      // Best-effort cleanup; iOS also has a native watchdog.
+    }
+  }
+
   Future<NativeAudioPlayback> playCue(
     TrainingCue cue, {
     required NativeAudioSettings settings,
