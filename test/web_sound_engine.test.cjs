@@ -50,3 +50,18 @@ class FakeContext{
  engine.destroy();
  console.log('Bibliothèque sonore et déblocage Web Audio : tests réussis');
 })().catch(e=>{console.error(e);process.exitCode=1});
+
+const audioSession={type:'auto'};
+const mixingEngine=createEngine({AudioContextCtor:FakeContext,AudioCtor:null,audioSession});
+assert.equal(mixingEngine.getMixingStatus().active,false);
+mixingEngine.setMode('web');
+assert.equal(audioSession.type,'ambient');
+assert.equal(mixingEngine.getMixingStatus().active,true);
+mixingEngine.setMode('media');
+assert.equal(mixingEngine.getMixingStatus().active,false);
+const unsupported=createEngine({AudioContextCtor:FakeContext,AudioCtor:null,audioSession:null});
+unsupported.setMode('web');
+assert.deepEqual(unsupported.getMixingStatus(),{supported:false,active:false});
+mixingEngine.destroy();
+unsupported.destroy();
+console.log('Coexistence audio ambiante iOS : tests réussis');
