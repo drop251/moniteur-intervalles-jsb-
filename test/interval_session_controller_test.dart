@@ -46,7 +46,7 @@ void main() {
   test('les changements de phase reposent sur le temps absolu', () {
     controller.start();
     controller.sample();
-    stopwatch.advance(10500);
+    stopwatch.advance(8500);
     final update = controller.sample();
     expect(update.snapshot.phase.type, PhaseType.rest);
     expect(update.snapshot.phase.cycle, 1);
