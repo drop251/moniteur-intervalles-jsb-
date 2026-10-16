@@ -38,6 +38,9 @@ void main() {
         'played': true,
         'focusGranted': true,
         'message': 'Focus temporaire demandé',
+        'duckConfigured': true,
+        'otherAudioPlaying': true,
+        'outputRoute': 'Speaker',
       };
     });
     final service = NativeAudioService(channel: channel);
@@ -47,15 +50,20 @@ void main() {
         alertVolume: 90,
         duckExternalMusic: true,
       ),
+      preview: true,
     );
     expect(captured!.method, 'playCue');
     final arguments = captured!.arguments as Map<dynamic, dynamic>;
     expect(arguments['cue'], 'effort');
     expect(arguments['volume'], 90);
     expect(arguments['duckOthers'], isTrue);
+    expect(arguments['preview'], isTrue);
     expect(response.played, isTrue);
     expect(response.focusGranted, isTrue);
     expect(response.duckRequested, isTrue);
+    expect(response.duckConfigured, isTrue);
+    expect(response.otherAudioPlaying, isTrue);
+    expect(response.outputRoute, 'Speaker');
     messenger.setMockMethodCallHandler(channel, null);
   });
 
