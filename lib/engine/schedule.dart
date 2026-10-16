@@ -37,12 +37,14 @@ const int countdownFrequencyHz = 800;
 /// de début de phase. Les instants négatifs (début de séance) sont ignorés.
 List<Cue> buildCues(List<Phase> phases) {
   final cues = <Cue>[];
+  // Un changement de phase prime sur un bip de décompte au même instant.
+  final startBoundaries = phaseStarts(phases).toSet();
   var start = 0;
   for (final phase in phases) {
     if (phase.type == PhaseType.effort || phase.type == PhaseType.prep) {
       for (final sec in const [3, 2, 1]) {
         final at = start - sec * 1000;
-        if (at >= 0) {
+        if (at >= 0 && !startBoundaries.contains(at)) {
           cues.add(Cue(atMs: at, frequencyHz: countdownFrequencyHz, durationMs: 120));
         }
       }
