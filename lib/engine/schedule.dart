@@ -56,7 +56,22 @@ List<Cue> buildCues(List<Phase> phases) {
     ));
     start += phase.durationMs;
   }
+  // Court work/rest cycles may cause a countdown to fall earlier than the
+  // preceding phase cue. Consumers require chronological events.
+  cues.sort((a, b) => a.atMs.compareTo(b.atMs));
   return cues;
+}
+
+/// Moments at which the native system should start ducking music BEFORE a cue.
+/// Multiple cues may share a preparation instant; always dispatch it once.
+/// At t=0 no earlier preparation is possible without delaying the workout.
+List<int> duckLeadTimes(List<Cue> cues, {int leadMs = 2000}) {
+  assert(leadMs >= 0);
+  final times = <int>{
+    for (final cue in cues)
+      if (cue.atMs >= leadMs) cue.atMs - leadMs,
+  };
+  return times.toList()..sort();
 }
 
 /// Instant de début de chaque phase, en millisecondes depuis le départ.
