@@ -95,7 +95,7 @@ class _AudioSettingsScreenState extends State<AudioSettingsScreen> {
         FilledButton.icon(
           onPressed: () => _preview(TrainingCue.effort),
           icon: const Icon(Icons.volume_up),
-          label: const Text('Tester le signal et l’atténuation (3 s)'),
+          label: const Text('Tester le signal et l’atténuation (4 s)'),
         ),
         const SizedBox(height: 12),
         OutlinedButton.icon(
