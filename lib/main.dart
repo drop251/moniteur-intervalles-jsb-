@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui' show FontFeature;
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -76,8 +75,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final result=await Navigator.push<Workout>(context,MaterialPageRoute(builder:(_)=>EditorScreen(workout:existing)));
     if(result==null || !mounted)return;
     setState((){
-      if(existing==null)workouts.add(result);
-      else workouts[workouts.indexOf(existing)]=result;
+      if (existing == null) { workouts.add(result); }
+      else { workouts[workouts.indexOf(existing)] = result; }
     });
     await _save();
   }
@@ -107,7 +106,7 @@ class _EditorScreenState extends State<EditorScreen>{
   late final work=TextEditingController(text:'${widget.workout?.work??30}');
   late final rest=TextEditingController(text:'${widget.workout?.rest??15}');
   late final cycles=TextEditingController(text:'${widget.workout?.cycles??8}');
-  @override void dispose(){for(final c in [name,prep,work,rest,cycles])c.dispose();super.dispose();}
+  @override void dispose(){for (final c in [name, prep, work, rest, cycles]) { c.dispose(); }super.dispose();}
   @override Widget build(BuildContext context)=>Scaffold(appBar:AppBar(title:Text(widget.workout==null?'Nouvelle séance':'Modifier la séance')),
     body:ListView(padding:const EdgeInsets.all(20),children:[
       TextField(controller:name,decoration:const InputDecoration(labelText:'Nom')),
