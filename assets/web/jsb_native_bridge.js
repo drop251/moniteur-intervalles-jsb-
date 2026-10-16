@@ -63,6 +63,8 @@
   root.JSBNativeAudio = {
     release,
     reset:()=>{lastPreparedCue=null},
+    setAwake:enabled=>post({type:'screenAwake',enabled:!!enabled}),
+    haptic:event=>post({type:'haptic',event:String(event||'effort')}),
     maybePrepare(now,cues,enabled=true) {
       if(!enabled || !Array.isArray(cues))return;
       // Chronological cue deadlines; never send redundant requests on every frame.
