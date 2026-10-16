@@ -1,6 +1,9 @@
 const assert=require('node:assert/strict');
-const {SOUNDS,notesFor,pcmWav,normalize,normalizeVolume,createEngine}=require('../sound_engine.js');
-assert.equal(SOUNDS.length,6);
+const {SOUNDS,FINISH_SOUNDS,notesFor,pcmWav,normalize,normalizeFinish,normalizeVolume,createEngine}=require('../sound_engine.js');
+assert.ok(SOUNDS.length>=13);
+assert.equal(FINISH_SOUNDS.length,5);
+assert.equal(normalizeFinish('gong'),'gong');
+assert.equal(normalizeFinish('invalid'),'gong');
 assert.equal(new Set(SOUNDS.map(s=>s.id)).size,6);
 assert.equal(normalize('unknown'),'short');
 assert.equal(normalizeVolume(105),100);
@@ -14,7 +17,10 @@ for(const item of SOUNDS){
  assert.equal(String.fromCharCode(...wav.slice(0,4)),'RIFF');
  assert.equal(String.fromCharCode(...wav.slice(8,12)),'WAVE');
 }
-assert.ok(notesFor('triple','finish').length>notesFor('triple','effort').length);
+assert.ok(notesFor('gong','finish').some(n=>n.duration>=3));
+assert.ok(notesFor('gongDouble','finish').length>notesFor('gong','finish').length);
+assert.ok(notesFor('taiko','effort').some(n=>n.shape==='drum'));
+for(const ending of FINISH_SOUNDS){const notes=notesFor(ending.id,'finish');assert.ok(notes.length>0);const wav=pcmWav(notes,70);assert.ok(wav.byteLength>44);}
 const events=[];
 class FakeOscillator{
  constructor(){this.frequency={setValueAtTime(){},linearRampToValueAtTime(){}}}
