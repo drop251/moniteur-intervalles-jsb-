@@ -114,6 +114,8 @@ class _AudioSettingsScreenState extends State<AudioSettingsScreen> {
           'Objectif : signal à 90 % et musique en fond très atténuée. '
           'Il n’est pas possible de garantir que Spotify ou Apple Music '
           'sera précisément à 10 % du volume initial. '
+          'En séance, l’atténuation est demandée 3 secondes avant chaque bip et '
+          'maintenue 3 secondes après sa fin, sauf pause ou arrêt. '
           'Le fonctionnement doit être testé avec le haut-parleur ou '
           'l’enceinte Bluetooth utilisés sur le tatami.',
         ),
