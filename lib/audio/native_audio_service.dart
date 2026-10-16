@@ -52,6 +52,9 @@ class NativeAudioPlayback {
     required this.duckRequested,
     required this.focusGranted,
     this.message,
+    this.duckConfigured,
+    this.otherAudioPlaying,
+    this.outputRoute,
   });
 
   final bool played;
@@ -63,6 +66,9 @@ class NativeAudioPlayback {
   final bool focusGranted;
 
   final String? message;
+  final bool? duckConfigured;
+  final bool? otherAudioPlaying;
+  final String? outputRoute;
 
   factory NativeAudioPlayback.fromResponse(
     Map<dynamic, dynamic>? response, {
@@ -73,6 +79,9 @@ class NativeAudioPlayback {
       duckRequested: requestedDuck,
       focusGranted: response?['focusGranted'] == true,
       message: response?['message'] as String?,
+      duckConfigured: response?['duckConfigured'] as bool?,
+      otherAudioPlaying: response?['otherAudioPlaying'] as bool?,
+      outputRoute: response?['outputRoute'] as String?,
     );
   }
 }
@@ -87,6 +96,7 @@ class NativeAudioService {
   Future<NativeAudioPlayback> playCue(
     TrainingCue cue, {
     required NativeAudioSettings settings,
+    bool preview = false,
   }) async {
     if (settings.alertVolume == 0) {
       return const NativeAudioPlayback(
@@ -104,6 +114,7 @@ class NativeAudioService {
           'cue': cue.name,
           'volume': settings.alertVolume,
           'duckOthers': settings.duckExternalMusic,
+          'preview': preview,
         },
       );
       return NativeAudioPlayback.fromResponse(
