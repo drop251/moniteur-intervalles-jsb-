@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../audio/native_audio_service.dart';
+import 'native_session_features.dart';
 
 /// Original JSB web experience bundled on-device. The HTML never navigates
 /// to an external URL, and all sounds are delegated to the native audio engine.
@@ -15,8 +16,10 @@ class JsbWebHomeScreen extends StatefulWidget {
   State<JsbWebHomeScreen> createState() => _JsbWebHomeScreenState();
 }
 
-class _JsbWebHomeScreenState extends State<JsbWebHomeScreen> {
+class _JsbWebHomeScreenState extends State<JsbWebHomeScreen>
+    with WidgetsBindingObserver {
   final NativeAudioService _audio = NativeAudioService();
+  final NativeSessionFeatures _sessionFeatures = NativeSessionFeatures();
   late final WebViewController _web;
   bool _loaded = false;
   String? _fatalError;
@@ -24,6 +27,7 @@ class _JsbWebHomeScreenState extends State<JsbWebHomeScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _web = WebViewController();
     unawaited(_initializeWeb());
   }
@@ -70,6 +74,14 @@ class _JsbWebHomeScreenState extends State<JsbWebHomeScreen> {
       final message = jsonDecode(encoded);
       if (message is! Map<String, dynamic>) return;
       switch (message['type']) {
+        case 'screenAwake':
+          await _sessionFeatures.setKeepAwake(message['enabled'] == true);
+          break;
+        case 'haptic':
+          await _sessionFeatures.hapticForCue(
+            message['event'] as String? ?? 'effort',
+          );
+          break;
         case 'prepare':
           await _audio.prepareDuck(
             settings: const NativeAudioSettings(),
@@ -108,7 +120,19 @@ class _JsbWebHomeScreenState extends State<JsbWebHomeScreen> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      unawaited(_sessionFeatures.setKeepAwake(false));
+      unawaited(_audio.releaseDuck());
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    unawaited(_sessionFeatures.setKeepAwake(false));
     unawaited(_audio.releaseDuck());
     super.dispose();
   }
