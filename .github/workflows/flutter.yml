@@ -1,0 +1,23 @@
+name: Flutter validation
+
+on:
+  push:
+    branches: [main, feat/lot1-ui]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Fetch dependencies
+        run: flutter pub get
+      - name: Analyze sources
+        run: flutter analyze
+      - name: Run tests
+        run: flutter test
