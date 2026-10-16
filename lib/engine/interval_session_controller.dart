@@ -41,10 +41,12 @@ class SessionUpdate {
     required this.snapshot,
     required this.enteredPhases,
     required this.dueCues,
+    required this.dueDuckLeads,
   });
   final SessionSnapshot snapshot;
   final List<Phase> enteredPhases;
   final List<Cue> dueCues;
+  final List<int> dueDuckLeads;
 }
 
 class IntervalSessionController {
@@ -58,12 +60,14 @@ class IntervalSessionController {
         _clock = clock ?? PhaseClock(),
         _starts = List.unmodifiable(phaseStarts(phases)),
         _cues = List.unmodifiable(buildCues(phases)),
+        _duckLeads = List.unmodifiable(duckLeadTimes(buildCues(phases))),
         _totalMs = totalDurationMs(phases);
 
   final List<Phase> _phases;
   final PhaseClock _clock;
   final List<int> _starts;
   final List<Cue> _cues;
+  final List<int> _duckLeads;
   final int _totalMs;
 
   /// Un signal ancien est abandonné plutôt que joué très en retard.
@@ -71,10 +75,19 @@ class IntervalSessionController {
 
   SessionStatus _status = SessionStatus.ready;
   int _nextCueIndex = 0;
+  int _nextDuckLeadIndex = 0;
   int _lastPhaseIndex = -1;
 
   SessionStatus get status => _status;
   int get totalMs => _totalMs;
+
+  /// Called when resuming, so the UI can re-arm a duck window already
+  /// entered before the user paused the workout.
+  bool get hasCueWithinDuckLead {
+    if (_status != SessionStatus.running) return false;
+    final now = _clock.elapsedMs;
+    return _cues.any((cue) => cue.atMs >= now && cue.atMs - now <= 2000);
+  }
 
   void start() {
     if (_status != SessionStatus.ready) return;
@@ -121,10 +134,10 @@ class IntervalSessionController {
   /// À appeler depuis un rafraîchissement de l'UI; ne détermine pas le temps.
   SessionUpdate sample() {
     if (_status == SessionStatus.ready || _status == SessionStatus.stopped) {
-      return SessionUpdate(snapshot: _snapshot(), enteredPhases: const [], dueCues: const []);
+      return SessionUpdate(snapshot: _snapshot(), enteredPhases: const [], dueCues: const [], dueDuckLeads: const []);
     }
     if (_status == SessionStatus.paused || _status == SessionStatus.completed) {
-      return SessionUpdate(snapshot: _snapshot(), enteredPhases: const [], dueCues: const []);
+      return SessionUpdate(snapshot: _snapshot(), enteredPhases: const [], dueCues: const [], dueDuckLeads: const []);
     }
 
     final now = _clock.elapsedMs;
@@ -143,6 +156,13 @@ class IntervalSessionController {
       if (now - cue.atMs <= maxCueDelayMs) dueCues.add(cue);
     }
 
+    final dueDuckLeads = <int>[];
+    while (_nextDuckLeadIndex < _duckLeads.length &&
+        _duckLeads[_nextDuckLeadIndex] <= now) {
+      final instant = _duckLeads[_nextDuckLeadIndex++];
+      if (now - instant <= maxCueDelayMs) dueDuckLeads.add(instant);
+    }
+
     if (now >= _totalMs) {
       _status = SessionStatus.completed;
       _clock.pause();
@@ -152,6 +172,7 @@ class IntervalSessionController {
       snapshot: _snapshot(),
       enteredPhases: List.unmodifiable(newlyEntered),
       dueCues: List.unmodifiable(dueCues),
+      dueDuckLeads: List.unmodifiable(dueDuckLeads),
     );
   }
 }
