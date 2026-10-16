@@ -24,10 +24,15 @@ class _JsbWebHomeScreenState extends State<JsbWebHomeScreen> {
   @override
   void initState() {
     super.initState();
-    _web = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0xFF1F293B))
-      ..setNavigationDelegate(
+    _web = WebViewController();
+    unawaited(_initializeWeb());
+  }
+
+  Future<void> _initializeWeb() async {
+    try {
+      await _web.setJavaScriptMode(JavaScriptMode.unrestricted);
+      await _web.setBackgroundColor(const Color(0xFF1F293B));
+      await _web.setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (_) {
             if (mounted) setState(() => _loaded = true);
@@ -46,14 +51,18 @@ class _JsbWebHomeScreenState extends State<JsbWebHomeScreen> {
                 : NavigationDecision.prevent;
           },
         ),
-      )
-      ..addJavaScriptChannel(
+      );
+      // Install the native channel BEFORE loading inline HTML scripts.
+      await _web.addJavaScriptChannel(
         'JSBHost',
         onMessageReceived: (message) {
           unawaited(_handleJsMessage(message.message));
         },
-      )
-      ..loadFlutterAsset('assets/web/index.html');
+      );
+      await _web.loadFlutterAsset('assets/web/index.html');
+    } catch (error) {
+      if (mounted) setState(() => _fatalError = error.toString());
+    }
   }
 
   Future<void> _handleJsMessage(String encoded) async {
