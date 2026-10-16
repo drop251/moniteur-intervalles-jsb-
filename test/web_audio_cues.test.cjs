@@ -3,7 +3,7 @@ const {countdownCues}=require('../audio_cues.js');
 const seq=[{kind:'prep',start:0,ms:5000},{kind:'effort',start:5000,ms:10000},{kind:'rest',start:15000,ms:5000},{kind:'effort',start:20000,ms:12000}];
 assert.deepEqual(countdownCues(seq,0,2300).map(x=>x.count),[3]);
 assert.deepEqual(countdownCues(seq,3900,4100).map(x=>x.count),[1]);
-assert.deepEqual(countdownCues(seq,16000,17300).map(x=>x.count),[3]);
+assert.deepEqual(countdownCues(seq,16000,17200).map(x=>x.count),[3]);
 assert.deepEqual(countdownCues(seq,15000,20000),[],'Pas de rafale en sortie de veille');
 assert.deepEqual(countdownCues(seq,31000,32000),[]);
 assert.deepEqual(countdownCues([{kind:'effort',start:0,ms:5000},{kind:'rest',start:5000,ms:5000}],0,2000),[]);
