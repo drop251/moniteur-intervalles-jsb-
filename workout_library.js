@@ -48,6 +48,8 @@
   }
 
   function filterWorkouts(workouts, options = {}) {
+    // Ne jamais convertir silencieusement un ancien filtre EMOM/AMRAP en « Tous ».
+    if(options.mode && !MODES.includes(options.mode)) return [];
     const mode = MODES.includes(options.mode) ? options.mode : 'all';
     const query = normalizedSearch(options.query);
     const onlyFavorites = options.onlyFavorites === true;
