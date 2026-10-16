@@ -1,0 +1,19 @@
+{
+  "name": "Moniteur JSB – Minuteur sportif",
+  "short_name": "Moniteur JSB",
+  "description": "Minuteur d'intervalles sportifs hors ligne",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0a1019",
+  "theme_color": "#0a1019",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
