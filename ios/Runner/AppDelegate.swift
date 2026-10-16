@@ -23,6 +23,17 @@ import AVFoundation
     )
     audioChannel = channel
     channel.setMethodCallHandler { [weak self] call, result in
+      if call.method == "releaseDuck" {
+        self?.releaseAudio()
+        result(nil)
+        return
+      }
+      if call.method == "prepareDuck" {
+        let enabled = (call.arguments as? [String: Any])?["duckOthers"] as? Bool ?? true
+        result(self?.prepareDuck(enabled: enabled) ??
+          ["prepared": false, "message": "Audio indisponible."])
+        return
+      }
       guard call.method == "playCue" else {
         result(FlutterMethodNotImplemented)
         return
@@ -57,6 +68,32 @@ import AVFoundation
       try audio.setActive(false, options: .notifyOthersOnDeactivation)
     } catch {
       NSLog("[JSB audio] Unable to deactivate temporary audio session: \\(error)")
+    }
+  }
+
+  private func prepareDuck(enabled: Bool) -> [String: Any] {
+    guard enabled else { return ["prepared": false, "message": "Atténuation désactivée."] }
+    if activeDuckingMode == false { releaseAudio() }
+    do {
+      if activeDuckingMode == nil {
+        try audio.setCategory(.playback, mode: .default, options: [.duckOthers])
+        try audio.setActive(true)
+        activeDuckingMode = true
+      }
+      // A failsafe ensures Spotify is never left ducked if Flutter misses
+      // the cue or the user pauses immediately after arming audio focus.
+      cueToken += 1
+      let token = cueToken
+      DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+        guard let self = self, self.cueToken == token else { return }
+        self.releaseAudio()
+      }
+      return ["prepared": true,
+              "duckConfigured": audio.categoryOptions.contains(.duckOthers),
+              "message": "Atténuation demandée avant le signal."]
+    } catch {
+      releaseAudio()
+      return ["prepared": false, "message": error.localizedDescription]
     }
   }
 
