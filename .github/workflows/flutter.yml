@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [main]
 
+# Keep only the most recent validation for a branch, across pushes and PRs.
+# This avoids a queue of obsolete macOS simulator builds during iteration.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     runs-on: ubuntu-latest
