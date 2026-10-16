@@ -1,0 +1,132 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+
+import '../audio/native_audio_service.dart';
+
+/// Original JSB web experience bundled on-device. The HTML never navigates
+/// to an external URL, and all sounds are delegated to the native audio engine.
+class JsbWebHomeScreen extends StatefulWidget {
+  const JsbWebHomeScreen({super.key});
+
+  @override
+  State<JsbWebHomeScreen> createState() => _JsbWebHomeScreenState();
+}
+
+class _JsbWebHomeScreenState extends State<JsbWebHomeScreen> {
+  final NativeAudioService _audio = NativeAudioService();
+  late final WebViewController _web;
+  bool _loaded = false;
+  String? _fatalError;
+
+  @override
+  void initState() {
+    super.initState();
+    _web = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0xFF1F293B))
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (_) {
+            if (mounted) setState(() => _loaded = true);
+          },
+          onWebResourceError: (error) {
+            if (error.isForMainFrame == true && mounted) {
+              setState(() => _fatalError = error.description);
+            }
+          },
+          onNavigationRequest: (request) {
+            final uri = Uri.tryParse(request.url);
+            if (uri == null) return NavigationDecision.prevent;
+            // The WebView is strictly offline; no external navigation.
+            return uri.scheme == 'file' || uri.scheme == 'about'
+                ? NavigationDecision.navigate
+                : NavigationDecision.prevent;
+          },
+        ),
+      )
+      ..addJavaScriptChannel(
+        'JSBHost',
+        onMessageReceived: (message) {
+          unawaited(_handleJsMessage(message.message));
+        },
+      )
+      ..loadFlutterAsset('assets/web/index.html');
+  }
+
+  Future<void> _handleJsMessage(String encoded) async {
+    try {
+      final message = jsonDecode(encoded);
+      if (message is! Map<String, dynamic>) return;
+      switch (message['type']) {
+        case 'prepare':
+          await _audio.prepareDuck(
+            settings: const NativeAudioSettings(),
+          );
+          break;
+        case 'release':
+          await _audio.releaseDuck();
+          break;
+        case 'cue':
+          final volume = (message['volume'] as num?)?.round().clamp(0, 100) ?? 90;
+          final event = message['event'] as String? ?? 'effort';
+          final settings = NativeAudioSettings(
+            alertVolume: volume,
+            duckExternalMusic: true,
+          );
+          final cue = switch (event) {
+            'finish' => TrainingCue.finish,
+            'rest' => TrainingCue.recovery,
+            'countdown' => TrainingCue.countdown,
+            'prep' => TrainingCue.preparation,
+            _ => TrainingCue.effort,
+          };
+          final wav = message['wavBase64'];
+          await _audio.playCue(
+            cue,
+            settings: settings,
+            wavBase64: wav is String ? wav : null,
+          );
+          break;
+      }
+    } catch (error) {
+      debugPrint('JSB offline bridge: $error');
+    }
+  }
+
+  @override
+  void dispose() {
+    unawaited(_audio.releaseDuck());
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF1F293B),
+      body: Stack(
+        children: [
+          WebViewWidget(controller: _web),
+          if (!_loaded && _fatalError == null)
+            const Center(
+              child: CircularProgressIndicator(color: Color(0xFFDBAE6B)),
+            ),
+          if (_fatalError != null)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  'Impossible de charger Moniteur JSB hors-ligne.\n$_fatalError',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
