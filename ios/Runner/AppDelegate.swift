@@ -6,6 +6,9 @@ import AVFoundation
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   private var player: AVAudioPlayer?
   private var cueToken = 0
+  // nil means no JSB audio session is currently active.
+  // Avoid resetting the ducking session on each 3-2-1 countdown beep.
+  private var activeDuckingMode: Bool?
   private let audio = AVAudioSession.sharedInstance()
   private var audioChannel: FlutterMethodChannel?
 
@@ -28,7 +31,8 @@ import AVFoundation
       let cue = args["cue"] as? String ?? "effort"
       let volume = min(100, max(0, args["volume"] as? Int ?? 90))
       let duck = args["duckOthers"] as? Bool ?? true
-      result(self?.playCue(cue: cue, volume: volume, duck: duck) ??
+      let preview = args["preview"] as? Bool ?? false
+      result(self?.playCue(cue: cue, volume: volume, duck: duck, preview: preview) ??
         ["played": false, "focusGranted": false, "message": "Audio indisponible."])
     }
   }
@@ -45,19 +49,37 @@ import AVFoundation
     cueToken += 1
     player?.stop()
     player = nil
-    try? audio.setActive(false, options: .notifyOthersOnDeactivation)
+    // Only deactivate sessions that JSB activated. Avoid changing the state
+    // of another plugin if JSB has no active sound.
+    guard activeDuckingMode != nil else { return }
+    activeDuckingMode = nil
+    do {
+      try audio.setActive(false, options: .notifyOthersOnDeactivation)
+    } catch {
+      NSLog("[JSB audio] Unable to deactivate temporary audio session: \\(error)")
+    }
   }
 
-  private func playCue(cue: String, volume: Int, duck: Bool) -> [String: Any] {
-    releaseAudio()
+  private func playCue(cue: String, volume: Int, duck: Bool, preview: Bool) -> [String: Any] {
     guard volume > 0 else {
+      releaseAudio()
       return ["played": false, "focusGranted": false, "message": "Son coupé."]
     }
+
+    // Consecutive countdown beeps should reuse the active mix/duck session.
+    // Restarting AVAudioSession every 140 ms would prevent iOS from applying
+    // an audible attenuation ramp before the next cue.
+    if let previousMode = activeDuckingMode, previousMode != duck {
+      releaseAudio()
+    }
+    cueToken += 1
+    player?.stop()
+    player = nil
+
+    // This is only a hint from iOS, NOT evidence that Spotify will actually
+    // change its volume (e.g. Spotify Connect may be rendering elsewhere).
+    let otherAudioWasPlaying = audio.isOtherAudioPlaying
     do {
-      var options: AVAudioSession.CategoryOptions = [.mixWithOthers]
-      if duck { options.insert(.duckOthers) }
-      try audio.setCategory(.playback, mode: .default, options: options)
-      try audio.setActive(true)
       let duration: Double
       switch cue {
       case "finish": duration = 3.4
@@ -66,25 +88,66 @@ import AVFoundation
       case "countdown": duration = 0.14
       default: duration = 0.24
       }
-      let bytes = synthesize(cue: cue, duration: duration)
-      let sound = try AVAudioPlayer(data: bytes)
+      if activeDuckingMode == nil {
+        // duckOthers implicitly sets mixWithOthers on the playback category.
+        // It must be configured BEFORE activation to affect other sessions.
+        let options: AVAudioSession.CategoryOptions =
+          duck ? [.duckOthers] : [.mixWithOthers]
+        try audio.setCategory(.playback, mode: .default, options: options)
+      }
+
+      let sound = try AVAudioPlayer(data: synthesize(cue: cue, duration: duration))
       sound.volume = Float(volume) / 100.0
       sound.prepareToPlay()
+
+      if activeDuckingMode == nil {
+        try audio.setActive(true)
+        activeDuckingMode = duck
+      }
+
+      let duckConfigured = audio.categoryOptions.contains(.duckOthers)
+      let route = audio.currentRoute.outputs.map { $0.portType.rawValue }.joined(separator: ", ")
       guard sound.play() else {
         releaseAudio()
-        return ["played": false, "focusGranted": false, "message": "Lecture impossible."]
+        return ["played": false, "focusGranted": false,
+                "duckConfigured": duckConfigured,
+                "otherAudioPlaying": otherAudioWasPlaying,
+                "outputRoute": route,
+                "message": "Lecture du signal impossible."]
       }
       player = sound
       let token = cueToken
-      DispatchQueue.main.asyncAfter(deadline: .now() + duration + 0.1) { [weak self] in
+
+      // Long diagnostic window makes system ducking objectively audible.
+      // Normal cues release focus quickly; countdown cues keep a short
+      // overlap to prevent a volume up/down pulse for every 3-2-1 beep.
+      let holdSeconds: Double = preview ? max(3.0, duration + 0.15) :
+        (cue == "countdown" ? 1.10 : duration + 0.25)
+      DispatchQueue.main.asyncAfter(deadline: .now() + holdSeconds) { [weak self] in
         guard let self = self, token == self.cueToken else { return }
         self.releaseAudio()
       }
+
+      let status: String
+      if !duck {
+        status = "Mixage sans réduction demandé."
+      } else if !duckConfigured {
+        status = "iOS n'a pas conservé l'option duckOthers."
+      } else if preview {
+        status = "DuckOthers configuré pendant 3 secondes (niveau réel non garanti)."
+      } else {
+        status = "DuckOthers configuré sur la session audio."
+      }
+
       return ["played": true, "focusGranted": true,
-              "message": duck ? "Atténuation temporaire demandée." : "Mixage sans atténuation."]
+              "duckConfigured": duckConfigured,
+              "otherAudioPlaying": otherAudioWasPlaying,
+              "outputRoute": route,
+              "message": status]
     } catch {
       releaseAudio()
-      return ["played": false, "focusGranted": false, "message": error.localizedDescription]
+      return ["played": false, "focusGranted": false,
+              "message": error.localizedDescription]
     }
   }
 
