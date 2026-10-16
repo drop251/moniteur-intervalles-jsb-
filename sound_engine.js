@@ -5,40 +5,111 @@
 (function (root) {
   'use strict';
 
+  // Les signaux d'effort privilégient une attaque immédiatement reconnaissable
+  // dans un dojo bruyant ; les signaux de fin ont une couleur distincte.
   const SOUNDS = Object.freeze([
-    {id:'short',label:'Bip court',description:'Signal bref et net'},
+    {id:'buzzer',label:'Buzzer de combat',description:'Avertisseur dense et puissant'},
+    {id:'referee',label:"Sifflet d’arbitre",description:'Signal aigu, incisif et répété'},
+    {id:'tatami',label:'Impact tatami',description:'Deux frappes courtes et sèches'},
+    {id:'clapper',label:'Claquement bois',description:'Clac net, idéal pour les changements'},
+    {id:'taiko',label:'Tambour taiko',description:'Percussion grave avec impact audible'},
+    {id:'alarm',label:'Alerte intensive',description:'Trois notes agressives'},
+    {id:'airhorn',label:'Corne de combat',description:'Deux couches stridentes'},
+    {id:'short',label:'Bip court',description:'Simple et discret'},
     {id:'double',label:'Double bip',description:'Deux signaux rapprochés'},
     {id:'triple',label:'Triple bip',description:'Trois signaux successifs'},
     {id:'whistle',label:'Sifflet électronique',description:'Signal montant'},
     {id:'bell',label:'Cloche',description:'Signal harmonique'},
     {id:'digital',label:'Signal digital',description:'Trois notes électroniques'}
   ]);
-  const IDS = new Set(SOUNDS.map(s=>s.id));
+  const FINISH_SOUNDS = Object.freeze([
+    {id:'gong',label:'Gong japonais',description:'Impact métallique et résonance longue'},
+    {id:'gongDouble',label:'Double gong',description:'Deux frappes de gong solennelles'},
+    {id:'taikoFinal',label:'Taiko final',description:'Deux grosses percussions et résonance'},
+    {id:'buzzerFinal',label:'Buzzer final',description:'Signal de fin fort et distinct'},
+    {id:'bellFinal',label:'Cloche de fin',description:'Cloche claire à longue résonance'}
+  ]);
+  const IDS = new Set([...SOUNDS,...FINISH_SOUNDS].map(s=>s.id));
   const EVENTS = Object.freeze(['prep','effort','rest','random','finish']);
-  const DEFAULTS = Object.freeze({effort:'double',rest:'bell',random:'whistle',finish:'triple'});
-  const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
-  const normalize = value => IDS.has(value) ? value : 'short';
-  const normalizeVolume = value => Number.isFinite(Number(value)) ? clamp(Number(value),0,100) : 70;
+  const DEFAULTS = Object.freeze({effort:'buzzer',rest:'clapper',random:'referee',finish:'gong'});
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const normalize=value=>IDS.has(value)?value:'buzzer';
+  const normalizeFinish=value=>FINISH_SOUNDS.some(s=>s.id===value)?value:'gong';
+  const normalizeVolume=value=>Number.isFinite(Number(value))?clamp(Number(value),0,100):70;
 
-  function notesFor(soundId, event='effort') {
-    const id = normalize(soundId);
-    const pitch = event==='rest' ? 0.66 : event==='prep' ? 0.84 : event==='random' ? 1.1 : 1;
-    const note=(time,duration,freq,wave='sine',endFreq=freq,amplitude=1)=>
-      ({time,duration,freq:freq*pitch,endFreq:endFreq*pitch,wave,amplitude});
+  function notesFor(soundId,event='effort'){
+    const id=normalize(soundId);
+    const pitch=event==='rest'?.78:event==='prep'?.9:event==='random'?1.08:1;
+    const n=(time,duration,freq,wave='sine',endFreq=freq,amplitude=1,shape='punch')=>({
+      time,duration,freq:freq*pitch,endFreq:endFreq*pitch,wave,amplitude,shape
+    });
     let notes;
     switch(id){
-      case 'double':notes=[note(0,.13,850),note(.20,.13,850)];break;
-      case 'triple':notes=[note(0,.11,960),note(.17,.11,960),note(.34,.11,960)];break;
-      case 'whistle':notes=[note(0,.42,900,'sine',1750)];break;
-      case 'bell':notes=[note(0,.52,640,'sine',620,.9),note(0,.46,1280,'sine',1240,.27)];break;
-      case 'digital':notes=[note(0,.12,720,'triangle'),note(.16,.12,980,'triangle'),note(.32,.18,1180,'triangle')];break;
-      default:notes=[note(0,.22,940)];break;
+      case 'buzzer':
+        notes=[n(0,.48,225,'sawtooth',235,.65),n(0,.48,305,'square',309,.31),n(.035,.32,475,'sawtooth',465,.2)];
+        break;
+      case 'referee':
+        notes=[n(0,.21,1510,'square',1900,.47),n(.28,.31,1680,'square',2110,.52)];
+        break;
+      case 'tatami':
+        notes=[n(0,.095,750,'sawtooth',290,.75),n(0,.10,1250,'square',510,.20),n(.19,.095,790,'sawtooth',300,.75),n(.19,.10,1380,'square',580,.16)];
+        break;
+      case 'clapper':
+        notes=[n(0,.12,850,'sawtooth',320,.7),n(0,.09,1350,'square',550,.24)];
+        break;
+      case 'taiko':
+        notes=[n(0,.56,170,'sine',77,1.1,'drum'),n(0,.18,370,'triangle',132,.43),n(0,.08,930,'sawtooth',500,.14)];
+        break;
+      case 'alarm':
+        notes=[n(0,.17,770,'square',900,.55),n(.24,.17,990,'square',1100,.55),n(.48,.30,1190,'sawtooth',1450,.55)];
+        break;
+      case 'airhorn':
+        notes=[n(0,.50,430,'sawtooth',450,.48),n(0,.50,650,'sawtooth',660,.40),n(.04,.43,830,'square',820,.18)];
+        break;
+      case 'double':notes=[n(0,.13,850),n(.20,.13,850)];break;
+      case 'triple':notes=[n(0,.11,960),n(.17,.11,960),n(.34,.11,960)];break;
+      case 'whistle':notes=[n(0,.42,900,'sine',1750)];break;
+      case 'bell':notes=[n(0,.52,640,'sine',620,.9),n(0,.46,1280,'sine',1240,.27)];break;
+      case 'digital':notes=[n(0,.12,720,'triangle'),n(.16,.12,980,'triangle'),n(.32,.18,1180,'triangle')];break;
+      case 'gong':
+      case 'gongDouble':{
+        // Synthèse de cloche de temple (inspiration sonore, pas un échantillon authentique).
+        // Partiels inharmoniques, grave soutenu, attaque métallique et longue décroissance.
+        const strike=at=>[
+          n(at,.18,1150,'sawtooth',410,.32,'metal'),
+          n(at,.12,2050,'triangle',1300,.18,'metal'),
+          n(at,3.5,196,'sine',190,.70,'resonant'),
+          n(at,3.0,287,'sine',281,.46,'resonant'),
+          n(at,2.7,407,'sine',398,.29,'resonant'),
+          n(at,2.3,623,'sine',610,.17,'resonant'),
+          n(at,1.9,933,'sine',916,.10,'resonant')
+        ];
+        notes=strike(0);
+        if(id==='gongDouble')notes=notes.concat(strike(1.28).map(x=>({...x,amplitude:x.amplitude*.82})));
+        break;
+      }
+      case 'taikoFinal':
+        notes=[n(0,.75,170,'sine',70,1,'drum'),n(0,.22,490,'sawtooth',210,.28),n(.8,1.0,185,'sine',67,1,'drum'),n(.8,.25,590,'sawtooth',260,.30)];
+        break;
+      case 'buzzerFinal':
+        notes=[...notesFor('buzzer','effort'),n(.65,.65,205,'sawtooth',240,.65),n(.65,.62,310,'square',320,.3)];
+        break;
+      case 'bellFinal':
+        notes=[n(0,2.8,520,'sine',510,.68,'resonant'),n(0,2.4,1047,'sine',1031,.33,'resonant'),n(0,2.0,1550,'sine',1540,.15,'resonant'),n(0,.12,1750,'triangle',1150,.20,'metal')];
+        break;
+      default:notes=[n(0,.22,940)];break;
     }
-    if(event==='finish'){
-      // Toujours une cadence terminale distincte pour le feedback de fin.
-      return notes.concat([note(.6,.15,1120),note(.83,.28,1350)]);
-    }
+    // Par défaut, le bip de fin est le gong spécifique, et non des notes ajoutées aux bips d'effort.
+    if(event==='finish'&&!FINISH_SOUNDS.some(s=>s.id===id))return notesFor('gong','finish');
     return notes;
+  }
+
+  function signalEnvelope(note,local){
+    const progress=local/note.duration;
+    if(note.shape==='resonant')return Math.min(1,local/.003)*Math.exp(-4.1*progress)*Math.max(0,1-progress);
+    if(note.shape==='drum')return Math.min(1,local/.003)*Math.exp(-5.2*progress)*Math.max(0,1-progress);
+    if(note.shape==='metal')return Math.min(1,local/.002)*Math.exp(-6.8*progress)*Math.max(0,1-progress);
+    return Math.min(1,local/.004)*Math.pow(Math.max(0,1-progress),.90);
   }
 
   function pcmWav(notes,volume=70,sampleRate=22050){
@@ -59,10 +130,10 @@
         const cycles=(n.freq*local+(n.endFreq-n.freq)*local*local/(2*n.duration));
         const angle=2*Math.PI*cycles;
         const wave=n.wave==='triangle'?2/Math.PI*Math.asin(Math.sin(angle)):Math.sin(angle);
-        const envelope=Math.min(1,local/.012)*Math.pow(Math.max(0,1-progress),1.7);
+        const envelope=signalEnvelope(n,local);
         total+=wave*envelope*n.amplitude;
       }
-      const value=clamp(total*.52*boundedVolume,-.94,.94);
+      const value=clamp(total*.63*boundedVolume,-.96,.96);
       view.setInt16(44+i*2,Math.round(value*32767),true);
     }
     return bytes;
@@ -157,14 +228,19 @@
       if(normalizeVolume(volume)===0)return false;
       try{
         const now=ctx.currentTime+.007;
-        const peak=.32*Math.pow(normalizeVolume(volume)/100,1.3);
+        const peak=.38*Math.pow(normalizeVolume(volume)/100,.82);
         for(const n of notesFor(sound,event)){
           const oscillator=ctx.createOscillator(),gain=ctx.createGain();
           oscillator.type=n.wave;oscillator.frequency.setValueAtTime(n.freq,now+n.time);
           if(n.endFreq!==n.freq)oscillator.frequency.linearRampToValueAtTime(n.endFreq,now+n.time+n.duration);
           const amplitude=peak*n.amplitude;
           gain.gain.setValueAtTime(.0001,now+n.time);
-          gain.gain.linearRampToValueAtTime(amplitude,now+n.time+.012);
+          const attack=n.shape==='metal'?.002:n.shape==='drum'?.003:n.shape==='resonant'?.003:.004;
+          gain.gain.linearRampToValueAtTime(amplitude,now+n.time+attack);
+          if(n.shape==='resonant'||n.shape==='drum'||n.shape==='metal'){
+            const shape=n.shape==='resonant'?4.1:n.shape==='drum'?5.2:6.8;
+            gain.gain.exponentialRampToValueAtTime(Math.max(.0001,amplitude*Math.exp(-shape*.55)),now+n.time+n.duration*.55);
+          }
           gain.gain.exponentialRampToValueAtTime(.0001,now+n.time+n.duration);
           oscillator.connect(gain);gain.connect(ctx.destination);
           oscillator.start(now+n.time);oscillator.stop(now+n.time+n.duration+.005);
@@ -199,7 +275,7 @@
     }
     return {setMode,play,activateAndPlay,resume,onStatus,getState,destroy};
   }
-  const api={SOUNDS,DEFAULTS,EVENTS,notesFor,pcmWav,normalize,normalizeVolume,createEngine};
+  const api={SOUNDS,FINISH_SOUNDS,DEFAULTS,EVENTS,notesFor,pcmWav,normalize,normalizeFinish,normalizeVolume,createEngine};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
   root.JSBSoundEngine=api;
 })(typeof window!=='undefined'?window:globalThis);
