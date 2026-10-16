@@ -143,6 +143,7 @@
 
   function createEngine(deps={}){
     const host=deps.host||root;
+    const audioSession=deps.audioSession===undefined?host.navigator?.audioSession:deps.audioSession;
     const AudioContextCtor=deps.AudioContextCtor===undefined
       ? (host.AudioContext||host.webkitAudioContext) : deps.AudioContextCtor;
     const AudioCtor=deps.AudioCtor===undefined ? host.Audio : deps.AudioCtor;
@@ -157,14 +158,26 @@
       for(const listener of listeners){try{listener(value)}catch{}}
     }
     function onStatus(listener){listeners.add(listener);return()=>listeners.delete(listener);}
+    // Sur Safari/iOS, ambient est la catégorie permettant la cohabitation
+    // des bips Web Audio avec Apple Music, Spotify et les autres sources.
+    // En l'absence de cette API, ne jamais supposer que le mixage fonctionne.
+    function requestAmbientMix(){
+      if(!audioSession)return false;
+      try{audioSession.type='ambient';return audioSession.type==='ambient'}
+      catch{return false}
+    }
+    function getMixingStatus(){
+      return{supported:!!audioSession,active:mode==='web'&&audioSession?.type==='ambient'};
+    }
     function setMode(value){
       const next=value==='media'?'media':'web';
       if(next!==mode&&media){try{media.pause()}catch{}}
-      mode=next;emit('inactive');
+      mode=next;if(mode==='web')requestAmbientMix();emit('inactive');
     }
     function ensureContext(){
       if(context)return context;
       if(!AudioContextCtor)throw Error('Web Audio indisponible');
+      requestAmbientMix();
       context=new AudioContextCtor();
       if(typeof context.addEventListener==='function'){
         context.addEventListener('statechange',()=>{
@@ -182,6 +195,7 @@
     }
     function webUnlock(){
       try{
+        requestAmbientMix();
         const ctx=ensureContext();
         // Opérations synchrones pendant le geste : indispensables sur iOS Safari.
         if(typeof ctx.createOscillator==='function'&&typeof ctx.createGain==='function'){
@@ -192,6 +206,7 @@
         }
         const pending=ctx.state==='running'?Promise.resolve():Promise.resolve(ctx.resume());
         return pending.then(()=>{
+          requestAmbientMix();
           const ok=ctx.state==='running';
           emit(ok?'ready':'blocked');
           return ok;
@@ -225,6 +240,7 @@
       }catch{emit('blocked');return false;}
     }
     function webPlay(sound,event,volume){
+      requestAmbientMix();
       const ctx=context;
       if(!ctx||ctx.state!=='running'){emit('blocked');return false;}
       if(normalizeVolume(volume)===0)return false;
@@ -275,7 +291,7 @@
       if(context&&typeof context.close==='function')context.close().catch(()=>{});
       context=null;media=null;emit('inactive');
     }
-    return {setMode,play,activateAndPlay,resume,onStatus,getState,destroy};
+    return {setMode,play,activateAndPlay,resume,onStatus,getState,getMixingStatus,destroy};
   }
   const api={SOUNDS,FINISH_SOUNDS,DEFAULTS,EVENTS,notesFor,pcmWav,normalize,normalizeFinish,normalizeVolume,createEngine};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
