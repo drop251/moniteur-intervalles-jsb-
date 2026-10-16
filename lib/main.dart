@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'domain/interval_plan.dart' as domain;
+import 'engine/interval_session_controller.dart' as engine;
+
 void main() => runApp(const MoniteurApp());
 
 class Workout {
@@ -121,56 +124,161 @@ class _EditorScreenState extends State<EditorScreen>{
     ]));
 }
 
-class TimerScreen extends StatefulWidget{
-  const TimerScreen({super.key,required this.workout});
+class TimerScreen extends StatefulWidget {
+  const TimerScreen({super.key, required this.workout});
   final Workout workout;
-  @override State<TimerScreen> createState()=>_TimerScreenState();
+  @override State<TimerScreen> createState() => _TimerScreenState();
 }
-class _TimerScreenState extends State<TimerScreen>{
-  late final List<Phase> phases=phasesFor(widget.workout);
-  final watch=Stopwatch();
+
+class _TimerScreenState extends State<TimerScreen> {
+  late final engine.IntervalSessionController session;
   Timer? ticker;
-  int index=0,remaining=0;
-  bool finished=false;
-  int phaseStartMs=0;
-  @override void initState(){super.initState();remaining=phases.first.seconds;watch.start();ticker=Timer.periodic(const Duration(milliseconds:80),(_)=>_tick());}
-  void _tick(){
-    if(!watch.isRunning||finished)return;
-    final elapsed=watch.elapsedMilliseconds;
-    var next=index;
-    var start=phaseStartMs;
-    while(next<phases.length && elapsed-start>=phases[next].seconds*1000){
-      start+=phases[next].seconds*1000;next++;
+  late engine.SessionSnapshot current;
+  bool leaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final w = widget.workout;
+    final preset = domain.Preset(
+      name: w.name, prepSec: w.prep, workSec: w.work,
+      restSec: w.rest, cycles: w.cycles,
+    );
+    session = engine.IntervalSessionController(phases: domain.buildPhases(preset));
+    session.start();
+    current = session.sample().snapshot;
+    ticker = Timer.periodic(const Duration(milliseconds: 80), (_) => _tick());
+  }
+
+  void _tick() {
+    if (!mounted || leaving) return;
+    final update = session.sample();
+    if (update.dueCues.isNotEmpty) {
+      // Signal provisoire. Le Lot audio natif planifiera les bips en avance.
+      SystemSound.play(SystemSoundType.click);
+      HapticFeedback.mediumImpact();
     }
-    if(next>=phases.length){_finish(true);return;}
-    if(next!=index){SystemSound.play(SystemSoundType.click);HapticFeedback.mediumImpact();}
-    if(mounted)setState((){index=next;phaseStartMs=start;remaining=((phases[index].seconds*1000-(elapsed-start)+999)~/1000).clamp(0,phases[index].seconds);});
+    if (update.snapshot.status == engine.SessionStatus.completed) {
+      _finish(true);
+      return;
+    }
+    setState(() => current = update.snapshot);
   }
-  void _finish(bool completed){if(finished)return;finished=true;watch.stop();ticker?.cancel();Navigator.pop(context,completed);}
-  @override void dispose(){ticker?.cancel();watch.stop();super.dispose();}
-  Future<void> _stop() async{
-    final ok=await showDialog<bool>(context:context,builder:(c)=>AlertDialog(title:const Text('Arrêter la séance ?'),content:const Text('La séance sera enregistrée comme interrompue.'),actions:[
-      TextButton(onPressed:()=>Navigator.pop(c,false),child:const Text('Continuer')),
-      FilledButton(onPressed:()=>Navigator.pop(c,true),child:const Text('Arrêter'))]));
-    if(ok==true&&mounted)_finish(false);
+
+  void _finish(bool completed) {
+    if (leaving) return;
+    leaving = true;
+    ticker?.cancel();
+    if (!completed) session.stop();
+    Navigator.pop(context, completed);
   }
-  @override Widget build(BuildContext context){
-    final phase=phases[index];
-    final color=switch(phase.label){'EFFORT'=>const Color(0xFF126A3D),'REPOS'=>const Color(0xFF922D2D),_=>const Color(0xFF94600B)};
-    return PopScope(canPop:false,child:Scaffold(backgroundColor:color,body:SafeArea(child:Padding(padding:const EdgeInsets.all(24),child:Column(children:[
-      const Spacer(),Text(phase.label,style:const TextStyle(fontSize:28,fontWeight:FontWeight.bold)),
-      const SizedBox(height:20),
-      Semantics(label:'${remaining} secondes restantes',child:FittedBox(child:Text('${(remaining~/60).toString().padLeft(2,'0')}:${(remaining%60).toString().padLeft(2,'0')}',style:const TextStyle(fontSize:112,fontWeight:FontWeight.w800,fontFeatures:[FontFeature.tabularFigures()])))),
-      Text('Cycle ${phase.cycle} sur ${widget.workout.cycles}',style:const TextStyle(fontSize:19)),
-      const Spacer(),
-      LinearProgressIndicator(value:1-remaining/phase.seconds,minHeight:12),
-      const SizedBox(height:36),
-      Row(children:[
-        Expanded(child:FilledButton.tonalIcon(onPressed:(){setState((){watch.isRunning?watch.stop():watch.start();});},icon:Icon(watch.isRunning?Icons.pause:Icons.play_arrow),label:Text(watch.isRunning?'Pause':'Reprendre'))),
-        const SizedBox(width:16),
-        Expanded(child:OutlinedButton.icon(onPressed:_stop,icon:const Icon(Icons.stop),label:const Text('Arrêter'))),
-      ]),
-      const SizedBox(height:20),
-    ])))));
+
+  Future<void> _stop() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Arrêter la séance ?'),
+        content: const Text('La séance sera enregistrée comme interrompue.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Continuer')),
+          FilledButton(onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Arrêter')),
+        ],
+      ),
+    );
+    if (ok == true && mounted) _finish(false);
+  }
+
+  @override
+  void dispose() {
+    ticker?.cancel();
+    session.stop();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final phase = current.phase;
+    final remaining = (current.remainingMs / 1000).ceil();
+    final color = switch (phase.type) {
+      domain.PhaseType.effort => const Color(0xFF126A3D),
+      domain.PhaseType.rest => const Color(0xFF922D2D),
+      domain.PhaseType.prep => const Color(0xFF94600B),
+      domain.PhaseType.end => const Color(0xFF374151),
+    };
+    final paused = current.status == engine.SessionStatus.paused;
+    final timeText = '${(remaining ~/ 60).toString().padLeft(2, '0')}:${(remaining % 60).toString().padLeft(2, '0')}';
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        backgroundColor: color,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                const Spacer(),
+                Text(phase.label,
+                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 20),
+                Semantics(
+                  label: '$remaining secondes restantes',
+                  child: ExcludeSemantics(
+                    child: FittedBox(
+                      child: Text(timeText,
+                        style: const TextStyle(
+                          fontSize: 112, fontWeight: FontWeight.w800,
+                          fontFeatures: [FontFeature.tabularFigures()],
+                        )),
+                    ),
+                  ),
+                ),
+                Text('Cycle ${phase.cycle} sur ${widget.workout.cycles}',
+                  style: const TextStyle(fontSize: 19)),
+                const Spacer(),
+                Semantics(
+                  label: 'Progression de la phase',
+                  value: '${(current.phaseProgress * 100).round()} pour cent',
+                  child: LinearProgressIndicator(
+                    value: current.phaseProgress, minHeight: 12,
+                  ),
+                ),
+                const SizedBox(height: 36),
+                Row(
+                  children: [
+                    Expanded(
+                      child: FilledButton.tonalIcon(
+                        onPressed: () {
+                          setState(() {
+                            if (paused) {
+                              session.resume();
+                            } else {
+                              session.pause();
+                            }
+                            current = session.snapshot;
+                          });
+                        },
+                        icon: Icon(paused ? Icons.play_arrow : Icons.pause),
+                        label: Text(paused ? 'Reprendre' : 'Pause'),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _stop,
+                        icon: const Icon(Icons.stop),
+                        label: const Text('Arrêter'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
