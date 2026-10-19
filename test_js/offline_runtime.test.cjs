@@ -44,11 +44,11 @@ test('the bundled web document has valid inline JavaScript', () => {
   }
 });
 
-test('original JSB gong and combat cues are transported as WAV, not browser audio', async () => {
+test('nouveaux signaux JSB synthétisés sont transmis en WAV natif', async () => {
   const {window, messages} = createJSB();
   const soundEngine = window.JSBSoundEngine.createEngine();
-  assert.equal(await soundEngine.activateAndPlay('buzzer', 'effort', 90), true);
-  assert.equal(await soundEngine.activateAndPlay('gong', 'finish', 80), true);
+  assert.equal(await soundEngine.activateAndPlay('bellSport', 'effort', 90), true);
+  assert.equal(await soundEngine.activateAndPlay('finishChime', 'finish', 80), true);
   const cues = messages.filter(message => message.type === 'cue');
   assert.equal(cues.length, 2);
   assert.equal(cues[0].event, 'effort');
@@ -156,4 +156,59 @@ test('Premium UI keeps user settings, custom timers, favorites and history', () 
   assert.match(html, /function configuredWorkout/);
   assert.match(html, /function closeStopConfirmation/);
   assert.match(html, /function renderHistory/);
+});
+
+test('le nouveau catalogue supprime tous les anciens signaux sonores', () => {
+  const {window} = createJSB();
+  const audio = window.JSBSoundEngine;
+  assert.deepEqual(Array.from(audio.SOUNDS, x => x.id),
+    ['bellSport', 'pulse', 'digitalDuo', 'wood', 'soft']);
+  assert.deepEqual(Array.from(audio.FINISH_SOUNDS, x => x.id),
+    ['finishBell', 'finishChime', 'finishTriple']);
+  for (const oldId of [
+    'buzzer','referee','tatami','clapper','taiko','alarm','airhorn',
+    'short','double','triple','whistle','bell','digital',
+    'gong','gongDouble','taikoFinal','buzzerFinal','bellFinal',
+  ]) {
+    assert.equal(audio.normalize(oldId), 'bellSport', oldId);
+    assert.equal(audio.normalizeFinish(oldId), 'finishChime', oldId);
+  }
+});
+
+test('chaque nouveau son possède une signature WAV originale et un niveau utilisable', () => {
+  const {window} = createJSB();
+  const audio=window.JSBSoundEngine;
+  const hashes=new Set();
+  const examples=[...audio.SOUNDS.map(x=>[x.id,'effort']),
+    ...audio.FINISH_SOUNDS.map(x=>[x.id,'finish']),
+    ['countdown','countdown']];
+  for(const [id,event] of examples) {
+    const wav=Buffer.from(audio.pcmWav(audio.notesFor(id,event),90));
+    assert.equal(wav.toString('ascii',0,4),'RIFF',id);
+    assert.equal(wav.toString('ascii',8,12),'WAVE',id);
+    assert.equal(wav.readUInt32LE(24),22050,id);
+    assert.ok(wav.length>6000 && wav.length<22050*2*4,id);
+    const slice=wav.subarray(44);
+    let peak=0;
+    for(let offset=0;offset<slice.length;offset+=2){
+      peak=Math.max(peak,Math.abs(slice.readInt16LE(offset)));
+    }
+    assert.ok(peak>3000 && peak<=32767, id+' peak '+peak);
+    const fingerprint=Array.from(slice.subarray(0,512)).join(',');
+    assert.ok(!hashes.has(fingerprint),id+' should have its own waveform');
+    hashes.add(fingerprint);
+  }
+});
+
+test('les réglages JSB proposent un son pour effort, repos et fin', () => {
+  const html=js('index.html');
+  for(const id of ['soundChoice','restSoundChoice','finishSoundChoice',
+    'testBeep','testRestSound','testFinishSound']){
+    assert.ok(html.includes('id="'+id+'"'),id);
+  }
+  assert.ok(html.includes("kind==='rest'?settings.restSound:settings.sound"));
+  assert.ok(html.includes("soundLibrary.normalize(settings.sound)"));
+  assert.ok(html.includes("soundLibrary.normalizeFinish(settings.finishSound)"));
+  assert.ok(!html.includes('<option value="buzzer">'));
+  assert.ok(!html.includes('<option value="gong">'));
 });
