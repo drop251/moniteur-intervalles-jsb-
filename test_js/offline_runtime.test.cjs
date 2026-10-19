@@ -127,21 +127,24 @@ test('screen wake and haptics are relayed to the native app', () => {
 test('JSB Performance v2 preserves four core modes and three bottom tabs', () => {
   const html = js('index.html');
   const css = js('premium_v2.css');
-  const mainNav = html.match(/<nav class="nav"[\\s\\S]*?<\\/nav>/);
-  assert.ok(mainNav, 'Bottom navigation missing');
-  const tabs = [...mainNav[0].matchAll(/data-nav="([^"]+)"/g)].map(m => m[1]);
+  const navStart = html.indexOf('<nav class="nav"');
+  assert.ok(navStart >= 0, 'Bottom navigation missing');
+  const navEnd = html.indexOf('</nav>', navStart);
+  assert.ok(navEnd > navStart);
+  const mainNav = html.slice(navStart, navEnd + 6);
+  const tabs = [...mainNav.matchAll(/data-nav="([^"]+)"/g)].map(m => m[1]);
   assert.deepEqual(tabs, ['sessions','history','settings']);
-  assert.match(html, /id="coreModes"/);
-  assert.match(html, /for\\(const key of \\['randori','golden','random','tabata'\\]\\)/);
-  assert.match(html, /id="libraryDetails"/);
-  assert.match(html, /id="launchConfigured"/);
-  assert.match(html, /id="stopConfirm"/);
-  assert.match(html, /id="sessionSummary"/);
-  assert.match(html, /id="summaryReplay"/);
-  assert.match(css, /@media \\(orientation:landscape\\)/);
-  assert.match(css, /\.mode-grid/);
-  assert.match(html, /id="phaseAnnouncement" aria-live="polite"/);
-  assert.doesNotMatch(mainNav[0], /data-nav="tests"/);
+  assert.ok(html.includes('id="coreModes"'));
+  assert.ok(html.includes("for(const key of ['randori','golden','random','tabata'])"));
+  assert.ok(html.includes('id="libraryDetails"'));
+  assert.ok(html.includes('id="launchConfigured"'));
+  assert.ok(html.includes('id="stopConfirm"'));
+  assert.ok(html.includes('id="sessionSummary"'));
+  assert.ok(html.includes('id="summaryReplay"'));
+  assert.ok(css.includes('@media (orientation:landscape)'));
+  assert.ok(css.includes('.mode-grid'));
+  assert.ok(html.includes('id="phaseAnnouncement" aria-live="polite"'));
+  assert.ok(!mainNav.includes('data-nav="tests"'));
 });
 
 test('Premium UI keeps user settings, custom timers, favorites and history', () => {
