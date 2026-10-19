@@ -254,7 +254,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
 </nav>
 </div>
 <div class="modal" id="editorModal" role="dialog" aria-modal="true" aria-labelledby="editorTitle"><div class="sheet"><header><h2 id="editorTitle">Configurer un minuteur</h2><button class="icon-btn" id="closeEditor" aria-label="Fermer l'éditeur">×</button></header><p class="editor-lead">Configure ton entraînement puis démarre immédiatement, ou enregistre tes paramètres pour plus tard.</p><form id="editorForm"><div class="editor-duration"><small>Durée totale estimée</small><span class="value" id="configDuration" aria-live="polite">—</span></div><div class="fields"><div class="field wide"><label for="workoutMode">Mode d’entraînement</label><select id="workoutMode"><option value="randori">Randori</option><option value="golden">Golden Score</option><option value="random">Bips aléatoires</option><option value="tabata">Tabata</option><option value="hiit">HIIT / Intervalles</option><option value="boxe">Boxe</option></select></div><div class="field wide"><label for="workoutName">Nom de la séance</label><input id="workoutName" maxlength="50" required placeholder="Ex. HIIT Judo" /></div><div class="field wide duration-field" id="preparationField"><div class="duration-title">Préparation</div><div class="duration-pickers"><div><label for="preparationMinutes">Minutes</label><select id="preparationMinutes" aria-label="Préparation : minutes"></select></div><div><label for="preparationSeconds">Secondes</label><select id="preparationSeconds" aria-label="Préparation : secondes"></select></div></div><input type="hidden" id="preparation" value="10" /><small class="duration-help">Choisis séparément les minutes et les secondes.</small></div><div class="field wide duration-field" id="effortField"><div class="duration-title" id="effortLabel">Effort</div><div class="duration-pickers"><div><label for="effortMinutes">Minutes</label><select id="effortMinutes" aria-label="Effort : minutes"></select></div><div><label for="effortSeconds">Secondes</label><select id="effortSeconds" aria-label="Effort : secondes"></select></div></div><input type="hidden" id="effort" value="30" /><small class="duration-help">Choisis séparément les minutes et les secondes.</small></div><div class="field wide duration-field" id="restField"><div class="duration-title">Repos</div><div class="duration-pickers"><div><label for="reposMinutes">Minutes</label><select id="reposMinutes" aria-label="Repos : minutes"></select></div><div><label for="reposSeconds">Secondes</label><select id="reposSeconds" aria-label="Repos : secondes"></select></div></div><input type="hidden" id="repos" value="15" /><small class="duration-help">Choisis séparément les minutes et les secondes.</small></div><div class="field wide" id="randomOptions" hidden><label for="randomFrequency">Fréquence des bips</label><select id="randomFrequency"><option value="low">Espacés</option><option value="medium" selected>Modérés</option><option value="high">Fréquents</option></select><label class="random-progressive"><input type="checkbox" id="randomProgressive" checked /> Rapprocher progressivement les bips</label><small>Exemple : faire un burpee à chaque bip.</small></div><div class="field" id="cyclesField"><label for="cycles" id="cyclesLabel">Cycles</label><input id="cycles" type="number" inputmode="numeric" min="1" max="200" value="8" required /></div></div><p class="caption" id="modeHint" aria-live="polite">Alternance d’effort et de récupération.</p><button class="secondary" type="button" id="cancelEditor" style="min-height:48px;margin-top:12px">Annuler</button><div class="editor-actions"><button type="submit" class="secondary" id="saveWorkout">Enregistrer</button><button type="button" class="primary" id="launchConfigured">▶ Démarrer</button></div></form></div></div>
-<section class="timer" id="timer" data-phase="prep" aria-label="Séance en cours"><div class="timer-head"><div><strong>MONITEUR JSB</strong><div style="margin-top:5px;font-size:12px;color:#b4c8d1" id="timerTitle"></div></div><small id="totalRemaining">Temps total restant</small></div><div class="timer-main"><span class="phase-chip" id="phaseLabel">PRÉPARATION</span><div class="clock" id="clockText" aria-label="Temps restant">00:10</div><div class="cycle" id="cycleLabel">Cycle 1 / 8</div><div class="paused" id="pausedFlag">EN PAUSE</div><div id="amrapCounter" class="amrap-counter" hidden><span>Tours validés</span><div><button type="button" id="amrapMinus" aria-label="Retirer un tour">−</button><strong id="amrapCount" aria-live="polite">0</strong><button type="button" id="amrapPlus" aria-label="Ajouter un tour">+</button></div></div></div><div class="timer-controls"><div class="prog" role="progressbar" aria-label="Progression de la phase" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress"><span id="progressBar"></span></div><div class="next"><span id="upNext">Ensuite : EFFORT</span><span id="percentLabel">0 %</span></div><div class="timer-actions"><button class="primary" id="pauseBtn" type="button">❚❚ &nbsp; Pause</button><button class="secondary danger" id="stopBtn" type="button">■ &nbsp; Arrêter</button></div><div class="caption">Signaux audio natifs · musique atténuée avant et après les alertes.</div></div></section>
+<section class="timer" id="timer" data-phase="prep" aria-label="Séance en cours"><div class="timer-head"><div><strong>MONITEUR JSB</strong><div style="margin-top:5px;font-size:12px;color:#b4c8d1" id="timerTitle"></div></div><small id="totalRemaining">Temps total restant</small></div><div class="timer-main"><span class="phase-chip" id="phaseLabel">PRÉPARATION</span><span class="sr-only" id="phaseAnnouncement" aria-live="polite" role="status"></span><div class="clock" id="clockText" aria-label="Temps restant" aria-live="off">00:10</div><div class="cycle" id="cycleLabel">Cycle 1 / 8</div><div class="paused" id="pausedFlag">EN PAUSE</div><div id="amrapCounter" class="amrap-counter" hidden><span>Tours validés</span><div><button type="button" id="amrapMinus" aria-label="Retirer un tour">−</button><strong id="amrapCount" aria-live="polite">0</strong><button type="button" id="amrapPlus" aria-label="Ajouter un tour">+</button></div></div></div><div class="timer-controls"><div class="prog" role="progressbar" aria-label="Progression de la phase" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress"><span id="progressBar"></span></div><div class="next"><span id="upNext">Ensuite : EFFORT</span><span id="percentLabel">0 %</span></div><div class="timer-actions"><button class="primary" id="pauseBtn" type="button">❚❚ &nbsp; Pause</button><button class="secondary danger" id="stopBtn" type="button">■ &nbsp; Arrêter</button></div><div class="caption">Signaux audio natifs · musique atténuée avant et après les alertes.</div></div></section>
 <div class="dialog-layer" id="stopConfirm" role="dialog" aria-modal="true" aria-labelledby="stopConfirmTitle" aria-hidden="true"><div class="dialog-box">
   <h2 id="stopConfirmTitle">Terminer la séance ?</h2>
   <p id="stopConfirmText">Ta séance sera enregistrée comme interrompue.</p>
@@ -426,7 +426,32 @@ function deleteWorkout(w){
  if(!confirm('Supprimer définitivement « '+w.name+' » ?'))return;
  customs=manager.removeCustom(customs,w.id);favorites=library.normalizeFavorites(favorites,[...standard,...customs].map(x=>x.id));safeWrite('jsb_preview_favorites',favorites);safeWrite('jsb_preview_customs',customs);renderWorkouts();notice('Minuteur supprimé');
 }
-function renderHistory(){const el=$('historyList');el.replaceChildren();if(!history.length){el.innerHTML='<div class="empty">Aucune séance pour le moment.<br>Ton activité apparaîtra ici.</div>';return;}for(const h of history){const row=document.createElement('div');row.className='hist-row';const left=document.createElement('div');const title=document.createElement('b');title.textContent=h.name;const stamp=document.createElement('small');stamp.textContent=h.date+' · '+pretty(h.elapsed)+(Number.isInteger(h.rounds)?' · '+h.rounds+' tours':'');left.append(title,stamp);const status=document.createElement('span');status.className='status'+(h.completed?'':' interrupted');status.textContent=h.completed?'Terminée':'Interrompue';row.append(left,status);el.append(row);}}
+function renderHistory(){
+ const el=$('historyList');el.replaceChildren();
+ if(!history.length){
+   const empty=document.createElement('div');empty.className='empty';
+   empty.textContent='Aucune séance pour le moment. Ton activité apparaîtra ici.';
+   el.append(empty);return;
+ }
+ for(const h of history){
+   const row=document.createElement('div');row.className='hist-row';
+   const left=document.createElement('div');
+   const title=document.createElement('b');title.textContent=h.name||'Séance';
+   const stamp=document.createElement('small');
+   stamp.textContent=(h.date||'')+' · '+pretty(h.elapsed||0)+
+      (Number.isInteger(h.signals)?' · '+h.signals+' bips':Number.isInteger(h.rounds)?' · '+h.rounds+' tours':'');
+   left.append(title,stamp);
+   const status=document.createElement('span');status.className='status'+(h.completed?'':' interrupted');
+   status.textContent=h.completed?'Terminée':'Interrompue';
+   const trailing=document.createElement('div');trailing.className='history-actions';
+   if(trainingModeIsValid(h.workout)){
+     const replay=document.createElement('button');replay.type='button';replay.className='history-replay';
+     replay.textContent='▶';replay.setAttribute('aria-label','Rejouer '+h.workout.name);
+     replay.addEventListener('click',()=>startWorkout(h.workout));trailing.append(replay);
+   }
+   trailing.append(status);row.append(left,trailing);el.append(row);
+ }
+}
 function openEditor(workout=null){
  if(!gate.allow('editor-open',350)||session||$('editorModal').classList.contains('active'))return;
  closeWorkoutMenus();$('editorForm').reset();editingWorkoutId=workout?workout.id:null;
@@ -569,7 +594,9 @@ function updateTimer(){
  let idx=session.seq.length-1;
  for(let i=0;i<session.seq.length;i++){if(t<session.seq[i].start+session.seq[i].ms){idx=i;break;}}
  const p=session.seq[idx];
- if(idx!==session.index){const previous=session.index;session.index=idx;if(!session.paused&&!(previous<0&&session.initialAudio)&&(previous<0||t-p.start<=180))beep(p.kind);}
+ if(idx!==session.index){const previous=session.index;session.index=idx;
+ $('phaseAnnouncement').textContent=p.label+(p.cycle?' '+p.cycle+' sur '+session.workout.cycles:'');
+ if(!session.paused&&!(previous<0&&session.initialAudio)&&(previous<0||t-p.start<=180))beep(p.kind);}
  if(settings.countdown&&settings.audio&&!session.paused){
   const due=audioCues.countdownCues(session.seq,session.lastCueMs,t);
   // L'horloge est évaluée à ~75 ms, sans rattrapage au retour d'arrière-plan.
@@ -656,7 +683,11 @@ $('reorderFavorites').addEventListener('click',()=>{
 $('workoutFilter').addEventListener('change',()=>{activeWorkoutFilter=$('workoutFilter').value;closeWorkoutMenus();renderWorkouts()});
 $('favoritesOnly').addEventListener('change',()=>{favoritesOnly=$('favoritesOnly').checked;closeWorkoutMenus();renderWorkouts()});
 document.addEventListener('click',e=>{if(!e.target.closest('.workout-row'))closeWorkoutMenus()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeWorkoutMenus()});
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;
+ if($('stopConfirm').classList.contains('active')){e.preventDefault();closeStopConfirmation(true);return;}
+ if($('sessionSummary').classList.contains('active')){e.preventDefault();$('summaryHome').click();return;}
+ if($('editorModal').classList.contains('active')){e.preventDefault();closeEditor();return;}
+ closeWorkoutMenus();});
 for(const n of document.querySelectorAll('[data-nav]'))n.addEventListener('click',()=>navigate(n.dataset.nav));$('settingsQuick').addEventListener('click',()=>navigate('settings'));$('quickStart').addEventListener('click',()=>startWorkout(recentWorkout&&trainingModeIsValid(recentWorkout)?recentWorkout:primaryWorkout(standard[0])));$('newWorkout').addEventListener('click',()=>openEditor());$('closeEditor').addEventListener('click',closeEditor);$('cancelEditor').addEventListener('click',closeEditor);$('editorModal').addEventListener('click',e=>{if(e.target===$('editorModal'))closeEditor()});for(const id of ['preparation','effort','repos']){
   for(const suffix of ['Minutes','Seconds']){
     $(id+suffix).addEventListener('change',()=>updateDurationOptions(id));
