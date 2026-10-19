@@ -108,7 +108,7 @@ test('random cues are spaced and countdown cues never replay when late', () => {
     {kind: 'effort', start: 10000, ms: 20000},
   ];
   assert.equal(window.JSBAudioCues.countdownCues(phases, 6900, 7100).length, 1);
-  assert.equal(window.JSBAudioCues.countdownCues(phases, 7000, 8100).length, 0);
+  assert.equal(window.JSBAudioCues.countdownCues(phases, 7001, 8500).length, 0);
 });
 
 test('screen wake and haptics are relayed to the native app', () => {
