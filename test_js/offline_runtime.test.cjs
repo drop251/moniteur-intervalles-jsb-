@@ -202,11 +202,12 @@ test('chaque nouveau son possède une signature WAV originale et un niveau utili
 
 test('les réglages JSB proposent un son pour effort, repos et fin', () => {
   const html=js('index.html');
-  for(const id of ['soundChoice','restSoundChoice','finishSoundChoice',
-    'testBeep','testRestSound','testFinishSound']){
+  for(const id of ['soundChoice','restSoundChoice','randomSoundChoice','finishSoundChoice',
+    'testBeep','testRestSound','testRandomSound','testFinishSound']){
     assert.ok(html.includes('id="'+id+'"'),id);
   }
-  assert.ok(html.includes("kind==='rest'?settings.restSound:settings.sound"));
+  assert.ok(html.includes("kind==='rest'?settings.restSound:"));
+  assert.ok(html.includes("kind==='random'?settings.randomSound:settings.sound"));
   assert.ok(html.includes("soundLibrary.normalize(settings.sound)"));
   assert.ok(html.includes("soundLibrary.normalizeFinish(settings.finishSound)"));
   assert.ok(!html.includes('<option value="buzzer">'));
