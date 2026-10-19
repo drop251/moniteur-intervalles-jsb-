@@ -213,3 +213,35 @@ test('les réglages JSB proposent un son pour effort, repos et fin', () => {
   assert.ok(!html.includes('<option value="buzzer">'));
   assert.ok(!html.includes('<option value="gong">'));
 });
+
+test('intensité des nouveaux sons renforcée sans écrêtage PCM', () => {
+  const {window} = createJSB();
+  const audio=window.JSBSoundEngine;
+  function measure(id,event,volume) {
+    const wav=Buffer.from(audio.pcmWav(audio.notesFor(id,event),volume));
+    let peak=0,power=0;
+    const samples=(wav.length-44)/2;
+    for(let i=44;i<wav.length;i+=2){
+      const v=wav.readInt16LE(i);
+      peak=Math.max(peak,Math.abs(v));
+      power+=v*v;
+    }
+    return {peak,rms:Math.sqrt(power/samples)};
+  }
+  for(const [id,event] of [
+    ['bellSport','effort'],['pulse','random'],['digitalDuo','effort'],
+    ['wood','random'],['soft','rest'],['finishBell','finish'],
+    ['finishChime','finish'],['finishTriple','finish'],['countdown','countdown'],
+  ]){
+    const silent=measure(id,event,0);
+    const low=measure(id,event,50);
+    const strong=measure(id,event,90);
+    assert.equal(silent.peak,0,id+' mute');
+    assert.ok(strong.peak>low.peak,id+' louder at 90 than at 50');
+    assert.ok(strong.rms>low.rms,id+' mean energy increases');
+    assert.ok(strong.peak<=Math.ceil(32767*.96)+1,id+' limited, no PCM clipping');
+    assert.ok(strong.rms>1000,id+' still audible');
+  }
+  const punch=measure('pulse','effort',90);
+  assert.ok(punch.peak>17000, 'pulse has a clear prominent attack');
+});
