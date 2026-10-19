@@ -7,6 +7,18 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../audio/native_audio_service.dart';
 import 'native_session_features.dart';
 
+/// Allow only the local application shell. Android's WebView asset loader
+/// serves bundled files through its reserved HTTPS origin rather than file://.
+/// No arbitrary internet destination is authorized by this navigation rule.
+bool isAllowedLocalJsbNavigation(String url) {
+  final uri = Uri.tryParse(url);
+  if (uri == null) return false;
+  if (uri.scheme == 'file' || url == 'about:blank') return true;
+  return uri.scheme == 'https' &&
+      uri.host == 'appassets.androidplatform.net' &&
+      uri.path.startsWith('/assets/');
+}
+
 /// Original JSB web experience bundled on-device. The HTML never navigates
 /// to an external URL, and all sounds are delegated to the native audio engine.
 class JsbWebHomeScreen extends StatefulWidget {
@@ -47,10 +59,8 @@ class _JsbWebHomeScreenState extends State<JsbWebHomeScreen>
             }
           },
           onNavigationRequest: (request) {
-            final uri = Uri.tryParse(request.url);
-            if (uri == null) return NavigationDecision.prevent;
-            // The WebView is strictly offline; no external navigation.
-            return uri.scheme == 'file' || uri.scheme == 'about'
+            // Both iOS file assets and Android WebViewAssetLoader are local.
+            return isAllowedLocalJsbNavigation(request.url)
                 ? NavigationDecision.navigate
                 : NavigationDecision.prevent;
           },
