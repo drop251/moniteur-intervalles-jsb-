@@ -123,3 +123,34 @@ test('screen wake and haptics are relayed to the native app', () => {
     {type: 'screenAwake', enabled: false},
   ]);
 });
+
+test('JSB Performance v2 preserves four core modes and three bottom tabs', () => {
+  const html = js('index.html');
+  const css = js('premium_v2.css');
+  const mainNav = html.match(/<nav class="nav"[\\s\\S]*?<\\/nav>/);
+  assert.ok(mainNav, 'Bottom navigation missing');
+  const tabs = [...mainNav[0].matchAll(/data-nav="([^"]+)"/g)].map(m => m[1]);
+  assert.deepEqual(tabs, ['sessions','history','settings']);
+  assert.match(html, /id="coreModes"/);
+  assert.match(html, /for\\(const key of \\['randori','golden','random','tabata'\\]\\)/);
+  assert.match(html, /id="libraryDetails"/);
+  assert.match(html, /id="launchConfigured"/);
+  assert.match(html, /id="stopConfirm"/);
+  assert.match(html, /id="sessionSummary"/);
+  assert.match(html, /id="summaryReplay"/);
+  assert.match(css, /@media \\(orientation:landscape\\)/);
+  assert.match(css, /\.mode-grid/);
+  assert.match(html, /id="phaseAnnouncement" aria-live="polite"/);
+  assert.doesNotMatch(mainNav[0], /data-nav="tests"/);
+});
+
+test('Premium UI keeps user settings, custom timers, favorites and history', () => {
+  const html = js('index.html');
+  for (const store of [
+    'jsb_preview_customs','jsb_preview_settings','jsb_preview_history',
+    'jsb_preview_favorites','jsb_v2_recent_workout','jsb_v2_mode_settings',
+  ]) assert.ok(html.includes(store), store);
+  assert.match(html, /function configuredWorkout/);
+  assert.match(html, /function closeStopConfirmation/);
+  assert.match(html, /function renderHistory/);
+});
