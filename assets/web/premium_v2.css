@@ -225,3 +225,16 @@ button:disabled { opacity:.50; }
   .mode-tile{min-height:84px;padding:9px 11px;}
   .mode-grid{gap:8px;}
 }
+
+/* Accessible one-tap presets; labels are mode-specific and preserve edits. */
+.editor-presets{margin-bottom:16px;}
+.editor-preset-label{display:block;color:#EAC999;letter-spacing:.09em;
+ font-size:11px;font-weight:800;margin:0 0 9px;}
+.preset-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.preset-chip{min-height:48px;min-width:88px;border:1px solid #9D8052;
+ color:#F8F7F2;background:#2C3F57;border-radius:12px;
+ padding:9px 13px;font-weight:730;font-size:13px;flex:1;}
+.preset-chip[aria-pressed=true]{border-color:#DBAE6B;background:#DBAE6B;
+ color:#152035;}
+.history-actions{display:flex;gap:12px;align-items:center;flex:none;}
+.history-actions .status{font-size:11px;}
