@@ -113,6 +113,16 @@
     return Math.min(1,local/.004)*Math.pow(Math.max(0,1-progress),.90);
   }
 
+  // An increased cue gain improves audibility with music and in a dojo.
+  // Soft-knee limiting caps intermodulating partials below 0 dBFS and
+  // avoids the harsh hard clipping of very strong metallic attacks.
+  const MIX_GAIN = .86; // previously .63 (about +2.7 dB before limiting)
+  function softLimit(value){
+    const knee=.80, peak=.96, abs=Math.abs(value);
+    if(abs<=knee)return value;
+    return Math.sign(value)*(knee+(peak-knee)*(1-Math.exp(-(abs-knee)/(peak-knee))));
+  }
+
   function pcmWav(notes,volume=70,sampleRate=22050){
     const boundedVolume=normalizeVolume(volume)/100;
     const end=Math.max(.1,...notes.map(n=>n.time+n.duration))+.06;
@@ -134,7 +144,7 @@
         const envelope=signalEnvelope(n,local);
         total+=wave*envelope*n.amplitude;
       }
-      const value=clamp(total*.63*boundedVolume,-.96,.96);
+      const value=softLimit(total*MIX_GAIN*boundedVolume);
       view.setInt16(44+i*2,Math.round(value*32767),true);
     }
     return bytes;
@@ -245,7 +255,8 @@
       if(normalizeVolume(volume)===0)return false;
       try{
         const now=ctx.currentTime+.007;
-        const peak=.38*Math.pow(normalizeVolume(volume)/100,.82);
+        // Keep the browser fallback close to the louder native WAV mix.
+        const peak=.52*Math.pow(normalizeVolume(volume)/100,.82);
         for(const n of notesFor(sound,event)){
           const oscillator=ctx.createOscillator(),gain=ctx.createGain();
           oscillator.type=n.wave;oscillator.frequency.setValueAtTime(n.freq,now+n.time);
