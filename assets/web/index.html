@@ -585,7 +585,8 @@ function beep(kind,preview=false){
    else if(navigator.vibrate){try{navigator.vibrate(kind==='effort'||kind==='random'?[65,40,65]:65)}catch{}}
  }
  if(!settings.audio||settings.volume<=0)return;
- const chosen=kind==='finish'?settings.finishSound:kind==='countdown'?'countdown':settings.sound;
+ const chosen=kind==='finish'?settings.finishSound:
+    kind==='countdown'?'countdown':kind==='rest'?settings.restSound:settings.sound;
  soundEngine.play(chosen,kind,settings.volume);
 }
 async function requestWakeLock(){
@@ -790,20 +791,43 @@ $('summaryReplay').addEventListener('click',()=>{
  $('app').inert=false;navigate('sessions');startWorkout(w);
 });
 $('clearHistory').addEventListener('click',()=>{if(history.length&&confirm('Effacer tout l’historique ?')){history=[];safeWrite('jsb_preview_history',history);renderHistory();notice('Historique effacé');}});
-const volumeRange=$('volumeRange'),volumeValue=$('volumeValue'),testBeep=$('testBeep'),testFinishSound=$('testFinishSound');
+const volumeRange=$('volumeRange'),volumeValue=$('volumeValue'),testBeep=$('testBeep'),testRestSound=$('testRestSound'),testFinishSound=$('testFinishSound');
 $('countdownEnabled').checked=settings.countdown!==false;
 $('countdownEnabled').addEventListener('change',()=>{settings.countdown=$('countdownEnabled').checked;safeWrite('jsb_preview_settings',settings);});
-$('finishSoundChoice').value=window.JSBSoundEngine.normalizeFinish(settings.finishSound);
-$('finishSoundChoice').addEventListener('change',()=>{settings.finishSound=$('finishSoundChoice').value;safeWrite('jsb_preview_settings',settings)});
-$('soundChoice').value=window.JSBSoundEngine.normalize(settings.sound);
-$('audioMethod').value=settings.audioMethod==='media'?'media':'web';
+// Sound catalog v2: old sound IDs are intentionally not selectable.
+const soundLibrary=window.JSBSoundEngine;
+const previousSound=settings.sound,previousRest=settings.restSound,previousFinish=settings.finishSound;
+settings.sound=soundLibrary.normalize(settings.sound);
+settings.restSound=soundLibrary.normalize(settings.restSound||'soft');
+settings.finishSound=soundLibrary.normalizeFinish(settings.finishSound);
+if(previousSound!==settings.sound||previousRest!==settings.restSound||previousFinish!==settings.finishSound)
+  safeWrite('jsb_preview_settings',settings);
+function fillSoundSelect(id,choices){
+ const select=$(id);select.replaceChildren();
+ for(const cue of choices){
+  const opt=document.createElement('option');opt.value=cue.id;opt.textContent=cue.label;
+  opt.title=cue.description;select.append(opt);
+ }
+}
+fillSoundSelect('soundChoice',soundLibrary.SOUNDS);
+fillSoundSelect('restSoundChoice',soundLibrary.SOUNDS);
+fillSoundSelect('finishSoundChoice',soundLibrary.FINISH_SOUNDS);
+$('soundChoice').value=settings.sound;
+$('restSoundChoice').value=settings.restSound;
+$('finishSoundChoice').value=settings.finishSound;
 $('soundChoice').addEventListener('change',()=>{settings.sound=$('soundChoice').value;safeWrite('jsb_preview_settings',settings);});
+$('restSoundChoice').addEventListener('change',()=>{settings.restSound=$('restSoundChoice').value;safeWrite('jsb_preview_settings',settings);});
+$('finishSoundChoice').addEventListener('change',()=>{settings.finishSound=$('finishSoundChoice').value;safeWrite('jsb_preview_settings',settings);});
+$('audioMethod').value=settings.audioMethod==='media'?'media':'web';
 $('audioMethod').addEventListener('change',()=>{settings.audioMethod=$('audioMethod').value;soundEngine.setMode(settings.audioMethod);safeWrite('jsb_preview_settings',settings);});
-function renderVolume(){const v=Math.round(settings.volume);volumeRange.value=String(v);volumeRange.setAttribute('aria-valuetext',v===0?'Muet':v+' pour cent');volumeValue.textContent=v+' %';testBeep.disabled=!settings.audio||v===0;testFinishSound.disabled=!settings.audio||v===0}
+function renderVolume(){const v=Math.round(settings.volume);volumeRange.value=String(v);volumeRange.setAttribute('aria-valuetext',v===0?'Muet':v+' pour cent');volumeValue.textContent=v+' %';testBeep.disabled=!settings.audio||v===0;testFinishSound.disabled=!settings.audio||v===0;testRestSound.disabled=!settings.audio||v===0}
 renderVolume();
 volumeRange.addEventListener('input',()=>{settings.volume=Number(volumeRange.value);renderVolume();safeWrite('jsb_preview_settings',settings)});
 testBeep.addEventListener('click',()=>{if(!settings.audio||settings.volume===0||!gate.allow('test-beep',400))return;void soundEngine.activateAndPlay(settings.sound,'effort',settings.volume);});
-testFinishSound.addEventListener('click',()=>{if(!settings.audio||settings.volume===0||!gate.allow('test-gong',1000))return;void soundEngine.activateAndPlay(settings.finishSound,'finish',settings.volume);});
+testRestSound.addEventListener('click',()=>{if(!settings.audio||settings.volume===0||!gate.allow('test-rest',500))return;
+ void soundEngine.activateAndPlay(settings.restSound,'rest',settings.volume);});
+testFinishSound.addEventListener('click',()=>{if(!settings.audio||settings.volume===0||!gate.allow('test-gong',1000))return;
+ void soundEngine.activateAndPlay(settings.finishSound,'finish',settings.volume);});
 for(const [id,key] of [['audioEnabled','audio'],['vibrateEnabled','vibrate'],['keepAwake','keepAwake']]){const el=$(id);el.checked=Boolean(settings[key]);el.addEventListener('change',()=>{settings[key]=el.checked;safeWrite('jsb_preview_settings',settings);if(key==='keepAwake'&&!el.checked)releaseWakeLock();if(key==='audio'){renderVolume();if(el.checked)void soundEngine.activateAndPlay(settings.sound,'prep',settings.volume);}});}
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&session&&!session.paused){nativeAudio?.release();releaseWakeLock();}else if(!document.hidden&&session&&!session.paused){nativeAudio?.reset();requestWakeLock();updateTimer();}});renderWorkouts();renderHistory();})();
 </script>
