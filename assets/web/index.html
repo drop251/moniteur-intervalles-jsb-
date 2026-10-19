@@ -532,6 +532,11 @@ function releaseWakeLock(){
 function startWorkout(w){
  if(session||!trainingModes.isAvailable(w.kind)||!gate.allow('start-workout',600))return;
  clearInterval(frame);frame=null;
+ recentWorkout={...w};safeWrite('jsb_v2_recent_workout',recentWorkout);
+ if(['randori','golden','random','tabata'].includes(w.id)){
+   modeSettings[w.id]={...w};safeWrite('jsb_v2_mode_settings',modeSettings);
+ }
+ updateQuickStart();
  // L'activation doit commencer dans le geste direct de démarrage sur iOS.
  if(settings.audio&&settings.volume>0)void soundEngine.activateAndPlay(settings.sound,(w.prep>0?'prep':'effort'),settings.volume);
  const seq=phases(w);let acc=0;
@@ -550,6 +555,7 @@ function startWorkout(w){
  if(nativeAudio)nativeAudio.reset();
  session={workout:w,seq,total:acc,elapsed:0,base:performance.now(),paused:false,index:-1,finished:false,rounds:0,signals,nextSignal:0,signalsPlayed:0,initialAudio:settings.audio&&settings.volume>0,lastCueMs:0,cueTimes};
  $('amrapCounter').hidden=true;$('amrapCount').textContent='0';
+ $('sessionSummary').classList.remove('active');$('sessionSummary').setAttribute('aria-hidden','true');
  $('timerTitle').textContent=w.name;$('timer').classList.add('active');
  document.querySelector('.nav').style.visibility='hidden';
  requestWakeLock();updateTimer();frame=setInterval(updateTimer,75);
@@ -596,7 +602,45 @@ function updateTimer(){
  $('pauseBtn').textContent=session.paused?'▶  Reprendre':'❚❚  Pause';
 }
 function pauseResume(){if(!session||session.finished||modalBusy||!gate.allow('pause-toggle',400))return;if(session.paused){session.base=performance.now();session.paused=false;armAudio();nativeAudio?.reset();requestWakeLock()}else{session.elapsed=currentMs();session.paused=true;nativeAudio?.release();releaseWakeLock()}updateTimer()}
-function finish(completed){if(!session||session.finished)return;session.finished=true;modalBusy=false;clearInterval(frame);frame=null;releaseWakeLock();if(!completed)nativeAudio?.release();if(settings.audio&&settings.volume>0&&completed)beep('finish');const s=session;const entry={name:s.workout.name,date:new Date().toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}),elapsed:Math.floor(Math.min(currentMs(),s.total)/1000),completed,...(s.workout.kind==='random'?{signals:s.signalsPlayed}:{}) ,...(s.workout.kind==='amrap'?{rounds:s.rounds}:{})};history.unshift(entry);history=history.slice(0,60);safeWrite('jsb_preview_history',history);$('timer').classList.remove('active');document.querySelector('.nav').style.visibility='visible';session=null;renderHistory();notice(completed?'Séance terminée !':'Séance interrompue');}
+function finish(completed){
+ if(!session||session.finished)return;
+ session.finished=true;modalBusy=false;clearInterval(frame);frame=null;releaseWakeLock();
+ if(!completed)nativeAudio?.release();
+ if(settings.audio&&settings.volume>0&&completed)beep('finish');
+ const current=session;
+ const elapsed=Math.floor(Math.min(currentMs(),current.total)/1000);
+ const completedEfforts=current.seq.filter(p=>p.kind==='effort'&&Number.isFinite(p.ms)&&
+   (p.start+p.ms)/1000<=elapsed).length;
+ const entry={name:current.workout.name,
+   date:new Date().toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}),
+   elapsed,completed,kind:current.workout.kind,cyclesDone:completedEfforts,
+   workout:{...current.workout},
+   ...(current.workout.kind==='random'?{signals:current.signalsPlayed}:{})};
+ history.unshift(entry);history=history.slice(0,60);safeWrite('jsb_preview_history',history);
+ replayWorkout={...current.workout};
+ $('timer').classList.remove('active');
+ $('stopConfirm').classList.remove('active');$('stopConfirm').setAttribute('aria-hidden','true');
+ document.querySelector('.nav').style.visibility='visible';
+ session=null;renderHistory();
+ $('summaryTitle').textContent=completed?'Séance terminée !':'Séance interrompue';
+ $('summaryWorkout').textContent=entry.name;
+ $('summaryDuration').textContent=pretty(entry.elapsed);
+ $('summaryDetail').textContent=entry.kind==='golden'?'∞':
+   entry.kind==='random'?String(entry.signals):String(completedEfforts)+' / '+entry.workout.cycles;
+ $('summaryDetailLabel').textContent=entry.kind==='randori'?'Combats':
+   entry.kind==='random'?'Bips émis':entry.kind==='golden'?'Temps libre':'Cycles';
+ $('sessionSummary').classList.add('active');$('sessionSummary').setAttribute('aria-hidden','false');
+ $('summaryReplay').focus();
+}
+function closeStopConfirmation(resume){
+ $('stopConfirm').classList.remove('active');$('stopConfirm').setAttribute('aria-hidden','true');
+ modalBusy=false;
+ if(resume&&session&&confirmWasPaused===false&&session.paused){
+   session.base=performance.now();session.paused=false;nativeAudio?.reset();requestWakeLock();updateTimer();
+ }else if(session){updateTimer();}
+ if(resume)$('stopBtn').focus();
+}
+
 $('workoutSearch').addEventListener('input',()=>{workoutSearch=$('workoutSearch').value;closeWorkoutMenus();renderWorkouts()});
 $('reorderFavorites').addEventListener('click',()=>{
   reorderFavorites=!reorderFavorites;
@@ -638,7 +682,34 @@ $('launchConfigured').addEventListener('click',()=>{
   closeEditor();
   startWorkout(w);
 });
-$('amrapMinus').addEventListener('click',()=>{if(session&&session.workout.kind==='amrap'){session.rounds=Math.max(0,session.rounds-1);$('amrapCount').textContent=String(session.rounds)}});$('amrapPlus').addEventListener('click',()=>{if(session&&session.workout.kind==='amrap'){session.rounds++;$('amrapCount').textContent=String(session.rounds)}});$('pauseBtn').addEventListener('click',pauseResume);$('stopBtn').addEventListener('click',()=>{if(!session||session.finished||modalBusy||!gate.allow('stop-dialog',650))return;modalBusy=true;try{if(confirm(session.workout.kind==='golden'?'Terminer le Golden Score et enregistrer le temps écoulé ?':'Arrêter la séance ? Elle sera enregistrée comme interrompue.'))finish(session.workout.kind==='golden')}finally{modalBusy=false}});$('clearHistory').addEventListener('click',()=>{if(history.length&&confirm('Effacer tout l’historique ?')){history=[];safeWrite('jsb_preview_history',history);renderHistory();notice('Historique effacé');}});
+$('amrapMinus').addEventListener('click',()=>{if(session&&session.workout.kind==='amrap'){session.rounds=Math.max(0,session.rounds-1);$('amrapCount').textContent=String(session.rounds)}});$('amrapPlus').addEventListener('click',()=>{if(session&&session.workout.kind==='amrap'){session.rounds++;$('amrapCount').textContent=String(session.rounds)}});$('pauseBtn').addEventListener('click',pauseResume);$('stopBtn').addEventListener('click',()=>{
+ if(!session||session.finished||modalBusy||!gate.allow('stop-dialog',650))return;
+ confirmWasPaused=session.paused;
+ if(!session.paused){
+   session.elapsed=currentMs();session.paused=true;nativeAudio?.release();releaseWakeLock();
+ }
+ updateTimer();modalBusy=true;
+ $('stopConfirmText').textContent=session.workout.kind==='golden'?
+   'Le Golden Score sera terminé et le temps écoulé enregistré.':
+   'La séance sera enregistrée comme interrompue.';
+ $('stopConfirm').classList.add('active');$('stopConfirm').setAttribute('aria-hidden','false');
+ $('continueWorkout').focus();
+});
+$('continueWorkout').addEventListener('click',()=>closeStopConfirmation(true));
+$('confirmStop').addEventListener('click',()=>{if(!session)return;
+ const completed=session.workout.kind==='golden';
+ closeStopConfirmation(false);finish(completed);
+});
+$('summaryHome').addEventListener('click',()=>{
+ $('sessionSummary').classList.remove('active');$('sessionSummary').setAttribute('aria-hidden','true');
+ navigate('sessions');$('quickStart').focus();
+});
+$('summaryReplay').addEventListener('click',()=>{
+ const w=replayWorkout;if(!w)return;
+ $('sessionSummary').classList.remove('active');$('sessionSummary').setAttribute('aria-hidden','true');
+ navigate('sessions');startWorkout(w);
+});
+$('clearHistory').addEventListener('click',()=>{if(history.length&&confirm('Effacer tout l’historique ?')){history=[];safeWrite('jsb_preview_history',history);renderHistory();notice('Historique effacé');}});
 const volumeRange=$('volumeRange'),volumeValue=$('volumeValue'),testBeep=$('testBeep'),testFinishSound=$('testFinishSound');
 $('countdownEnabled').checked=settings.countdown!==false;
 $('countdownEnabled').addEventListener('change',()=>{settings.countdown=$('countdownEnabled').checked;safeWrite('jsb_preview_settings',settings);});
