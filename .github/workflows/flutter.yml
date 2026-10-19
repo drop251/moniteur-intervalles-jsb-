@@ -27,6 +27,12 @@ jobs:
         run: flutter analyze
       - name: Run tests
         run: flutter test
+      - name: Install Node for offline interface checks
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test native audio bridge and web UI scripts
+        run: node --test test_js/*.test.cjs
 
   android-native:
     runs-on: ubuntu-latest
