@@ -15,6 +15,8 @@
   function wavBase64(sound, event) {
     const key = sound + '|' + event;
     if(cache.has(key)) return cache.get(key);
+    const originalSample=api.sampleWavBase64?.(sound,event);
+    if(originalSample){cache.set(key,originalSample);return originalSample;}
     const data = api.pcmWav(api.notesFor(sound, event), 100);
     const chunks = [];
     for(let i=0;i<data.length;i+=8192) {
