@@ -7,12 +7,17 @@
 
   // Audio original JSB v2, inspired by standard sports timer alert patterns.
   // These tones are not recordings or copies of sounds from other apps.
+  // Distinct high-energy WAV samples, provided by jsb_audio_samples.js.
+  // Each sample is available offline and decoded only when played.
   const SOUNDS = Object.freeze([
-    {id:'bellSport', label:'Cloche sportive', description:'Cloche claire pour les combats'},
-    {id:'pulse', label:'Pulse net', description:'Un top électronique court et franc'},
-    {id:'digitalDuo', label:'Double digital', description:'Deux tons nets, faciles à distinguer'},
-    {id:'wood', label:'Clac sec', description:'Percussion brève pour la réactivité'},
-    {id:'soft', label:'Bip doux', description:'Alerte légère pour les récupérations'}
+    {id:'buzzerPro',label:'Buzzer de combat',description:'Fort et direct · idéal Randori'},
+    {id:'bellSport',label:'Cloche de ring',description:'Métallique · début et fin de combat'},
+    {id:'whistlePro',label:'Sifflet d’arbitre',description:'Aigu et perçant · départ'},
+    {id:'hornPro',label:'Corne sportive',description:'Grave et puissante · rounds'},
+    {id:'digitalDuo',label:'Double bip',description:'Deux tops nets · fractionné'},
+    {id:'wood',label:'Claquement sec',description:'Percussion rapide · réactivité'},
+    {id:'pulse',label:'Bip sportif',description:'Signal franc · intervalles'},
+    {id:'soft',label:'Signal de repos',description:'Moins agressif · récupération'}
   ]);
   const FINISH_SOUNDS = Object.freeze([
     {id:'finishBell', label:'Cloche finale', description:'Cloche claire à décroissance progressive'},
@@ -23,11 +28,11 @@
   const FINISH_IDS = new Set(FINISH_SOUNDS.map(s=>s.id));
   const EVENTS = Object.freeze(['prep','effort','rest','random','countdown','finish']);
   const DEFAULTS = Object.freeze({
-    effort:'bellSport', rest:'soft', random:'pulse', finish:'finishChime'
+    effort:'buzzerPro', rest:'soft', random:'digitalDuo', finish:'finishBell'
   });
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   // Reject legacy selections instead of quietly bringing their old sounds back.
-  const normalize=value=>IDS.has(value)?value:'bellSport';
+  const normalize=value=>IDS.has(value)?value:'buzzerPro';
   const normalizeFinish=value=>FINISH_IDS.has(value)?value:'finishChime';
   const normalizeVolume=value=>Number.isFinite(Number(value))?clamp(Number(value),0,100):90;
 
@@ -50,6 +55,13 @@
       time,duration,freq:freq*pitch,endFreq:endFreq*pitch,wave,amplitude,shape
     });
     switch(id){
+      case 'buzzerPro':
+        return [n(0,.78,640,'triangle',640,.88),n(0,.78,960,'sine',960,.30)];
+      case 'whistlePro':
+        return [n(0,.68,1710,'sine',1860,.90),n(0,.68,3420,'sine',3720,.12)];
+      case 'hornPro':
+        return [n(0,1.0,420,'triangle',415,.75),n(0,1.0,840,'sine',830,.35),
+          n(0,1.0,1260,'sine',1250,.18)];
       case 'bellSport':
         return [
           n(0,.75,695,'sine',690,.75,'resonant'),
@@ -150,6 +162,16 @@
     return bytes;
   }
 
+  function sampleWavBase64(sound,event='effort'){
+    const id=event==='countdown'?'countdown':
+      event==='finish'?normalizeFinish(sound):normalize(sound);
+    return root.JSBRealSignals?.getWavBase64(id)||null;
+  }
+  function sampleBytesFor(sound,event='effort'){
+    const id=event==='countdown'?'countdown':
+      event==='finish'?normalizeFinish(sound):normalize(sound);
+    return root.JSBRealSignals?.getWavBytes(id)||null;
+  }
   function createEngine(deps={}){
     const host=deps.host||root;
     const audioSession=deps.audioSession===undefined?host.navigator?.audioSession:deps.audioSession;
@@ -160,7 +182,7 @@
     const revokeUrl=deps.revokeUrl||((url)=>host.URL.revokeObjectURL(url));
     const BlobCtor=deps.BlobCtor||host.Blob;
     let context=null,media=null,mode='web',status='inactive';
-    const cached=new Map(),listeners=new Set();
+    const cached=new Map(),buffers=new Map(),listeners=new Set();
 
     function emit(value){
       status=value;
@@ -234,11 +256,46 @@
       }
       return url;
     }
+    function sampleUrl(sound,event,volume){
+      const bytes=sampleBytesFor(sound,event);
+      if(!bytes)return urlFor(notesFor(sound,event),volume);
+      const key='sample:'+sound+'|'+event;
+      if(cached.has(key))return cached.get(key);
+      const url=createUrl(new BlobCtor([bytes],{type:'audio/wav'}));
+      cached.set(key,url);
+      return url;
+    }
+    function playSampleBuffer(ctx,sound,event,volume){
+      if(typeof ctx.createBuffer!=='function'||typeof ctx.createBufferSource!=='function')
+        return false;
+      const bytes=sampleBytesFor(sound,event);
+      if(!bytes||bytes.length<=44)return false;
+      const key=event==='countdown'?'countdown':event==='finish'?normalizeFinish(sound):normalize(sound);
+      let buffer=buffers.get(key);
+      if(!buffer){
+        const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+        const hz=view.getUint32(24,true),count=view.getUint32(40,true)/2;
+        if(hz!==22050||count<1||count>22050*4)return false;
+        buffer=ctx.createBuffer(1,count,hz);
+        const channel=buffer.getChannelData(0);
+        for(let i=0;i<count;i++)channel[i]=view.getInt16(44+i*2,true)/32768;
+        buffers.set(key,buffer);
+      }
+      const src=ctx.createBufferSource(),gain=ctx.createGain();
+      src.buffer=buffer;
+      gain.gain.setValueAtTime(Math.pow(normalizeVolume(volume)/100,.91),ctx.currentTime);
+      src.connect(gain);gain.connect(ctx.destination);
+      src.start(ctx.currentTime+.004);
+      src.onended=()=>{try{src.disconnect();gain.disconnect()}catch{}};
+      emit('ready');
+      return true;
+    }
     function mediaPlay(sound,event,volume){
       try{
         const audio=initializeMedia();
         audio.pause();
-        audio.src=urlFor(notesFor(sound,event),volume);
+        audio.src=sampleUrl(sound,event,volume);
+        audio.volume=normalizeVolume(volume)/100;
         audio.currentTime=0;
         // play() est appelé directement depuis le geste dans le cas d'un test.
         const pending=audio.play();
@@ -254,8 +311,9 @@
       if(!ctx||ctx.state!=='running'){emit('blocked');return false;}
       if(normalizeVolume(volume)===0)return false;
       try{
+        if(playSampleBuffer(ctx,sound,event,volume))return true;
         const now=ctx.currentTime+.007;
-        // Keep the browser fallback close to the louder native WAV mix.
+        // Oscillator fallback for older browsers, or absent WAV bundle.
         const peak=.52*Math.pow(normalizeVolume(volume)/100,.82);
         for(const n of notesFor(sound,event)){
           const oscillator=ctx.createOscillator(),gain=ctx.createGain();
@@ -297,13 +355,13 @@
     function destroy(){
       if(media)try{media.pause();media.src='';}catch{}
       for(const url of cached.values())try{revokeUrl(url)}catch{}
-      cached.clear();
+      cached.clear();buffers.clear();
       if(context&&typeof context.close==='function')context.close().catch(()=>{});
       context=null;media=null;emit('inactive');
     }
     return {setMode,play,activateAndPlay,resume,onStatus,getState,getMixingStatus,destroy};
   }
-  const api={SOUNDS,FINISH_SOUNDS,DEFAULTS,EVENTS,notesFor,pcmWav,normalize,normalizeFinish,normalizeVolume,createEngine};
+  const api={SOUNDS,FINISH_SOUNDS,DEFAULTS,EVENTS,notesFor,pcmWav,normalize,normalizeFinish,normalizeVolume,sampleWavBase64,createEngine};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
   root.JSBSoundEngine=api;
 })(typeof window!=='undefined'?window:globalThis);
