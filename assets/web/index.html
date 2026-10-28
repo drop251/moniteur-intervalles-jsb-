@@ -242,7 +242,11 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
       </div>
     </details>
   </div>
-  <details class="library-panel" id="libraryDetails">
+  
+</section>
+<section id="view-tests" class="view" aria-label="Tests physiques"><div class="top-intro"><div class="eyebrow">ÉVALUE TA PROGRESSION</div><h1>Tests physiques</h1><p class="lead">Chronométrage progressif et résultats enregistrés.</p></div><div class="panel"><span class="flag">Validation en cours</span><h2 style="margin:19px 0 9px">Test Luc Léger</h2><p class="muted" style="line-height:1.55">Le module est prévu pour un test navette de 20 mètres. La table officielle des paliers et des bips doit encore être validée avant utilisation réelle.</p><button class="secondary" style="margin-top:20px;width:100%" disabled>Disponible dans une prochaine version</button></div></section>
+<section id="view-history" class="view" aria-label="Historique"><div class="top-intro"><div class="eyebrow">SUIVI PERSONNEL</div><h1>Historique</h1><p class="lead">Tes dernières séances, enregistrées uniquement sur cet appareil.</p></div><div class="panel" id="historyList"></div>
+<details class="library-panel" id="libraryDetails">
     <summary>Mes séances personnalisées <span class="custom-count" id="customCount">0 séance</span></summary>
     <div class="library-content">
       <div class="section-head"><h2>Bibliothèque</h2><button id="newWorkout" type="button">+ Créer</button></div>
@@ -261,10 +265,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
       <div class="cards" id="presetList"></div>
       <p class="footnote">Tes anciennes séances restent disponibles et enregistrées sur cet appareil.</p>
     </div>
-  </details>
-</section>
-<section id="view-tests" class="view" aria-label="Tests physiques"><div class="top-intro"><div class="eyebrow">ÉVALUE TA PROGRESSION</div><h1>Tests physiques</h1><p class="lead">Chronométrage progressif et résultats enregistrés.</p></div><div class="panel"><span class="flag">Validation en cours</span><h2 style="margin:19px 0 9px">Test Luc Léger</h2><p class="muted" style="line-height:1.55">Le module est prévu pour un test navette de 20 mètres. La table officielle des paliers et des bips doit encore être validée avant utilisation réelle.</p><button class="secondary" style="margin-top:20px;width:100%" disabled>Disponible dans une prochaine version</button></div></section>
-<section id="view-history" class="view" aria-label="Historique"><div class="top-intro"><div class="eyebrow">SUIVI PERSONNEL</div><h1>Historique</h1><p class="lead">Tes dernières séances, enregistrées uniquement sur cet appareil.</p></div><div class="panel" id="historyList"></div><button class="secondary" id="clearHistory" style="width:100%">Effacer l'historique</button></section>
+  </details><button class="secondary" id="clearHistory" style="width:100%">Effacer l'historique</button></section>
 <section id="view-settings" class="view" aria-label="Réglages"><div class="top-intro"><div class="eyebrow">PERSONNALISER L'EXPÉRIENCE</div><h1>Réglages</h1><p class="lead">Adapte les retours sonores et haptiques à tes entraînements.</p></div><div class="panel"><div class="setting"><div><label for="audioEnabled">Bips sonores</label><small>Aux changements de phase</small></div><input class="toggle" id="audioEnabled" type="checkbox" checked></div><div class="volume-setting"><div class="field">
   <label for="soundChoice">Signal de début et d’effort</label>
   <select id="soundChoice" aria-describedby="soundStartHelp"></select>
