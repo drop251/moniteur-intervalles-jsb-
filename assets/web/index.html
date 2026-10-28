@@ -909,7 +909,32 @@ testRandomSound.addEventListener('click',()=>{if(!settings.audio||settings.volum
 testFinishSound.addEventListener('click',()=>{if(!settings.audio||settings.volume===0||!gate.allow('test-gong',1000))return;
  void soundEngine.activateAndPlay(settings.finishSound,'finish',settings.volume);});
 for(const [id,key] of [['audioEnabled','audio'],['vibrateEnabled','vibrate'],['keepAwake','keepAwake']]){const el=$(id);el.checked=Boolean(settings[key]);el.addEventListener('change',()=>{settings[key]=el.checked;safeWrite('jsb_preview_settings',settings);if(key==='keepAwake'&&!el.checked)releaseWakeLock();if(key==='audio'){renderVolume();if(el.checked)void soundEngine.activateAndPlay(settings.sound,'prep',settings.volume);}});}
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&session&&!session.paused){nativeAudio?.release();releaseWakeLock();}else if(!document.hidden&&session&&!session.paused){nativeAudio?.reset();requestWakeLock();updateTimer();}});renderWorkouts();renderHistory();})();
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&session&&!session.paused){nativeAudio?.release();releaseWakeLock();}else if(!document.hidden&&session&&!session.paused){nativeAudio?.reset();requestWakeLock();updateTimer();}});
+// Open only one category at a time; keep the last-used category between sessions.
+// Native <details>/<summary> also works with keyboard and VoiceOver/TalkBack.
+const groups=[...document.querySelectorAll('#coreModes > details[data-group]')];
+const storedOpenGroup=read('jsb_v2_open_group','randori');
+const openGroup=['randori','tabata','chrono'].includes(storedOpenGroup)?storedOpenGroup:'randori';
+for(const group of groups){
+ group.open=group.dataset.group===openGroup;
+ group.addEventListener('toggle',()=>{
+   if(!group.open)return;
+   for(const other of groups)if(other!==group)other.open=false;
+   if(group.dataset.group!=='luc')safeWrite('jsb_v2_open_group',group.dataset.group);
+ });
+}
+// Luc Léger cannot be started until its protocol and pacing signals are
+// verified. Even when explicitly revealed, the action remains disabled.
+const lucPreference=read('jsb_v2_show_luc_leger',false)===true;
+$('showLucLeger').checked=lucPreference;
+$('lucLegerCategory').hidden=!lucPreference;
+$('showLucLeger').addEventListener('change',()=>{
+ const enabled=$('showLucLeger').checked;
+ $('lucLegerCategory').hidden=!enabled;
+ if(!enabled)$('lucLegerCategory').open=false;
+ safeWrite('jsb_v2_show_luc_leger',enabled);
+});
+renderWorkouts();renderHistory();})();
 </script>
 
 </body>
