@@ -816,6 +816,7 @@ function startWorkout(w){
  $('amrapCounter').hidden=true;$('amrapCount').textContent='0';
  $('sessionSummary').classList.remove('active');$('sessionSummary').setAttribute('aria-hidden','true');
  $('timerTitle').textContent=w.name;$('timer').classList.add('active');$('timer').dataset.mode=w.kind;
+ $('adjustTimeBtn').hidden=true;
  $('app').inert=true;
  document.querySelector('.nav').style.visibility='hidden';
  requestWakeLock();updateTimer();frame=setInterval(updateTimer,75);
@@ -862,8 +863,65 @@ function updateTimer(){
  $('upNext').textContent=session.workout.kind==='random'?'Bips émis : '+session.signalsPlayed:next?'Ensuite : '+next.label:growing?'Arrêt manuel':'Dernière phase';
  $('pausedFlag').classList.toggle('on',session.paused);
  $('pauseBtn').textContent=session.paused?'▶  Reprendre':'❚❚  Pause';
+ $('adjustTimeBtn').hidden=!session.paused||!['randori','tabata','golden'].includes(session.workout.kind)||modalBusy;
 }
-function pauseResume(){if(!session||session.finished||modalBusy||!gate.allow('pause-toggle',400))return;if(session.paused){session.base=performance.now();session.paused=false;armAudio();nativeAudio?.reset();requestWakeLock()}else{session.elapsed=currentMs();session.paused=true;nativeAudio?.release();releaseWakeLock()}updateTimer()}
+function pauseResume(){
+ if(!session||session.finished||modalBusy||!gate.allow('pause-toggle',400))return;
+ if(session.paused){
+   session.base=performance.now();session.paused=false;armAudio();
+   nativeAudio?.reset();requestWakeLock();
+ }else{
+   session.elapsed=currentMs();session.paused=true;
+   nativeAudio?.release();releaseWakeLock();
+ }
+ updateTimer();
+}
+function pauseTimeInputs(prefix,seconds){
+ const clamped=Math.max(0,Math.floor(seconds));
+ $(prefix+'Min').value=String(Math.floor(clamped/60));
+ $(prefix+'Sec').value=String(clamped%60);
+}
+function readPauseTimeInputs(prefix){
+ const minutes=Number($(prefix+'Min').value);
+ const seconds=Number($(prefix+'Sec').value);
+ if(!Number.isSafeInteger(minutes)||!Number.isSafeInteger(seconds)||
+    minutes<0||seconds<0||seconds>=60)return NaN;
+ return minutes*60+seconds;
+}
+function openPauseTimeDialog(){
+ if(!session||!session.paused||session.finished||modalBusy||
+    !['randori','tabata','golden'].includes(session.workout.kind))return;
+ const t=session.elapsed;
+ const idx=window.JSBPauseAdjustments.locatePhase(session.seq,t);
+ const phase=session.seq[idx];
+ const countUp=session.workout.kind==='golden'&&phase.kind==='effort';
+ const current=countUp?Math.floor((t-phase.start)/1000):
+   Math.ceil(Math.max(0,(phase.start+phase.ms-t)/1000));
+ pauseTimeInputs('adjustCurrent',current);
+ pauseTimeInputs('adjustEffort',session.workout.work);
+ pauseTimeInputs('adjustRest',session.workout.rest);
+ $('adjustFutureFields').hidden=session.workout.kind==='golden';
+ $('adjustDisplayLabel').textContent=countUp?
+   'Temps écoulé actuel du Golden Score':
+   'Temps restant de la phase actuelle';
+ $('pauseTimeFeedback').hidden=true;$('pauseTimeFeedback').textContent='';
+ modalBusy=true;
+ $('timer').inert=true;
+ $('pauseTimeDialog').classList.add('active');
+ $('pauseTimeDialog').setAttribute('aria-hidden','false');
+ $('adjustCurrentMin').focus();
+}
+function closePauseTimeDialog(){
+ $('pauseTimeDialog').classList.remove('active');
+ $('pauseTimeDialog').setAttribute('aria-hidden','true');
+ $('timer').inert=false;
+ modalBusy=false;
+ if(session&&!session.finished){
+   updateTimer();
+   $('adjustTimeBtn').focus();
+ }
+}
+
 function finish(completed){
  if(!session||session.finished)return;
  session.finished=true;modalBusy=false;clearInterval(frame);frame=null;releaseWakeLock();
@@ -885,6 +943,7 @@ function finish(completed){
  $('timer').inert=false;
  document.querySelector('.nav').style.visibility='visible';
  session=null;
+ $('adjustTimeBtn').hidden=true;
  $('summaryTitle').textContent=completed?'Séance terminée !':'Séance interrompue';
  $('summaryWorkout').textContent=entry.name;
  $('summaryDuration').textContent=pretty(entry.elapsed);
@@ -921,6 +980,7 @@ $('workoutFilter').addEventListener('change',()=>{activeWorkoutFilter=$('workout
 $('favoritesOnly').addEventListener('change',()=>{favoritesOnly=$('favoritesOnly').checked;closeWorkoutMenus();renderWorkouts()});
 document.addEventListener('click',e=>{if(!e.target.closest('.workout-row'))closeWorkoutMenus()});
 document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;
+ if($('pauseTimeDialog').classList.contains('active')){e.preventDefault();closePauseTimeDialog();return;}
  if($('stopConfirm').classList.contains('active')){e.preventDefault();closeStopConfirmation(true);return;}
  if($('sessionSummary').classList.contains('active')){e.preventDefault();$('summaryHome').click();return;}
  if($('editorModal').classList.contains('active')){e.preventDefault();closeEditor();return;}
@@ -953,7 +1013,38 @@ $('launchConfigured').addEventListener('click',()=>{
   closeEditor();
   startWorkout(w);
 });
-$('amrapMinus').addEventListener('click',()=>{if(session&&session.workout.kind==='amrap'){session.rounds=Math.max(0,session.rounds-1);$('amrapCount').textContent=String(session.rounds)}});$('amrapPlus').addEventListener('click',()=>{if(session&&session.workout.kind==='amrap'){session.rounds++;$('amrapCount').textContent=String(session.rounds)}});$('pauseBtn').addEventListener('click',pauseResume);$('stopBtn').addEventListener('click',()=>{
+$('amrapMinus').addEventListener('click',()=>{if(session&&session.workout.kind==='amrap'){session.rounds=Math.max(0,session.rounds-1);$('amrapCount').textContent=String(session.rounds)}});$('amrapPlus').addEventListener('click',()=>{if(session&&session.workout.kind==='amrap'){session.rounds++;$('amrapCount').textContent=String(session.rounds)}});$('adjustTimeBtn').addEventListener('click',openPauseTimeDialog);
+$('cancelPauseTime').addEventListener('click',closePauseTimeDialog);
+$('pauseTimeForm').addEventListener('submit',event=>{
+ event.preventDefault();
+ if(!session||!session.paused)return;
+ const changes={
+   displaySeconds:readPauseTimeInputs('adjustCurrent'),
+   effortSeconds:readPauseTimeInputs('adjustEffort'),
+   restSeconds:readPauseTimeInputs('adjustRest')
+ };
+ try{
+   window.JSBPauseAdjustments.applyPausedEdit(session,changes,{countdown:settings.countdown});
+   // No sound is triggered for changes made while paused.
+   closePauseTimeDialog();
+   notice('Temps modifiés · séance toujours en pause');
+ }catch(error){
+   $('pauseTimeFeedback').textContent=error?.message||'Vérifie les durées indiquées.';
+   $('pauseTimeFeedback').hidden=false;
+ }
+});
+for(const button of document.querySelectorAll('[data-time-delta]')){
+ button.addEventListener('click',()=>{
+   const current=readPauseTimeInputs('adjustCurrent');
+   if(!Number.isFinite(current))return;
+   const countUp=session?.workout.kind==='golden'&&
+     window.JSBPauseAdjustments.locatePhase(session.seq,session.elapsed)>0;
+   const lower=countUp?0:1,upper=countUp?21600:3600;
+   const next=Math.max(lower,Math.min(upper,current+Number(button.dataset.timeDelta)));
+   pauseTimeInputs('adjustCurrent',next);
+ });
+}
+$('pauseBtn').addEventListener('click',pauseResume);$('stopBtn').addEventListener('click',()=>{
  if(!session||session.finished||modalBusy||!gate.allow('stop-dialog',650))return;
  confirmWasPaused=session.paused;
  if(!session.paused){
