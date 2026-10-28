@@ -203,7 +203,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
 <section id="view-sessions" class="view active" aria-label="Minuteurs">
   <div class="home-heading"><div class="eyebrow">JUDO · TAÏSO · PRÉPARATION PHYSIQUE</div>
     <h1>Prêt à t’entraîner ?</h1>
-    <p class="lead">Choisis ton minuteur et lance ta séance. Chaque seconde compte.</p></div>
+    <p class="lead">Ouvre une rubrique, choisis ton minuteur et démarre.</p></div>
   <div class="section-head home-section-head"><h2>Mes minuteurs</h2><small>3 rubriques</small></div>
   <div class="mode-accordion-group" id="coreModes" aria-label="Choisir un minuteur">
     <details class="mode-accordion" data-group="randori" open>
@@ -346,7 +346,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
-const standard=[{id:'randori',name:'Randori · 5 × 4 min',prep:10,work:240,rest:60,cycles:5,kind:'randori',symbol:'🥋'},{id:'golden',name:'Golden Score · Libre',prep:10,work:0,rest:0,cycles:1,kind:'golden',symbol:'∞'},{id:'random',name:'Bips aléatoires · Burpees',prep:10,work:180,rest:0,cycles:1,kind:'random',symbol:'♫',frequency:'medium',progressive:true},{id:'tabata',name:'Tabata classique',prep:10,work:20,rest:10,cycles:8,kind:'tabata',symbol:'◉'},{id:'hiit',name:'HIIT 40 / 20',prep:10,work:40,rest:20,cycles:10,kind:'hiit',symbol:'↗'},{id:'boxe',name:'Boxe · 3 rounds',prep:10,work:180,rest:60,cycles:3,kind:'boxe',symbol:'✦'}];
+const standard=[{id:'randori',name:'Randori · 5 × 4 min',prep:10,work:240,rest:60,cycles:5,kind:'randori',symbol:'🥋'},{id:'golden',name:'Golden Score · Libre',prep:10,work:0,rest:0,cycles:1,kind:'golden',symbol:'∞'},{id:'chrono',name:'Chronomètre libre',prep:0,work:0,rest:0,cycles:1,kind:'chrono',symbol:'◷'},{id:'random',name:'Bips aléatoires · Burpees',prep:10,work:180,rest:0,cycles:1,kind:'random',symbol:'♫',frequency:'medium',progressive:true},{id:'tabata',name:'Tabata classique',prep:10,work:20,rest:10,cycles:8,kind:'tabata',symbol:'◉'},{id:'hiit',name:'HIIT 40 / 20',prep:10,work:40,rest:20,cycles:10,kind:'hiit',symbol:'↗'},{id:'boxe',name:'Boxe · 3 rounds',prep:10,work:180,rest:60,cycles:3,kind:'boxe',symbol:'✦'}];
 const read=(key,fallback)=>{try{const parsed=JSON.parse(localStorage.getItem(key));return parsed===null?fallback:parsed}catch{return fallback}};
 let customs=read('jsb_preview_customs',[]);if(!Array.isArray(customs))customs=[];let history=read('jsb_preview_history',[]);if(!Array.isArray(history))history=[];
 const storedSettings=read('jsb_preview_settings',{});let settings={audio:true,vibrate:true,keepAwake:false,volume:90,sound:'bellSport',restSound:'soft',randomSound:'pulse',audioMethod:'web',finishSound:'finishChime',countdown:true,...storedSettings};
@@ -360,7 +360,7 @@ let modeSettings=read('jsb_v2_mode_settings',{});
 if(!modeSettings||typeof modeSettings!=='object'||Array.isArray(modeSettings))modeSettings={};
 if(!recentWorkout||!trainingModeIsValid(recentWorkout))recentWorkout=null;
 let replayWorkout=null,confirmWasPaused=false,editorOrigin=null;
-function trainingModeIsValid(w){return w&&typeof w==='object'&&['randori','golden','random','tabata','hiit','boxe'].includes(w.kind)&&typeof w.name==='string'&&Number.isSafeInteger(w.prep)&&Number.isSafeInteger(w.work)&&Number.isSafeInteger(w.rest)&&Number.isSafeInteger(w.cycles)&&w.prep>=0&&w.work>=0&&w.rest>=0&&w.cycles>=1;}
+function trainingModeIsValid(w){return w&&typeof w==='object'&&['randori','golden','chrono','random','tabata','hiit','boxe'].includes(w.kind)&&typeof w.name==='string'&&Number.isSafeInteger(w.prep)&&Number.isSafeInteger(w.work)&&Number.isSafeInteger(w.rest)&&Number.isSafeInteger(w.cycles)&&w.prep>=0&&w.work>=0&&w.rest>=0&&w.cycles>=1;}
 
 const soundEngine=window.JSBSoundEngine.createEngine();
 const nativeAudio=window.JSBNativeAudio||null;
@@ -394,37 +394,63 @@ function primaryWorkout(base){
  if(!trainingModeIsValid(stored)||stored.kind!==base.kind)return base;
  return {...base,...stored,id:base.id,kind:base.kind};
 }
-function updateQuickStart(){
- const w=recentWorkout&&trainingModeIsValid(recentWorkout)?recentWorkout:primaryWorkout(standard[0]);
- $('quickTitle').textContent=w.name;
- $('quickSubtitle').textContent=Number.isFinite(secs(w))?pretty(secs(w))+' · Derniers paramètres':'Chronomètre libre';
- $('quickStart').setAttribute('aria-label','Démarrer '+w.name);
+function modeOptionMeta(key,w) {
+ if(key==='randori')return {
+   title:'Randori classique',
+   description:w.cycles+' combats · '+pretty(w.work)+' / '+pretty(w.rest)+' de repos',
+ };
+ if(key==='golden')return {
+   title:'Golden Score',description:'Temps croissant · arrêt manuel',
+ };
+ if(key==='tabata')return {
+   title:'Tabata',
+   description:w.cycles+' cycles · '+w.work+' s effort / '+w.rest+' s repos',
+ };
+ if(key==='chrono')return {
+   title:'Chronomètre libre',description:'Temps croissant · démarrage immédiat',
+ };
+ return {
+   title:'Bips aléatoires',description:'Réactivité · signaux imprévisibles',
+ };
+}
+function buildModeOption(key) {
+ const base=standard.find(w=>w.id===key);
+ if(!base)return null;
+ const w=primaryWorkout(base),info=modeOptionMeta(key,w);
+ const row=document.createElement('div');row.className='mode-option';row.dataset.kind=key;
+ const configure=document.createElement('button');
+ configure.type='button';configure.className='mode-option-configure';
+ configure.setAttribute('aria-label','Configurer '+info.title);
+ const labels=document.createElement('span');labels.className='mode-option-info';
+ const heading=document.createElement('strong');heading.textContent=info.title;
+ const description=document.createElement('small');description.textContent=info.description;
+ const duration=document.createElement('span');duration.className='mode-option-duration';
+ duration.textContent=Number.isFinite(secs(w))?pretty(secs(w))+' au total':'Temps libre';
+ labels.append(heading,description,duration);
+ const arrow=document.createElement('span');arrow.className='mode-option-edit';
+ arrow.textContent='Régler';arrow.setAttribute('aria-hidden','true');
+ configure.append(labels,arrow);
+ configure.addEventListener('click',()=>openEditor(w));
+ const play=document.createElement('button');
+ play.type='button';play.className='mode-option-play';
+ play.textContent='▶';play.setAttribute('aria-label','Démarrer '+info.title);
+ play.addEventListener('click',()=>startWorkout(w));
+ row.append(configure,play);
+ return row;
 }
 function renderWorkouts(){
- const core=$('coreModes');core.replaceChildren();
- for(const key of ['randori','golden','random','tabata']){
-   const base=standard.find(w=>w.id===key);
-   if(!base)continue;
-   const w=primaryWorkout(base);
-   const tile=document.createElement('div');tile.className='mode-tile';tile.dataset.kind=key;
-   const open=document.createElement('button');open.type='button';open.className='mode-open';
-   open.setAttribute('aria-label','Configurer '+base.name);
-   const glyph=document.createElement('span');glyph.className='glyph';glyph.setAttribute('aria-hidden','true');
-   glyph.textContent=base.symbol||'◷';
-   const info=document.createElement('span');info.className='mode-info';
-   const heading=document.createElement('strong');heading.textContent=key==='random'?'Bip aléatoire':key==='golden'?'Golden Score':key==='randori'?'Randori':'Tabata';
-   const description=document.createElement('small');
-   description.textContent=key==='randori'?w.cycles+' combats · '+pretty(w.work)+' / '+pretty(w.rest)+' de repos':key==='golden'?'Chronomètre croissant · temps libre':key==='random'?'Signaux surprises · réflexes':'Fractionné · '+w.work+' s / '+w.rest+' s';
-   const duration=document.createElement('span');duration.className='mode-duration';
-   duration.textContent=Number.isFinite(secs(w))?pretty(secs(w))+' au total':'SANS LIMITE';
-   info.append(heading,description,duration);open.append(glyph,info);
-   open.addEventListener('click',()=>openEditor(w));
-   const play=document.createElement('button');play.type='button';play.className='mode-play';play.textContent='▶';
-   play.setAttribute('aria-label','Démarrer '+heading.textContent+' immédiatement');
-   play.addEventListener('click',()=>startWorkout(w));
-   tile.append(open,play);core.append(tile);
+ for(const [containerId,keys] of [
+   ['modeOptionsRandori',['randori','golden']],
+   ['modeOptionsTabata',['tabata']],
+   ['modeOptionsChrono',['chrono','random']],
+ ]) {
+   const group=$(containerId);
+   group.replaceChildren();
+   for(const key of keys){
+     const row=buildModeOption(key);
+     if(row)group.append(row);
+   }
  }
- updateQuickStart();
  // Backward compatibility: custom HIIT/boxe presets remain in the library.
  const el=$('presetList');el.replaceChildren();
  const all=[...standard,...customs.filter(w=>trainingModes.isAvailable(w.kind))];
@@ -520,7 +546,7 @@ function openEditor(workout=null){
  closeWorkoutMenus();$('editorForm').reset();editingWorkoutId=workout?workout.id:null;
  if(!workout){const defaults=trainingModes.DEFAULTS[$('workoutMode').value];$('preparation').value=String(defaults.prep);$('effort').value=String(defaults.work);$('repos').value=String(defaults.rest);$('cycles').value=String(defaults.cycles);}
  $('editorTitle').textContent=workout?'Configurer '+workout.name:'Nouvelle séance';
- $('workoutMode').disabled=Boolean(workout&&['randori','golden','random','tabata'].includes(workout.id));
+ $('workoutMode').disabled=Boolean(workout&&['randori','golden','chrono','random','tabata'].includes(workout.id));
  if(workout){
    if(!trainingModes.isAvailable(workout.kind)){notice('Mode en cours d’analyse');return;}
    $('workoutMode').value=workout.kind||'hiit';
@@ -652,10 +678,9 @@ function startWorkout(w){
  if(session||!trainingModes.isAvailable(w.kind)||!gate.allow('start-workout',600))return;
  clearInterval(frame);frame=null;
  recentWorkout={...w};safeWrite('jsb_v2_recent_workout',recentWorkout);
- if(['randori','golden','random','tabata'].includes(w.id)){
+ if(['randori','golden','chrono','random','tabata'].includes(w.id)){
    modeSettings[w.id]={...w};safeWrite('jsb_v2_mode_settings',modeSettings);
  }
- updateQuickStart();
  // L'activation doit commencer dans le geste direct de démarrage sur iOS.
  if(settings.audio&&settings.volume>0)void soundEngine.activateAndPlay(settings.sound,(w.prep>0?'prep':'effort'),settings.volume);
  const seq=phases(w);let acc=0;
@@ -785,7 +810,7 @@ document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;
  if($('sessionSummary').classList.contains('active')){e.preventDefault();$('summaryHome').click();return;}
  if($('editorModal').classList.contains('active')){e.preventDefault();closeEditor();return;}
  closeWorkoutMenus();});
-for(const n of document.querySelectorAll('[data-nav]'))n.addEventListener('click',()=>navigate(n.dataset.nav));$('settingsQuick').addEventListener('click',()=>navigate('settings'));$('quickStart').addEventListener('click',()=>startWorkout(recentWorkout&&trainingModeIsValid(recentWorkout)?recentWorkout:primaryWorkout(standard[0])));$('newWorkout').addEventListener('click',()=>openEditor());$('closeEditor').addEventListener('click',closeEditor);$('cancelEditor').addEventListener('click',closeEditor);$('editorModal').addEventListener('click',e=>{if(e.target===$('editorModal'))closeEditor()});for(const id of ['preparation','effort','repos']){
+for(const n of document.querySelectorAll('[data-nav]'))n.addEventListener('click',()=>navigate(n.dataset.nav));$('settingsQuick').addEventListener('click',()=>navigate('settings'));$('newWorkout').addEventListener('click',()=>openEditor());$('closeEditor').addEventListener('click',closeEditor);$('cancelEditor').addEventListener('click',closeEditor);$('editorModal').addEventListener('click',e=>{if(e.target===$('editorModal'))closeEditor()});for(const id of ['preparation','effort','repos']){
   for(const suffix of ['Minutes','Seconds']){
     $(id+suffix).addEventListener('change',()=>updateDurationOptions(id));
   }
@@ -831,7 +856,7 @@ $('confirmStop').addEventListener('click',()=>{if(!session)return;
 });
 $('summaryHome').addEventListener('click',()=>{
  $('sessionSummary').classList.remove('active');$('sessionSummary').setAttribute('aria-hidden','true');
- $('app').inert=false;navigate('sessions');$('quickStart').focus();
+ $('app').inert=false;navigate('sessions');document.querySelector('[data-group="randori"] summary')?.focus();
 });
 $('summaryReplay').addEventListener('click',()=>{
  const w=replayWorkout;if(!w)return;
