@@ -210,12 +210,12 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
     <p>Combats chronométrés et Golden Score.</p></div>
   </div>
   <section class="recent-timer" id="lastUsedRandori" aria-label="Dernier minuteur utilisé" hidden></section>
-  <div class="mode-page-body" id="modeOptionsRandori" aria-label="Minuteurs Randori et Golden Score"></div><section class="saved-workouts" aria-labelledby="savedHeadingRandori">
- <div class="saved-workouts-heading"><h2 id="savedHeadingRandori">Mes minuteurs préparés</h2><div class="saved-workouts-actions"><button type="button" data-new-kind="randori" aria-label="Créer un minuteur Randori à enregistrer">+ Randori</button><button type="button" data-new-kind="golden" aria-label="Créer un minuteur Golden Score à enregistrer">+ Golden Score</button></div></div>
+  <div class="mode-page-body" id="modeOptionsRandori" aria-label="Minuteurs Randori et Golden Score"></div><details class="saved-workouts" id="preparedRandori" aria-label="Mes séances enregistrées">
+ <summary>Mes séances enregistrées <span class="saved-workouts-count" id="savedCountRandori">0</span></summary><div class="saved-workouts-heading"><div class="saved-workouts-actions"><button type="button" data-new-kind="randori" aria-label="Créer un minuteur Randori à enregistrer">+ Randori</button><button type="button" data-new-kind="golden" aria-label="Créer un minuteur Golden Score à enregistrer">+ Golden Score</button></div></div>
  <div class="saved-workouts-list" id="savedRandori" aria-label="Minuteurs personnels enregistrés"></div>
  <p class="saved-workouts-empty" id="savedEmptyRandori">Prépare tes séances en avance et démarre-les en un appui.</p>
-</section>
-  <p class="mode-page-tip">Choisis <strong>Régler</strong> puis <strong>Enregistrer</strong> pour garder tes temps. <strong>▶</strong> lance les valeurs affichées.</p>
+</details>
+  <p class="mode-page-tip">Ajuste tes réglages une fois, puis démarre en un appui.</p>
 </section>
 <section id="view-tabata" class="view mode-screen" aria-label="Tabata">
   <div class="mode-page-intro">
@@ -224,11 +224,11 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
     <p>Effort, récupération et cycles.</p></div>
   </div>
   <section class="recent-timer" id="lastUsedTabata" aria-label="Dernier minuteur utilisé" hidden></section>
-  <div class="mode-page-body" id="modeOptionsTabata" aria-label="Minuteur Tabata"></div><section class="saved-workouts" aria-labelledby="savedHeadingTabata">
- <div class="saved-workouts-heading"><h2 id="savedHeadingTabata">Mes minuteurs préparés</h2><div class="saved-workouts-actions"><button type="button" data-new-kind="tabata" aria-label="Créer un minuteur Tabata à enregistrer">+ Tabata</button></div></div>
+  <div class="mode-page-body" id="modeOptionsTabata" aria-label="Minuteur Tabata"></div><details class="saved-workouts" id="preparedTabata" aria-label="Mes séances enregistrées">
+ <summary>Mes séances enregistrées <span class="saved-workouts-count" id="savedCountTabata">0</span></summary><div class="saved-workouts-heading"><div class="saved-workouts-actions"><button type="button" data-new-kind="tabata" aria-label="Créer un minuteur Tabata à enregistrer">+ Tabata</button></div></div>
  <div class="saved-workouts-list" id="savedTabata" aria-label="Minuteurs personnels enregistrés"></div>
  <p class="saved-workouts-empty" id="savedEmptyTabata">Enregistre plusieurs programmes avec tes durées et répétitions.</p>
-</section>
+</details>
   <p class="mode-page-tip">Les temps d'effort et de repos peuvent aussi être corrigés <strong>pendant la pause</strong>.</p>
 </section>
 <section id="view-chrono" class="view mode-screen" aria-label="Chronomètre">
@@ -238,11 +238,11 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
     <p>Temps libre ou bips imprévisibles.</p></div>
   </div>
   <section class="recent-timer" id="lastUsedChrono" aria-label="Dernier minuteur utilisé" hidden></section>
-  <div class="mode-page-body" id="modeOptionsChrono" aria-label="Chronomètre libre et bips aléatoires"></div><section class="saved-workouts" aria-labelledby="savedHeadingChrono">
- <div class="saved-workouts-heading"><h2 id="savedHeadingChrono">Mes minuteurs préparés</h2><div class="saved-workouts-actions"><button type="button" data-new-kind="chrono" aria-label="Créer un minuteur Chrono à enregistrer">+ Chrono</button><button type="button" data-new-kind="random" aria-label="Créer un minuteur Bips aléatoires à enregistrer">+ Bips aléatoires</button></div></div>
+  <div class="mode-page-body" id="modeOptionsChrono" aria-label="Chronomètre libre et bips aléatoires"></div><details class="saved-workouts" id="preparedChrono" aria-label="Mes séances enregistrées">
+ <summary>Mes séances enregistrées <span class="saved-workouts-count" id="savedCountChrono">0</span></summary><div class="saved-workouts-heading"><div class="saved-workouts-actions"><button type="button" data-new-kind="chrono" aria-label="Créer un minuteur Chrono à enregistrer">+ Chrono</button><button type="button" data-new-kind="random" aria-label="Créer un minuteur Bips aléatoires à enregistrer">+ Bips aléatoires</button></div></div>
  <div class="saved-workouts-list" id="savedChrono" aria-label="Minuteurs personnels enregistrés"></div>
  <p class="saved-workouts-empty" id="savedEmptyChrono">Crée des minuteurs pour tes exercices et retrouve-les ici.</p>
-</section>
+</details>
   <p class="mode-page-tip">Le <strong>Golden Score</strong> se trouve dans l'onglet Randori.</p>
 </section>
 <section id="view-luc-leger" class="view" aria-label="Espace Test Luc Léger">
@@ -391,7 +391,71 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
   <button type="button" data-nav="luc-leger"><span class="ni" aria-hidden="true">↗</span><span class="nl">Luc Léger</span></button>
 </nav>
 </div>
-<div class="modal" id="editorModal" role="dialog" aria-modal="true" aria-labelledby="editorTitle"><div class="sheet"><header><h2 id="editorTitle">Configurer un minuteur</h2><button class="icon-btn" id="closeEditor" aria-label="Fermer l'éditeur">×</button></header><p class="editor-lead">Configure ton entraînement puis démarre immédiatement, ou enregistre tes paramètres pour plus tard.</p><form id="editorForm"><div class="editor-duration"><small>Durée totale estimée</small><span class="value" id="configDuration" aria-live="polite">—</span></div><div class="editor-presets"><span class="editor-preset-label">RÉGLAGES RAPIDES</span><div class="preset-chips" id="presetChips" role="group" aria-label="Réglages rapides du minuteur"></div></div><div class="fields"><div class="field wide"><label for="workoutMode">Mode d’entraînement</label><select id="workoutMode"><option value="randori">Randori</option><option value="golden">Golden Score</option><option value="tabata">Tabata</option><option value="chrono">Chronomètre libre</option><option value="random">Bips aléatoires</option><option value="hiit">HIIT / Intervalles</option><option value="boxe">Boxe</option></select></div><div class="field wide"><label for="workoutName">Nom de la séance</label><input id="workoutName" maxlength="50" required placeholder="Ex. HIIT Judo" /></div><div class="field wide duration-field" id="preparationField"><div class="duration-title">Préparation</div><div class="duration-pickers"><div><label for="preparationMinutes">Minutes</label><select id="preparationMinutes" aria-label="Préparation : minutes"></select></div><div><label for="preparationSeconds">Secondes</label><select id="preparationSeconds" aria-label="Préparation : secondes"></select></div></div><input type="hidden" id="preparation" value="10" /><small class="duration-help">Choisis séparément les minutes et les secondes.</small></div><div class="field wide duration-field" id="effortField"><div class="duration-title" id="effortLabel">Effort</div><div class="duration-pickers"><div><label for="effortMinutes">Minutes</label><select id="effortMinutes" aria-label="Effort : minutes"></select></div><div><label for="effortSeconds">Secondes</label><select id="effortSeconds" aria-label="Effort : secondes"></select></div></div><input type="hidden" id="effort" value="30" /><small class="duration-help">Choisis séparément les minutes et les secondes.</small></div><div class="field wide duration-field" id="restField"><div class="duration-title">Repos</div><div class="duration-pickers"><div><label for="reposMinutes">Minutes</label><select id="reposMinutes" aria-label="Repos : minutes"></select></div><div><label for="reposSeconds">Secondes</label><select id="reposSeconds" aria-label="Repos : secondes"></select></div></div><input type="hidden" id="repos" value="15" /><small class="duration-help">Choisis séparément les minutes et les secondes.</small></div><div class="field wide" id="randomOptions" hidden><label for="randomFrequency">Fréquence des bips</label><select id="randomFrequency"><option value="low">Espacés</option><option value="medium" selected>Modérés</option><option value="high">Fréquents</option></select><label class="random-progressive"><input type="checkbox" id="randomProgressive" checked /> Rapprocher progressivement les bips</label><small>Exemple : faire un burpee à chaque bip.</small></div><div class="field" id="cyclesField"><label for="cycles" id="cyclesLabel">Cycles</label><input id="cycles" type="number" inputmode="numeric" min="1" max="200" value="8" required /></div></div><p class="caption" id="modeHint" aria-live="polite">Alternance d’effort et de récupération.</p><button class="secondary" type="button" id="cancelEditor" style="min-height:48px;margin-top:12px">Annuler</button><div class="editor-actions"><button type="submit" class="secondary" id="saveWorkout">Enregistrer</button><button type="button" class="primary" id="launchConfigured">▶ Démarrer</button></div></form></div></div>
+<div class="modal" id="editorModal" role="dialog" aria-modal="true" aria-labelledby="editorTitle">
+ <div class="sheet simple-editor-sheet"><header><h2 id="editorTitle">Régler mon minuteur</h2><button class="icon-btn" id="closeEditor" type="button" aria-label="Fermer les réglages">×</button></header>
+ <form id="editorForm">
+  <div class="editor-duration"><small>Durée totale</small><span class="value" id="configDuration" aria-live="polite">—</span></div>
+  <div class="fields simple-editor-fields">
+   <div class="field wide simple-name-field"><label for="workoutMode">Mode d’entraînement</label><select id="workoutMode"><option value="randori">Randori</option><option value="golden">Golden Score</option><option value="tabata">Tabata</option><option value="chrono">Chronomètre libre</option><option value="random">Bips aléatoires</option><option value="hiit">HIIT / Intervalles</option><option value="boxe">Boxe</option></select></div>
+   <div class="field wide simple-name-field"><label for="workoutName">Nom de la séance</label><input id="workoutName" maxlength="50" required placeholder="Ex. Randori du mercredi" /></div>
+   <p id="editorUnlimited" class="editor-unlimited" hidden><strong>∞</strong><span>Temps libre : démarrer, puis arrêter quand tu veux.</span></p>
+   <div class="field wide duration-field simple-field" id="effortField">
+ <div class="duration-title" id="effortLabel">Durée d’effort</div>
+ <div class="large-stepper" role="group" aria-label="Durée d’effort">
+  <button type="button" data-step-field="effort" data-step="-1" aria-label="Diminuer Durée d’effort">−</button>
+  <output id="effortDisplay" class="large-stepper-value" aria-live="off">00:30</output>
+  <button type="button" data-step-field="effort" data-step="1" aria-label="Augmenter Durée d’effort">+</button>
+ </div>
+ <details class="duration-precision"><summary>Ajuster à la seconde</summary><div class="duration-pickers">
+   <div><label for="effortMinutes">Minutes</label><select id="effortMinutes" aria-label="Durée d’effort : minutes"></select></div>
+   <div><label for="effortSeconds">Secondes</label><select id="effortSeconds" aria-label="Durée d’effort : secondes"></select></div>
+ </div></details><input type="hidden" id="effort" value="30" />
+</div>
+   <div class="field wide duration-field simple-field" id="reposField">
+ <div class="duration-title">Temps de repos</div>
+ <div class="large-stepper" role="group" aria-label="Temps de repos">
+  <button type="button" data-step-field="repos" data-step="-1" aria-label="Diminuer Temps de repos">−</button>
+  <output id="reposDisplay" class="large-stepper-value" aria-live="off">00:15</output>
+  <button type="button" data-step-field="repos" data-step="1" aria-label="Augmenter Temps de repos">+</button>
+ </div>
+ <details class="duration-precision"><summary>Ajuster à la seconde</summary><div class="duration-pickers">
+   <div><label for="reposMinutes">Minutes</label><select id="reposMinutes" aria-label="Temps de repos : minutes"></select></div>
+   <div><label for="reposSeconds">Secondes</label><select id="reposSeconds" aria-label="Temps de repos : secondes"></select></div>
+ </div></details><input type="hidden" id="repos" value="15" />
+</div>
+   <div class="field wide simple-field" id="cyclesField"><div class="duration-title" id="cyclesLabel">Répétitions</div>
+    <div class="large-stepper cycle-stepper" role="group" aria-label="Nombre de répétitions">
+      <button type="button" data-step-cycles="-1" aria-label="Diminuer le nombre de répétitions">−</button>
+      <input id="cycles" type="number" inputmode="numeric" min="1" max="200" value="8" required aria-label="Nombre de répétitions" />
+      <button type="button" data-step-cycles="1" aria-label="Augmenter le nombre de répétitions">+</button>
+    </div>
+   </div>
+   <div class="field wide simple-field" id="randomOptions" hidden><label for="randomFrequency">Fréquence des bips</label>
+    <select id="randomFrequency"><option value="low">Espacés</option><option value="medium" selected>Normaux</option><option value="high">Rapides</option></select></div>
+  </div>
+  <details id="editorMore" class="editor-more"><summary>Options supplémentaires</summary>
+   <div class="editor-more-inner">
+    <div class="field wide duration-field simple-field" id="preparationField">
+ <div class="duration-title">Préparation avant le départ</div>
+ <div class="large-stepper" role="group" aria-label="Préparation avant le départ">
+  <button type="button" data-step-field="preparation" data-step="-1" aria-label="Diminuer Préparation avant le départ">−</button>
+  <output id="preparationDisplay" class="large-stepper-value" aria-live="off">00:10</output>
+  <button type="button" data-step-field="preparation" data-step="1" aria-label="Augmenter Préparation avant le départ">+</button>
+ </div>
+ <details class="duration-precision"><summary>Ajuster à la seconde</summary><div class="duration-pickers">
+   <div><label for="preparationMinutes">Minutes</label><select id="preparationMinutes" aria-label="Préparation avant le départ : minutes"></select></div>
+   <div><label for="preparationSeconds">Secondes</label><select id="preparationSeconds" aria-label="Préparation avant le départ : secondes"></select></div>
+ </div></details><input type="hidden" id="preparation" value="10" />
+</div>
+    <label class="random-progressive" id="randomProgressiveOption" hidden><input type="checkbox" id="randomProgressive" checked /> Accélérer progressivement les bips</label>
+    <div class="editor-presets"><span class="editor-preset-label">MODÈLES PRÉDÉFINIS</span><div class="preset-chips" id="presetChips" role="group" aria-label="Modèles rapides de séance"></div></div>
+    <p class="caption" id="modeHint" aria-live="polite"></p>
+   </div>
+  </details>
+  <button class="secondary" type="button" id="cancelEditor" hidden>Annuler</button>
+  <div class="editor-actions"><button type="submit" class="secondary" id="saveWorkout">Enregistrer</button><button type="button" class="primary" id="launchConfigured">▶ Démarrer</button></div>
+ </form></div>
+</div>
 <section class="timer" id="timer" data-phase="prep" aria-label="Séance en cours"><div class="timer-head"><div><strong>MONITEUR JSB</strong><div style="margin-top:5px;font-size:12px;color:#b4c8d1" id="timerTitle"></div></div><small id="totalRemaining">Temps total restant</small></div><div class="timer-main"><span class="phase-chip" id="phaseLabel">PRÉPARATION</span><span class="sr-only" id="phaseAnnouncement" aria-live="polite" role="status"></span><div class="clock" id="clockText" aria-label="Temps restant" aria-live="off">00:10</div><div class="cycle" id="cycleLabel">Cycle 1 / 8</div><div class="paused" id="pausedFlag">EN PAUSE</div><div id="amrapCounter" class="amrap-counter" hidden><span>Tours validés</span><div><button type="button" id="amrapMinus" aria-label="Retirer un tour">−</button><strong id="amrapCount" aria-live="polite">0</strong><button type="button" id="amrapPlus" aria-label="Ajouter un tour">+</button></div></div></div><div class="timer-controls"><div class="prog" role="progressbar" aria-label="Progression de la phase" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress"><span id="progressBar"></span></div><div class="next"><span id="upNext">Ensuite : EFFORT</span><span id="percentLabel">0 %</span></div><button type="button" class="secondary adjust-time-trigger" id="adjustTimeBtn" hidden aria-haspopup="dialog" aria-controls="pauseTimeDialog">✎ Modifier les temps</button><div class="timer-actions"><button class="primary" id="pauseBtn" type="button">❚❚ &nbsp; Pause</button><button class="secondary danger" id="stopBtn" type="button">■ &nbsp; Arrêter</button></div><div class="caption">Signaux du navigateur · pour la réduction automatique de Spotify, utilise l’app mobile.</div></div></section>
 <div class="dialog-layer" id="stopConfirm" role="dialog" aria-modal="true" aria-labelledby="stopConfirmTitle" aria-hidden="true"><div class="dialog-box">
   <h2 id="stopConfirmTitle">Terminer la séance ?</h2>
@@ -581,7 +645,8 @@ function buildModeOption(key) {
  const heading=document.createElement('strong');heading.textContent=info.title;
  const description=document.createElement('small');description.textContent=info.description;
  const duration=document.createElement('span');duration.className='mode-option-duration';
- duration.textContent=(modeSettings[key]?'✓ Enregistré · ':'')+(Number.isFinite(secs(w))?pretty(secs(w))+' au total':'Temps libre');
+ duration.textContent=['golden','chrono'].includes(key)?'∞ Temps libre':pretty(w.work);
+ duration.setAttribute('aria-label',['golden','chrono'].includes(key)?'Chronomètre sans limite':'Durée de travail '+pretty(w.work));
  labels.append(heading,description,duration);
  const arrow=document.createElement('span');arrow.className='mode-option-edit';
  arrow.textContent='Régler';arrow.setAttribute('aria-hidden','true');
@@ -589,7 +654,7 @@ function buildModeOption(key) {
  configure.addEventListener('click',()=>openEditor(w));
  const play=document.createElement('button');
  play.type='button';play.className='mode-option-play';
- play.textContent='▶';play.setAttribute('aria-label','Démarrer '+info.title);
+ play.textContent='▶ Démarrer';play.setAttribute('aria-label','Démarrer '+info.title);
  play.addEventListener('click',()=>startWorkout(w));
  row.append(configure,play);
  return row;
@@ -618,6 +683,7 @@ function renderSavedWorkouts(){
   const prepared=customs.filter(w=>trainingModeIsValid(w)&&kinds.includes(w.kind));
   for(const w of prepared)list.append(savedWorkoutCard(w));
   $('savedEmpty'+tab).hidden=prepared.length!==0;
+  $('savedCount'+tab).textContent=String(prepared.length);
  }
 }
 function renderLastUsed(){
@@ -728,6 +794,8 @@ function deleteWorkout(w){
  customs=manager.removeCustom(customs,w.id);favorites=library.normalizeFavorites(favorites,[...standard,...customs].map(x=>x.id));safeWrite('jsb_preview_favorites',favorites);safeWrite('jsb_preview_customs',customs);renderWorkouts();notice('Minuteur supprimé');
 }
 function openEditor(workout=null,requestedKind=null){
+ $('editorMore').open=false;
+ for(const el of document.querySelectorAll('.duration-precision'))el.open=false;
  if(!gate.allow('editor-open',350)||session||$('editorModal').classList.contains('active'))return;
  if(workout&&!trainingModes.isAvailable(workout.kind)){notice('Mode indisponible');return;}
  editorReturnFocus=document.activeElement;
@@ -758,6 +826,29 @@ function openEditor(workout=null,requestedKind=null){
  (isStandard?$('preparationMinutes'):$('workoutName')).focus();
 }
 const durationLimits={preparation:600,effort:3600,repos:3600};
+function updateSimpleDisplays(){
+ for(const id of ['preparation','effort','repos']){
+  const target=$(id+'Display');
+  if(target)target.textContent=pretty(Number($(id).value)||0);
+ }
+}
+$('editorForm').addEventListener('click',event=>{
+ const button=event.target.closest('[data-step-field],[data-step-cycles]');
+ if(!button)return;
+ if(button.dataset.stepCycles!==undefined){
+  const delta=Number(button.dataset.stepCycles);
+  const next=Math.max(1,Math.min(200,(Number($('cycles').value)||1)+delta));
+  $('cycles').value=String(next);updateConfigDuration();return;
+ }
+ const id=button.dataset.stepField,mode=$('workoutMode').value;
+ const step=id==='preparation'?5:id==='repos'?(mode==='randori'||mode==='boxe'?15:5):
+  mode==='randori'||mode==='boxe'?30:mode==='random'?15:5;
+ const min=id==='effort'?1:0;
+ const cur=Number($(id).value)||0;
+ const change=Number(button.dataset.step);
+ const value=Math.max(min,Math.min(durationLimits[id],cur+change*step));
+ $(id).value=String(value);syncDurationPickers(id);updateConfigDuration();
+});
 $('cycles').addEventListener('input',updateConfigDuration);
 function syncDurationPickers(id){
  const max=durationLimits[id],parts=durationPresets.splitDuration(Number($(id).value),max);
@@ -784,8 +875,10 @@ function applyMode(){
  $('effortField').hidden=['golden','chrono'].includes(mode);
  $('cyclesField').hidden=['golden','chrono','random'].includes(mode);
  $('randomOptions').hidden=mode!=='random';
- $('effortLabel').textContent=mode==='random'?'Temps de travail':mode==='randori'?'Durée du randori':mode==='boxe'?'Durée du round':'Effort';
- $('cyclesLabel').textContent=mode==='randori'?'Nombre de randoris':mode==='boxe'?'Rounds':'Cycles';
+ $('randomProgressiveOption').hidden=mode!=='random';
+ $('editorUnlimited').hidden=!['golden','chrono'].includes(mode);
+ $('effortLabel').textContent=mode==='random'?'Durée de l’exercice':mode==='randori'?'Durée du combat':mode==='boxe'?'Durée du round':'Durée d’effort';
+ $('cyclesLabel').textContent=mode==='randori'?'Nombre de combats':mode==='boxe'?'Rounds':'Nombre de cycles';
  $('cycles').disabled=['golden','chrono','random'].includes(mode);
  if(mode==='golden'||mode==='chrono'){$('effort').value='0';$('repos').value='0';$('cycles').value='1'}
  if(mode==='random'){$('repos').value='0';$('cycles').value='1'}
@@ -843,6 +936,7 @@ function configuredWorkout(){
      progressive:$('randomProgressive').checked}:{})};
 }
 function updateConfigDuration(){
+ updateSimpleDisplays();
  const output=$('configDuration');
  if(!output)return;
  const kind=$('workoutMode').value;
