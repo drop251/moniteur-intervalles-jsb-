@@ -516,3 +516,34 @@ button:disabled { opacity:.50; }
  .signal-card,.settings-switch input[type=checkbox],
  .settings-switch input[type=checkbox]::after{transition:none!important;}
 }
+
+
+/* Réglages JSB — les quatre enregistrements de combat sont prioritaires. */
+.signal-category-heading{
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+  gap:5px 12px;margin:7px 0 12px;
+}
+.signal-category-heading strong{
+  font-size:14px;font-weight:800;color:#F8F7F2;
+}
+.signal-category-heading span{
+  font-size:11px;font-weight:700;color:#F3D19F;
+}
+.settings-other-sounds{margin:14px 0 0;}
+.settings-other-sounds>.signal-gallery-secondary{
+  padding:0 11px 13px;gap:8px;
+}
+.settings-other-sounds .signal-card{min-height:105px;}
+.signal-card[data-sound=buzzerPro],
+.signal-card[data-sound=bellSport],
+.signal-card[data-sound=whistlePro],
+.signal-card[data-sound=hornPro]{
+  min-height:131px;
+}
+.signal-card[aria-checked=true] .signal-action:before{
+  content:'✓ ';color:#F8F7F2;
+}
+@media (max-width:380px){
+ .signal-category-heading{align-items:flex-start;}
+ .signal-card{min-height:123px!important;}
+}
