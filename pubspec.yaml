@@ -1,7 +1,7 @@
 name: moniteur_intervalles
-description: Moniteur d'intervalles et tests physiques (Tabata, HIIT, Luc Léger). Données locales uniquement.
+description: Moniteur JSB — Randori, Golden Score, Tabata et chronomètres. Données locales uniquement.
 publish_to: "none"
-version: 0.2.2+4
+version: 0.2.3+5
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
