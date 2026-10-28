@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const crypto=require('node:crypto');
 
 const root = path.resolve(__dirname, '..');
 const get = filename => fs.readFileSync(path.join(root, filename), 'utf8');
@@ -92,7 +93,7 @@ test('the five training submodes preserve their timing semantics', () => {
 
 test('browser uses JSB audio, not unavailable native iOS ducking', () => {
   assert.ok(!html.includes('Signaux audio natifs'));
-  assert.ok(html.includes('Le site ne peut pas réduire automatiquement le volume'));
+  assert.ok(html.includes('il ne peut pas réduire automatiquement Spotify'));
   assert.ok(!html.includes('jsb_native_bridge.js'));
   assert.ok(html.includes('soundEngine.activateAndPlay'));
   assert.ok(html.includes('settings.randomSound'));
@@ -166,7 +167,7 @@ test('all mastered WAV samples are PCM, loud and without digital clipping', () =
     const rms=Math.sqrt(total/count);
     assert.ok(rms>.12,id+' is too quiet ('+rms+')');
     assert.ok(peak<=.94,id+' exceeds safe peak ('+peak+')');
-    const hash=b64.slice(80,180);
+    const hash=crypto.createHash('sha256').update(wav).digest('hex');
     assert.ok(!hashes.has(hash),id+' is duplicate');
     hashes.add(hash);
   }
