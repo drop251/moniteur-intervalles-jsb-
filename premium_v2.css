@@ -659,3 +659,24 @@ button:disabled { opacity:.50; }
 @media (prefers-reduced-motion:reduce){
   .app>header{backdrop-filter:none;-webkit-backdrop-filter:none;}
 }
+
+
+/* Latest actually-started timer is available immediately after reopening.
+   It does not start without an explicit user action. */
+.recent-timer{
+  display:flex;flex-direction:column;gap:13px;
+  margin:0 0 18px;padding:16px;
+  background:linear-gradient(135deg,#334962,#26374E);
+  border:1.5px solid #DBAE6B;border-radius:18px;
+}
+.recent-timer[hidden]{display:none!important;}
+.recent-info{display:flex;flex-direction:column;gap:5px;min-width:0;}
+.recent-eyebrow{color:#F3D19F;letter-spacing:.1em;font-size:10px;font-weight:850;}
+.recent-info strong{color:#F8F7F2;font-size:19px;overflow-wrap:anywhere;}
+.recent-info small{color:#DEE2EA;font-size:12px;line-height:1.4;}
+.recent-actions{display:grid;grid-template-columns:1fr 1.35fr;gap:9px;}
+.recent-actions button{min-height:52px;border-radius:13px;font-weight:780;}
+@media(min-width:650px){
+ .recent-timer{flex-direction:row;align-items:center;justify-content:space-between;}
+ .recent-actions{width:270px;flex:none;}
+}
