@@ -5,105 +5,104 @@
 (function (root) {
   'use strict';
 
-  // Les signaux d'effort privilégient une attaque immédiatement reconnaissable
-  // dans un dojo bruyant ; les signaux de fin ont une couleur distincte.
+  // Audio original JSB v2, inspired by standard sports timer alert patterns.
+  // These tones are not recordings or copies of sounds from other apps.
   const SOUNDS = Object.freeze([
-    {id:'buzzer',label:'Buzzer de combat',description:'Avertisseur dense et puissant'},
-    {id:'referee',label:"Sifflet d’arbitre",description:'Signal aigu, incisif et répété'},
-    {id:'tatami',label:'Impact tatami',description:'Deux frappes courtes et sèches'},
-    {id:'clapper',label:'Claquement bois',description:'Clac net, idéal pour les changements'},
-    {id:'taiko',label:'Tambour taiko',description:'Percussion grave avec impact audible'},
-    {id:'alarm',label:'Alerte intensive',description:'Trois notes agressives'},
-    {id:'airhorn',label:'Corne de combat',description:'Deux couches stridentes'},
-    {id:'short',label:'Bip court',description:'Simple et discret'},
-    {id:'double',label:'Double bip',description:'Deux signaux rapprochés'},
-    {id:'triple',label:'Triple bip',description:'Trois signaux successifs'},
-    {id:'whistle',label:'Sifflet électronique',description:'Signal montant'},
-    {id:'bell',label:'Cloche',description:'Signal harmonique'},
-    {id:'digital',label:'Signal digital',description:'Trois notes électroniques'},
-    {id:'countdown',label:'Top décompte',description:'Bip sec 3-2-1, puis départ'}
+    {id:'bellSport', label:'Cloche sportive', description:'Cloche claire pour les combats'},
+    {id:'pulse', label:'Pulse net', description:'Un top électronique court et franc'},
+    {id:'digitalDuo', label:'Double digital', description:'Deux tons nets, faciles à distinguer'},
+    {id:'wood', label:'Clac sec', description:'Percussion brève pour la réactivité'},
+    {id:'soft', label:'Bip doux', description:'Alerte légère pour les récupérations'}
   ]);
   const FINISH_SOUNDS = Object.freeze([
-    {id:'gong',label:'Gong japonais',description:'Impact métallique et résonance longue'},
-    {id:'gongDouble',label:'Double gong',description:'Deux frappes de gong solennelles'},
-    {id:'taikoFinal',label:'Taiko final',description:'Deux grosses percussions et résonance'},
-    {id:'buzzerFinal',label:'Buzzer final',description:'Signal de fin fort et distinct'},
-    {id:'bellFinal',label:'Cloche de fin',description:'Cloche claire à longue résonance'}
+    {id:'finishBell', label:'Cloche finale', description:'Cloche claire à décroissance progressive'},
+    {id:'finishChime', label:'Double carillon', description:'Deux notes harmonieuses de fin'},
+    {id:'finishTriple', label:'Triple top', description:'Trois bips distincts de fin'}
   ]);
-  const IDS = new Set([...SOUNDS,...FINISH_SOUNDS].map(s=>s.id));
-  const EVENTS = Object.freeze(['prep','effort','rest','random','finish']);
-  const DEFAULTS = Object.freeze({effort:'buzzer',rest:'clapper',random:'referee',finish:'gong'});
+  const IDS = new Set(SOUNDS.map(s=>s.id));
+  const FINISH_IDS = new Set(FINISH_SOUNDS.map(s=>s.id));
+  const EVENTS = Object.freeze(['prep','effort','rest','random','countdown','finish']);
+  const DEFAULTS = Object.freeze({
+    effort:'bellSport', rest:'soft', random:'pulse', finish:'finishChime'
+  });
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-  const normalize=value=>IDS.has(value)?value:'buzzer';
-  const normalizeFinish=value=>FINISH_SOUNDS.some(s=>s.id===value)?value:'gong';
-  const normalizeVolume=value=>Number.isFinite(Number(value))?clamp(Number(value),0,100):70;
+  // Reject legacy selections instead of quietly bringing their old sounds back.
+  const normalize=value=>IDS.has(value)?value:'bellSport';
+  const normalizeFinish=value=>FINISH_IDS.has(value)?value:'finishChime';
+  const normalizeVolume=value=>Number.isFinite(Number(value))?clamp(Number(value),0,100):90;
 
+  /**
+   * A small catalog of original, synthesized sports cues.
+   * Event-specific pitch differences make START vs REST intelligible.
+   * Limit durations to reduce playback latency and prevent musical masking.
+   */
   function notesFor(soundId,event='effort'){
-    const id=normalize(soundId);
-    const pitch=event==='rest'?.78:event==='prep'?.9:event==='random'?1.08:1;
+    if(event==='countdown'){
+      return [
+        {time:0,duration:.10,freq:1100,endFreq:1040,wave:'sine',amplitude:.73,shape:'punch'},
+        {time:0,duration:.065,freq:1650,endFreq:1560,wave:'triangle',amplitude:.20,shape:'punch'}
+      ];
+    }
+    const finish=event==='finish';
+    const id=finish?normalizeFinish(soundId):normalize(soundId);
+    const pitch=event==='rest'?.82:event==='prep'?.91:event==='random'?1.06:1;
     const n=(time,duration,freq,wave='sine',endFreq=freq,amplitude=1,shape='punch')=>({
       time,duration,freq:freq*pitch,endFreq:endFreq*pitch,wave,amplitude,shape
     });
-    let notes;
     switch(id){
-      case 'buzzer':
-        notes=[n(0,.48,225,'sawtooth',235,.65),n(0,.48,305,'square',309,.31),n(.035,.32,475,'sawtooth',465,.2)];
-        break;
-      case 'referee':
-        notes=[n(0,.21,1510,'square',1900,.47),n(.28,.31,1680,'square',2110,.52)];
-        break;
-      case 'tatami':
-        notes=[n(0,.095,750,'sawtooth',290,.75),n(0,.10,1250,'square',510,.20),n(.19,.095,790,'sawtooth',300,.75),n(.19,.10,1380,'square',580,.16)];
-        break;
-      case 'clapper':
-        notes=[n(0,.12,850,'sawtooth',320,.7),n(0,.09,1350,'square',550,.24)];
-        break;
-      case 'taiko':
-        notes=[n(0,.56,170,'sine',77,1.1,'drum'),n(0,.18,370,'triangle',132,.43),n(0,.08,930,'sawtooth',500,.14)];
-        break;
-      case 'alarm':
-        notes=[n(0,.17,770,'square',900,.55),n(.24,.17,990,'square',1100,.55),n(.48,.30,1190,'sawtooth',1450,.55)];
-        break;
-      case 'airhorn':
-        notes=[n(0,.50,430,'sawtooth',450,.48),n(0,.50,650,'sawtooth',660,.40),n(.04,.43,830,'square',820,.18)];
-        break;
-      case 'countdown':notes=[n(0,.095,1320,'square',1240,.43),n(0,.085,1870,'triangle',1500,.14)];break;
-      case 'double':notes=[n(0,.13,850),n(.20,.13,850)];break;
-      case 'triple':notes=[n(0,.11,960),n(.17,.11,960),n(.34,.11,960)];break;
-      case 'whistle':notes=[n(0,.42,900,'sine',1750)];break;
-      case 'bell':notes=[n(0,.52,640,'sine',620,.9),n(0,.46,1280,'sine',1240,.27)];break;
-      case 'digital':notes=[n(0,.12,720,'triangle'),n(.16,.12,980,'triangle'),n(.32,.18,1180,'triangle')];break;
-      case 'gong':
-      case 'gongDouble':{
-        // Synthèse de cloche de temple (inspiration sonore, pas un échantillon authentique).
-        // Partiels inharmoniques, grave soutenu, attaque métallique et longue décroissance.
-        const strike=at=>[
-          n(at,.18,1150,'sawtooth',410,.32,'metal'),
-          n(at,.12,2050,'triangle',1300,.18,'metal'),
-          n(at,3.5,196,'sine',190,.70,'resonant'),
-          n(at,3.0,287,'sine',281,.46,'resonant'),
-          n(at,2.7,407,'sine',398,.29,'resonant'),
-          n(at,2.3,623,'sine',610,.17,'resonant'),
-          n(at,1.9,933,'sine',916,.10,'resonant')
+      case 'bellSport':
+        return [
+          n(0,.75,695,'sine',690,.75,'resonant'),
+          n(0,.63,1030,'sine',1020,.34,'resonant'),
+          n(0,.51,1550,'triangle',1530,.17,'resonant'),
+          n(0,.08,2160,'triangle',1500,.15,'metal')
         ];
-        notes=strike(0);
-        if(id==='gongDouble')notes=notes.concat(strike(1.28).map(x=>({...x,amplitude:x.amplitude*.82})));
-        break;
-      }
-      case 'taikoFinal':
-        notes=[n(0,.75,170,'sine',70,1,'drum'),n(0,.22,490,'sawtooth',210,.28),n(.8,1.0,185,'sine',67,1,'drum'),n(.8,.25,590,'sawtooth',260,.30)];
-        break;
-      case 'buzzerFinal':
-        notes=[...notesFor('buzzer','effort'),n(.65,.65,205,'sawtooth',240,.65),n(.65,.62,310,'square',320,.3)];
-        break;
-      case 'bellFinal':
-        notes=[n(0,2.8,520,'sine',510,.68,'resonant'),n(0,2.4,1047,'sine',1031,.33,'resonant'),n(0,2.0,1550,'sine',1540,.15,'resonant'),n(0,.12,1750,'triangle',1150,.20,'metal')];
-        break;
-      default:notes=[n(0,.22,940)];break;
+      case 'pulse':
+        return [
+          n(0,.25,910,'sine',945,.76),
+          n(0,.17,1350,'triangle',1390,.22),
+        ];
+      case 'digitalDuo':
+        return [
+          n(0,.15,870,'sine',930,.76),
+          n(.23,.18,1130,'sine',1170,.79),
+          n(.23,.16,1690,'triangle',1740,.13)
+        ];
+      case 'wood':
+        return [
+          n(0,.095,620,'sine',330,.82,'metal'),
+          n(0,.065,1250,'triangle',610,.27,'metal'),
+          n(.095,.055,450,'sine',295,.20,'metal')
+        ];
+      case 'soft':
+        return [
+          n(0,.32,620,'sine',615,.61),
+          n(0,.23,930,'sine',923,.15)
+        ];
+      case 'finishBell':
+        return [
+          n(0,2.2,535,'sine',528,.72,'resonant'),
+          n(0,1.9,801,'sine',790,.39,'resonant'),
+          n(0,1.5,1239,'triangle',1223,.21,'resonant'),
+          n(0,.12,1880,'triangle',1320,.22,'metal')
+        ];
+      case 'finishChime':
+        return [
+          n(0,1.55,659,'sine',651,.63,'resonant'),
+          n(0,1.32,989,'sine',978,.20,'resonant'),
+          n(.42,2.0,880,'sine',871,.64,'resonant'),
+          n(.42,1.65,1320,'sine',1308,.22,'resonant')
+        ];
+      case 'finishTriple':
+        return [
+          n(0,.15,970,'sine',1030,.72),
+          n(.25,.15,970,'sine',1030,.72),
+          n(.50,.29,1250,'sine',1250,.80),
+          n(.50,.26,1875,'triangle',1875,.14)
+        ];
+      default:
+        return notesFor(finish?'finishChime':'bellSport',event);
     }
-    // Par défaut, le bip de fin est le gong spécifique, et non des notes ajoutées aux bips d'effort.
-    if(event==='finish'&&!FINISH_SOUNDS.some(s=>s.id===id))return notesFor('gong','finish');
-    return notes;
   }
 
   function signalEnvelope(note,local){
@@ -112,6 +111,16 @@
     if(note.shape==='drum')return Math.min(1,local/.003)*Math.exp(-5.2*progress)*Math.max(0,1-progress);
     if(note.shape==='metal')return Math.min(1,local/.002)*Math.exp(-6.8*progress)*Math.max(0,1-progress);
     return Math.min(1,local/.004)*Math.pow(Math.max(0,1-progress),.90);
+  }
+
+  // An increased cue gain improves audibility with music and in a dojo.
+  // Soft-knee limiting caps intermodulating partials below 0 dBFS and
+  // avoids the harsh hard clipping of very strong metallic attacks.
+  const MIX_GAIN = .86; // previously .63 (about +2.7 dB before limiting)
+  function softLimit(value){
+    const knee=.80, peak=.96, abs=Math.abs(value);
+    if(abs<=knee)return value;
+    return Math.sign(value)*(knee+(peak-knee)*(1-Math.exp(-(abs-knee)/(peak-knee))));
   }
 
   function pcmWav(notes,volume=70,sampleRate=22050){
@@ -135,7 +144,7 @@
         const envelope=signalEnvelope(n,local);
         total+=wave*envelope*n.amplitude;
       }
-      const value=clamp(total*.63*boundedVolume,-.96,.96);
+      const value=softLimit(total*MIX_GAIN*boundedVolume);
       view.setInt16(44+i*2,Math.round(value*32767),true);
     }
     return bytes;
@@ -246,7 +255,8 @@
       if(normalizeVolume(volume)===0)return false;
       try{
         const now=ctx.currentTime+.007;
-        const peak=.38*Math.pow(normalizeVolume(volume)/100,.82);
+        // Keep the browser fallback close to the louder native WAV mix.
+        const peak=.52*Math.pow(normalizeVolume(volume)/100,.82);
         for(const n of notesFor(sound,event)){
           const oscillator=ctx.createOscillator(),gain=ctx.createGain();
           oscillator.type=n.wave;oscillator.frequency.setValueAtTime(n.freq,now+n.time);
