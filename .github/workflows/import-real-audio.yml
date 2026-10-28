@@ -1,0 +1,132 @@
+name: JSB – Intégrer quatre signaux enregistrés CC0
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/import-real-audio.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import-audio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Préparer ffmpeg et les échantillons CC0
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/jsb-original assets/audio
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq ffmpeg
+          fi
+          # URLs pinned to immutable GitHub revisions. CC0 credits:
+          # SpliceSound / Freesound 218318; Umplix / OpenGameArt;
+          # Naima / Freesound 510026; guitarguy1985 / Freesound 68999.
+          curl -fL --retry 3 --connect-timeout 15 -o /tmp/jsb-original/whistle.wav 'https://raw.githubusercontent.com/GodotVR/godot-xr-tools/6c6189bdfcdf855052ef1aeb9f3e0ec4c7a7eb60/assets/freesound/218318__splicesound__referee-whistle-blow-gymnasium.wav'
+          curl -fL --retry 3 --connect-timeout 15 -o /tmp/jsb-original/bell.wav 'https://raw.githubusercontent.com/sergeyt/vifu/c791170cd91df899b59b8fca84ecb99424306851/assets/sounds/fight_bell.wav'
+          curl -fL --retry 3 --connect-timeout 15 -o /tmp/jsb-original/buzzer.wav 'https://raw.githubusercontent.com/samsonahh/ggj-2026-mask/667423705808e60e87db090cf1b6d44e1b2e3ca0/Assets/Features/Player/Audio/SFX/BuzzerSFX.wav'
+          curl -fL --retry 3 --connect-timeout 15 -o /tmp/jsb-original/horn.wav 'https://raw.githubusercontent.com/playroomkit/playroom-godot-kart/9ff64c1a25be1dcab0f78410269550c362569a54/assets/68999__guitarguy1985__airhorn-short.wav'
+          for sound in whistle bell buzzer horn; do
+            ffmpeg -nostdin -hide_banner -loglevel error -y \
+              -i "/tmp/jsb-original/${sound}.wav" \
+              -af 'highpass=f=110,lowpass=f=7800' \
+              -ar 22050 -ac 1 -sample_fmt s16 \
+              "/tmp/jsb-original/${sound}_mono.wav"
+          done
+      - name: Masteriser et embarquer les prises de son dans la PWA
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import array, base64, math, pathlib, re, wave
+          root=pathlib.Path('.')
+          sources=pathlib.Path('/tmp/jsb-original')
+          out=root/'assets'/'audio'
+          out.mkdir(parents=True,exist_ok=True)
+          specs={
+            'whistlePro':('whistle',1.32,'sifflet_arbitre.wav'),
+            'bellSport':('bell',1.75,'cloche_ring.wav'),
+            'buzzerPro':('buzzer',1.22,'buzzer_combat.wav'),
+            'hornPro':('horn',1.60,'corne_sportive.wav'),
+          }
+          js=(root/'jsb_audio_samples.js').read_text('utf-8')
+          mastered={}
+          for key,(source,max_duration,filename) in specs.items():
+            with wave.open(str(sources/f'{source}_mono.wav'),'rb') as f:
+              assert f.getnchannels()==1 and f.getsampwidth()==2 and f.getframerate()==22050
+              pcm=array.array('h');pcm.frombytes(f.readframes(f.getnframes()))
+            if not pcm:raise RuntimeError(f'Source empty: {source}')
+            # Find the earliest strong attack, avoiding source lead-in silence.
+            hop=441
+            energies=[]
+            for start in range(0,len(pcm),hop):
+              chunk=pcm[start:start+hop]
+              energies.append(math.sqrt(sum((x/32768.0)**2 for x in chunk)/max(1,len(chunk))))
+            peak_energy=max(energies)
+            if peak_energy<.005:raise RuntimeError(f'Source too quiet: {source}')
+            first=next((i for i,e in enumerate(energies) if e>max(.018,peak_energy*.18)),0)
+            offset=max(0,first*hop-int(.035*22050))
+            target=int(max_duration*22050)
+            selected=pcm[offset:offset+target]
+            if len(selected)<target:selected.extend([0]*(target-len(selected)))
+            power=math.sqrt(sum((x/32768.0)**2 for x in selected)/len(selected))
+            gain=min(3.8,.27/max(.01,power))
+            result=array.array('h')
+            fade_in=int(.007*22050);fade_out=int(.085*22050)
+            for i,v in enumerate(selected):
+              env=min(1.0,i/max(1,fade_in),(len(selected)-1-i)/max(1,fade_out))
+              safe=.9*math.tanh((v/32768.0)*gain/.9)*max(0,env)
+              result.append(round(safe*32767))
+            peak=max(abs(x)/32768 for x in result)
+            if peak<.2 or peak>.905:raise RuntimeError(f'Invalid mastered peak: {source} {peak:.3f}')
+            path=out/filename
+            with wave.open(str(path),'wb') as f:
+              f.setnchannels(1);f.setsampwidth(2);f.setframerate(22050);f.writeframes(result.tobytes())
+            mastered[key]=base64.b64encode(path.read_bytes()).decode('ascii')
+            print(key,'duration',round(len(result)/22050,2),'peak',round(peak,3),'RMS',round(power,3))
+          # Existing finishBell remains available but gets its own real two-hit boxing bell.
+          bell_file=(out/'cloche_ring.wav').read_bytes()
+          with wave.open(str(out/'cloche_ring.wav'),'rb') as f:
+            bell_bytes=f.readframes(f.getnframes())
+          bell_samples=array.array('h');bell_samples.frombytes(bell_bytes)
+          count=round(2.75*22050)
+          double=array.array('h',[0]*count)
+          for time,gain in ((0,1.0),(.88,.76)):
+            offset=round(time*22050)
+            for j,v in enumerate(bell_samples):
+              k=offset+j
+              if k>=count:break
+              sample=(double[k]+round(v*gain))
+              double[k]=max(-29500,min(29500,sample))
+          p=out/'cloche_finale.wav'
+          with wave.open(str(p),'wb') as f:
+            f.setnchannels(1);f.setsampwidth(2);f.setframerate(22050);f.writeframes(double.tobytes())
+          mastered['finishBell']=base64.b64encode(p.read_bytes()).decode('ascii')
+          for key,value in mastered.items():
+            pattern=r'("'+re.escape(key)+r'":")[A-Za-z0-9+/=]+(")'
+            js,n=re.subn(pattern,lambda m:m.group(1)+value+m.group(2),js)
+            if n!=1:raise RuntimeError(f'Could not replace sound sample {key}: {n}')
+          js=js.replace(
+            'échantillons WAV originaux masterisés (22 050 Hz, mono).',
+            'échantillons WAV masterisés (22 050 Hz, mono).')
+          js=js.replace(
+            'Créés spécialement pour JSB. Aucun enregistrement d\'application tierce.',
+            'Cinq signaux proviennent d\'enregistrements CC0 réadaptés; autres tonalités conçues par JSB. Voir AUDIO_CREDITS.md.')
+          (root/'jsb_audio_samples.js').write_text(js,'utf-8')
+          PY
+      - name: Enregistrer les vrais signaux dans GitHub
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/audio/ jsb_audio_samples.js
+          git diff --cached --quiet && exit 0
+          git commit -m "feat(audio): ajouter de vrais sifflet, cloche, buzzer et corne CC0 masterisés"
+          git push origin HEAD:main
