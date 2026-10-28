@@ -385,8 +385,8 @@ let reorderFavorites=false;
 const safeWrite=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
 const pretty=secs=>{const n=Math.max(0,Math.ceil(secs));return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')};
 const secs=w=>trainingModes.workoutDuration(w);
-const kindSymbol={randori:'🥋',golden:'∞',random:'♫',hiit:'↗',tabata:'◉',boxe:'✦'};
-const kindDescription=w=>w.kind==='golden'?'Sans limite de temps':w.kind==='random'?'Signaux irréguliers · '+pretty(w.work):w.kind==='randori'?w.cycles+' combats · '+pretty(w.work)+' chacun':w.kind==='boxe'?w.cycles+' rounds de '+pretty(w.work):w.cycles+' cycles • '+w.work+' s / '+w.rest+' s';
+const kindSymbol={randori:'🥋',golden:'∞',chrono:'◷',random:'♫',hiit:'↗',tabata:'◉',boxe:'✦'};
+const kindDescription=w=>w.kind==='golden'?'Temps libre · Golden Score':w.kind==='chrono'?'Temps libre · Chronomètre':w.kind==='random'?'Signaux irréguliers · '+pretty(w.work):w.kind==='randori'?w.cycles+' combats · '+pretty(w.work)+' chacun':w.kind==='boxe'?w.cycles+' rounds de '+pretty(w.work):w.cycles+' cycles • '+w.work+' s / '+w.rest+' s';
 function notice(s){$('toast').textContent=s;$('toast').classList.add('active');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('active'),3500)}
 function navigate(view){['sessions','history','settings'].forEach(v=>{ $('view-'+v).classList.toggle('active',v===view);const n=document.querySelector('[data-nav="'+v+'"]');if(v===view)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current');});if(view==='history')renderHistory();window.scrollTo({top:0,behavior:'instant'});}
 function closeWorkoutMenus(){for(const menu of document.querySelectorAll('.workout-menu'))menu.hidden=true;for(const btn of document.querySelectorAll('.workout-menu-button'))btn.setAttribute('aria-expanded','false');workoutMenuId=null}
