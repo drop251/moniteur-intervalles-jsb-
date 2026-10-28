@@ -5,54 +5,31 @@
 (function (root) {
   'use strict';
 
-  // Audio original JSB v2, inspired by standard sports timer alert patterns.
-  // These tones are not recordings or copies of sounds from other apps.
-  // Distinct high-energy WAV samples, provided by jsb_audio_samples.js.
-  // Each sample is available offline and decoded only when played.
-  const SOUNDS = Object.freeze([
-    {id:'buzzerPro',label:'Buzzer de combat',description:'Fort et direct · idéal Randori'},
-    {id:'bellSport',label:'Cloche de ring',description:'Métallique · début et fin de combat'},
-    {id:'whistlePro',label:'Sifflet d’arbitre',description:'Aigu et perçant · départ'},
-    {id:'hornPro',label:'Corne sportive',description:'Grave et puissante · rounds'},
-    {id:'digitalDuo',label:'Double bip',description:'Deux tops nets · fractionné'},
-    {id:'wood',label:'Claquement sec',description:'Percussion rapide · réactivité'},
-    {id:'pulse',label:'Bip sportif',description:'Signal franc · intervalles'},
-    {id:'soft',label:'Signal de repos',description:'Moins agressif · récupération'}
+  // Catalogue strict : uniquement les quatre enregistrements de combat CC0.
+  const SOUNDS=Object.freeze([
+    {id:'buzzerPro',label:'Buzzer de combat',description:'Départ franc · combats et rounds'},
+    {id:'bellSport',label:'Cloche de ring',description:'Cloche métallique · combat et fin'},
+    {id:'whistlePro',label:'Sifflet d’arbitre',description:'Sifflet réel · départ et décompte'},
+    {id:'hornPro',label:'Corne sportive',description:'Corne réelle · alerte puissante'}
   ]);
-  const FINISH_SOUNDS = Object.freeze([
-    {id:'finishBell', label:'Cloche finale', description:'Cloche claire à décroissance progressive'},
-    {id:'finishChime', label:'Double carillon', description:'Deux notes harmonieuses de fin'},
-    {id:'finishTriple', label:'Triple top', description:'Trois bips distincts de fin'}
-  ]);
-  const IDS = new Set(SOUNDS.map(s=>s.id));
-  const FINISH_IDS = new Set(FINISH_SOUNDS.map(s=>s.id));
-  const EVENTS = Object.freeze(['prep','effort','rest','random','countdown','finish']);
-  const DEFAULTS = Object.freeze({
-    effort:'buzzerPro', rest:'soft', random:'digitalDuo', finish:'finishBell'
+  // Les options avancées ne réintroduisent aucun ancien son.
+  const FINISH_SOUNDS=SOUNDS;
+  const IDS=new Set(SOUNDS.map(sound=>sound.id));
+  const EVENTS=Object.freeze(['prep','effort','rest','random','countdown','finish']);
+  const DEFAULTS=Object.freeze({
+    effort:'buzzerPro',rest:'bellSport',random:'whistlePro',finish:'bellSport'
   });
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-  // Reject legacy selections instead of quietly bringing their old sounds back.
   const normalize=value=>IDS.has(value)?value:'buzzerPro';
-  const normalizeFinish=value=>FINISH_IDS.has(value)?value:'finishChime';
+  const normalizeFinish=value=>IDS.has(value)?value:'bellSport';
   const normalizeVolume=value=>Number.isFinite(Number(value))?clamp(Number(value),0,100):90;
 
-  /**
-   * A small catalog of original, synthesized sports cues.
-   * Event-specific pitch differences make START vs REST intelligible.
-   * Limit durations to reduce playback latency and prevent musical masking.
-   */
+  // Secours sans échantillon : aucune tonalité supprimée ne peut revenir.
   function notesFor(soundId,event='effort'){
-    if(event==='countdown'){
-      return [
-        {time:0,duration:.10,freq:1100,endFreq:1040,wave:'sine',amplitude:.73,shape:'punch'},
-        {time:0,duration:.065,freq:1650,endFreq:1560,wave:'triangle',amplitude:.20,shape:'punch'}
-      ];
-    }
-    const finish=event==='finish';
-    const id=finish?normalizeFinish(soundId):normalize(soundId);
-    const pitch=event==='rest'?.82:event==='prep'?.91:event==='random'?1.06:1;
+    const id=event==='countdown'?'whistlePro':
+      event==='finish'?normalizeFinish(soundId):normalize(soundId);
     const n=(time,duration,freq,wave='sine',endFreq=freq,amplitude=1,shape='punch')=>({
-      time,duration,freq:freq*pitch,endFreq:endFreq*pitch,wave,amplitude,shape
+      time,duration,freq,endFreq,wave,amplitude,shape
     });
     switch(id){
       case 'buzzerPro':
@@ -63,57 +40,12 @@
         return [n(0,1.0,420,'triangle',415,.75),n(0,1.0,840,'sine',830,.35),
           n(0,1.0,1260,'sine',1250,.18)];
       case 'bellSport':
-        return [
-          n(0,.75,695,'sine',690,.75,'resonant'),
+        return [n(0,.75,695,'sine',690,.75,'resonant'),
           n(0,.63,1030,'sine',1020,.34,'resonant'),
           n(0,.51,1550,'triangle',1530,.17,'resonant'),
-          n(0,.08,2160,'triangle',1500,.15,'metal')
-        ];
-      case 'pulse':
-        return [
-          n(0,.25,910,'sine',945,.76),
-          n(0,.17,1350,'triangle',1390,.22),
-        ];
-      case 'digitalDuo':
-        return [
-          n(0,.15,870,'sine',930,.76),
-          n(.23,.18,1130,'sine',1170,.79),
-          n(.23,.16,1690,'triangle',1740,.13)
-        ];
-      case 'wood':
-        return [
-          n(0,.095,620,'sine',330,.82,'metal'),
-          n(0,.065,1250,'triangle',610,.27,'metal'),
-          n(.095,.055,450,'sine',295,.20,'metal')
-        ];
-      case 'soft':
-        return [
-          n(0,.32,620,'sine',615,.61),
-          n(0,.23,930,'sine',923,.15)
-        ];
-      case 'finishBell':
-        return [
-          n(0,2.2,535,'sine',528,.72,'resonant'),
-          n(0,1.9,801,'sine',790,.39,'resonant'),
-          n(0,1.5,1239,'triangle',1223,.21,'resonant'),
-          n(0,.12,1880,'triangle',1320,.22,'metal')
-        ];
-      case 'finishChime':
-        return [
-          n(0,1.55,659,'sine',651,.63,'resonant'),
-          n(0,1.32,989,'sine',978,.20,'resonant'),
-          n(.42,2.0,880,'sine',871,.64,'resonant'),
-          n(.42,1.65,1320,'sine',1308,.22,'resonant')
-        ];
-      case 'finishTriple':
-        return [
-          n(0,.15,970,'sine',1030,.72),
-          n(.25,.15,970,'sine',1030,.72),
-          n(.50,.29,1250,'sine',1250,.80),
-          n(.50,.26,1875,'triangle',1875,.14)
-        ];
+          n(0,.08,2160,'triangle',1500,.15,'metal')];
       default:
-        return notesFor(finish?'finishChime':'bellSport',event);
+        return notesFor('buzzerPro','effort');
     }
   }
 
@@ -163,12 +95,12 @@
   }
 
   function sampleWavBase64(sound,event='effort'){
-    const id=event==='countdown'?'countdown':
+    const id=event==='countdown'?'whistlePro':
       event==='finish'?normalizeFinish(sound):normalize(sound);
     return root.JSBRealSignals?.getWavBase64(id)||null;
   }
   function sampleBytesFor(sound,event='effort'){
-    const id=event==='countdown'?'countdown':
+    const id=event==='countdown'?'whistlePro':
       event==='finish'?normalizeFinish(sound):normalize(sound);
     return root.JSBRealSignals?.getWavBytes(id)||null;
   }
@@ -269,7 +201,7 @@
     function playSampleBuffer(ctx,sound,event,volume){
       if(typeof ctx.createBuffer!=='function'||typeof ctx.createBufferSource!=='function')
         return false;
-      const key=event==='countdown'?'countdown':event==='finish'?normalizeFinish(sound):normalize(sound);
+      const key=event==='countdown'?'whistlePro':event==='finish'?normalizeFinish(sound):normalize(sound);
       let buffer=buffers.get(key);
       if(!buffer){
         const bytes=sampleBytesFor(sound,event);
