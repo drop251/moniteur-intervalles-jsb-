@@ -49,7 +49,7 @@ test('nouveaux signaux JSB synthétisés sont transmis en WAV natif', async () =
   const {window, messages} = createJSB();
   const soundEngine = window.JSBSoundEngine.createEngine();
   assert.equal(await soundEngine.activateAndPlay('bellSport', 'effort', 90), true);
-  assert.equal(await soundEngine.activateAndPlay('finishChime', 'finish', 80), true);
+  assert.equal(await soundEngine.activateAndPlay('bellSport', 'finish', 80), true);
   const cues = messages.filter(message => message.type === 'cue');
   assert.equal(cues.length, 2);
   assert.equal(cues[0].event, 'effort');
@@ -177,41 +177,40 @@ test('le nouveau catalogue supprime tous les anciens signaux sonores', () => {
   const {window} = createJSB();
   const audio = window.JSBSoundEngine;
   assert.deepEqual(Array.from(audio.SOUNDS, x => x.id),
-    ['buzzerPro','bellSport','whistlePro','hornPro','digitalDuo','wood','pulse','soft']);
+    ['buzzerPro','bellSport','whistlePro','hornPro']);
   assert.deepEqual(Array.from(audio.FINISH_SOUNDS, x => x.id),
-    ['finishBell', 'finishChime', 'finishTriple']);
+    ['buzzerPro','bellSport','whistlePro','hornPro']);
   for (const oldId of [
     'buzzer','referee','tatami','clapper','taiko','alarm','airhorn',
     'short','double','triple','whistle','bell','digital',
     'gong','gongDouble','taikoFinal','buzzerFinal','bellFinal',
   ]) {
     assert.equal(audio.normalize(oldId), 'buzzerPro', oldId);
-    assert.equal(audio.normalizeFinish(oldId), 'finishChime', oldId);
+    assert.equal(audio.normalizeFinish(oldId), 'bellSport', oldId);
   }
 });
 
-test('chaque nouveau son possède une signature WAV originale et un niveau utilisable', () => {
-  const {window} = createJSB();
+test('uniquement quatre véritables signaux WAV sont embarqués et accessibles', () => {
+  const {window}=createJSB();
   const audio=window.JSBSoundEngine;
-  const hashes=new Set();
-  const examples=[...audio.SOUNDS.map(x=>[x.id,'effort']),
-    ...audio.FINISH_SOUNDS.map(x=>[x.id,'finish']),
-    ['countdown','countdown']];
-  for(const [id,event] of examples) {
-    const wav=Buffer.from(audio.pcmWav(audio.notesFor(id,event),90));
+  const real=window.JSBRealSignals;
+  const allowed=['buzzerPro','bellSport','whistlePro','hornPro'];
+  assert.deepEqual(Array.from(real.ids),allowed);
+  for(const id of allowed){
+    const wav=Buffer.from(real.getWavBase64(id),'base64');
     assert.equal(wav.toString('ascii',0,4),'RIFF',id);
     assert.equal(wav.toString('ascii',8,12),'WAVE',id);
     assert.equal(wav.readUInt32LE(24),22050,id);
-    assert.ok(wav.length>6000 && wav.length<22050*2*4,id);
-    const slice=wav.subarray(44);
-    let peak=0;
-    for(let offset=0;offset<slice.length;offset+=2){
-      peak=Math.max(peak,Math.abs(slice.readInt16LE(offset)));
-    }
-    assert.ok(peak>3000 && peak<=32767, id+' peak '+peak);
-    const fingerprint=Array.from(slice.subarray(0,512)).join(',');
-    assert.ok(!hashes.has(fingerprint),id+' should have its own waveform');
-    hashes.add(fingerprint);
+    assert.ok(wav.length>6000,id);
+    assert.equal(audio.sampleWavBase64(id,'effort'),real.getWavBase64(id));
+    assert.equal(audio.sampleWavBase64(id,'finish'),real.getWavBase64(id));
+  }
+  assert.equal(audio.sampleWavBase64('countdown','countdown'),
+    real.getWavBase64('whistlePro'));
+  for(const old of ['wood','pulse','soft','digitalDuo','finishBell','finishTriple']){
+    assert.equal(real.getWavBase64(old),null,old);
+    assert.equal(audio.normalize(old),'buzzerPro',old);
+    assert.equal(audio.normalizeFinish(old),'bellSport',old);
   }
 });
 
@@ -246,9 +245,8 @@ test('intensité des nouveaux sons renforcée sans écrêtage PCM', () => {
     return {peak,rms:Math.sqrt(power/samples)};
   }
   for(const [id,event] of [
-    ['bellSport','effort'],['pulse','random'],['digitalDuo','effort'],
-    ['wood','random'],['soft','rest'],['finishBell','finish'],
-    ['finishChime','finish'],['finishTriple','finish'],['countdown','countdown'],
+    ['bellSport','effort'],['buzzerPro','random'],
+    ['whistlePro','effort'],['hornPro','finish'],['countdown','countdown'],
   ]){
     const silent=measure(id,event,0);
     const low=measure(id,event,50);
@@ -259,8 +257,8 @@ test('intensité des nouveaux sons renforcée sans écrêtage PCM', () => {
     assert.ok(strong.peak<=Math.ceil(32767*.96)+1,id+' limited, no PCM clipping');
     assert.ok(strong.rms>1000,id+' still audible');
   }
-  const punch=measure('pulse','effort',90);
-  assert.ok(punch.peak>17000, 'pulse has a clear prominent attack');
+  const punch=measure('buzzerPro','effort',90);
+  assert.ok(punch.peak>17000, 'the combat buzzer has a prominent attack');
 });
 
 test('Les trois rubriques gardent les minuteurs et Luc Léger est masqué', () => {
@@ -299,11 +297,11 @@ test('Chronomètre libre et Golden Score restent deux modes distincts', () => {
 test('la galerie transmet les vrais échantillons WAV au canal audio iOS', async () => {
   const {window,messages}=createJSB();
   const engine=window.JSBSoundEngine.createEngine();
-  for(const sound of ['buzzerPro','whistlePro','hornPro','bellSport','wood']){
+  for(const sound of ['buzzerPro','whistlePro','hornPro','bellSport']){
     await engine.activateAndPlay(sound,'effort',95);
   }
   const sent=messages.filter(m=>m.type==='cue');
-  assert.equal(sent.length,5);
+  assert.equal(sent.length,4);
   for(const item of sent){
     const actual=item.wavBase64;
     const expected=window.JSBRealSignals.getWavBase64(item.sound);
@@ -324,4 +322,17 @@ test('les réglages essentiels sont visibles et les options avancées repliables
   assert.ok(html.includes('Tout est enregistré automatiquement'));
   assert.ok(html.includes("soundEngine.activateAndPlay(cue.id,'effort',settings.volume)"));
   assert.ok(!html.includes('id="soundChoice"'));
+});
+
+test('les réglages avancés ne proposent aucun signal retiré', () => {
+  const html=js('index.html');
+  assert.ok(html.includes('id="signalGallery"'));
+  assert.ok(!html.includes('id="signalGallerySecondary"'));
+  assert.ok(!html.includes('id="otherSounds"'));
+  assert.ok(html.includes('4 choix uniquement'));
+  assert.ok(!html.includes('flagshipSounds'));
+  const {window}=createJSB();
+  const allowed=['buzzerPro','bellSport','whistlePro','hornPro'];
+  assert.deepEqual(Array.from(window.JSBSoundEngine.SOUNDS,s=>s.id),allowed);
+  assert.deepEqual(Array.from(window.JSBSoundEngine.FINISH_SOUNDS,s=>s.id),allowed);
 });
