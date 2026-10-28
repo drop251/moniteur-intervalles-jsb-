@@ -276,37 +276,23 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
     <p class="lead">Choisis un signal, écoute-le, puis entraîne-toi. Tout est enregistré automatiquement.</p>
   </div>
   <div class="settings-stack">
-    <section class="settings-card" aria-labelledby="settingsAudioTitle">
-      <div class="settings-section-heading">
-        <span class="settings-step" aria-hidden="true">1</span>
-        <div><h2 id="settingsAudioTitle">Activer et régler le son</h2>
-          <p>Vérifie le volume avant ta séance.</p></div>
-      </div>
-      <label class="settings-switch" for="audioEnabled">
-        <span><strong>Signaux sonores</strong><small>Départ, récupération, bips et fin</small></span>
-        <input class="toggle" id="audioEnabled" type="checkbox" checked />
-      </label>
-      <div class="volume-setting settings-volume" id="audioControls">
-        <div class="volume-heading"><label for="volumeRange">Puissance des signaux</label>
-          <output id="volumeValue" for="volumeRange">90 %</output></div>
-        <input type="range" id="volumeRange" min="0" max="100" step="5" value="90" aria-describedby="volumeHelp" />
-        <div class="volume-scale" aria-hidden="true"><span>Discret</span><span>Puissant</span></div>
-        <p id="volumeHelp" class="volume-help">Règle aussi le volume physique de ton téléphone. Préfère un haut-parleur externe pour un grand dojo.</p>
-        <button type="button" class="primary settings-test-main" id="testBeep">▶ Tester le son choisi</button>
-        <p id="audioStatus" class="audio-status" role="status" aria-live="polite">Appuie sur « Tester le son choisi ».</p>
-      </div>
-    </section>
     <section class="settings-card" aria-labelledby="settingsGalleryTitle">
       <div class="settings-section-heading">
-        <span class="settings-step" aria-hidden="true">2</span>
-        <div><h2 id="settingsGalleryTitle">Choisir un signal</h2>
-          <p>Appuie sur une carte pour <strong>écouter et sélectionner</strong> le signal de départ.</p></div>
+        <span class="settings-step" aria-hidden="true">1</span>
+        <div><h2 id="settingsGalleryTitle">Choisir mon signal</h2>
+          <p>Appuie pour <strong>écouter</strong> : ton choix est enregistré automatiquement.</p></div>
       </div>
       <div class="settings-selection-status" role="status" aria-live="polite">
         <span>Signal sélectionné</span>
         <strong id="currentSoundLabel">Cloche sportive</strong>
       </div>
-      <div id="signalGallery" class="signal-gallery" role="radiogroup" aria-label="Galerie des signaux de départ"></div>
+      <div class="signal-category-heading"><strong>Les 4 signaux de combat</strong><span>Enregistrements réels</span></div>
+      <div id="signalGallery" class="signal-gallery" role="radiogroup" aria-label="Quatre vrais signaux de combat"></div>
+      <details class="settings-detail settings-other-sounds" id="otherSounds">
+        <summary>Autres signaux <span class="settings-detail-caption">Bips et percussions</span></summary>
+        <p class="settings-detail-help">Pour le fractionné et les exercices plus discrets.</p>
+        <div id="signalGallerySecondary" class="signal-gallery signal-gallery-secondary" role="radiogroup" aria-label="Signaux électroniques complémentaires"></div>
+      </details>
       <details class="settings-detail" id="advancedSounds">
         <summary>Personnaliser les autres sons <span class="settings-detail-caption">Facultatif</span></summary>
         <p class="settings-detail-help">Les réglages recommandés conviennent à la plupart des séances. Modifie-les seulement si besoin.</p>
@@ -327,6 +313,26 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
         </div>
       </details>
       <button type="button" id="resetSounds" class="settings-reset">↺ Revenir aux sons recommandés</button>
+    </section>
+    <section class="settings-card" aria-labelledby="settingsAudioTitle">
+      <div class="settings-section-heading">
+        <span class="settings-step" aria-hidden="true">2</span>
+        <div><h2 id="settingsAudioTitle">Volume et test</h2>
+          <p>Écoute le son au volume de ton appareil.</p></div>
+      </div>
+      <label class="settings-switch" for="audioEnabled">
+        <span><strong>Signaux sonores</strong><small>Départ, récupération, bips et fin</small></span>
+        <input class="toggle" id="audioEnabled" type="checkbox" checked />
+      </label>
+      <div class="volume-setting settings-volume" id="audioControls">
+        <div class="volume-heading"><label for="volumeRange">Puissance des signaux</label>
+          <output id="volumeValue" for="volumeRange">90 %</output></div>
+        <input type="range" id="volumeRange" min="0" max="100" step="5" value="90" aria-describedby="volumeHelp" />
+        <div class="volume-scale" aria-hidden="true"><span>Discret</span><span>Puissant</span></div>
+        <p id="volumeHelp" class="volume-help">Règle aussi le volume physique de ton téléphone. Préfère un haut-parleur externe pour un grand dojo.</p>
+        <button type="button" class="primary settings-test-main" id="testBeep">▶ Tester le son choisi</button>
+        <p id="audioStatus" class="audio-status" role="status" aria-live="polite">Appuie sur « Tester le son choisi ».</p>
+      </div>
     </section>
     <section class="settings-card" aria-labelledby="settingsSessionTitle">
       <div class="settings-section-heading">
@@ -939,13 +945,14 @@ if(previousSound!==settings.sound||previousRest!==settings.restSound||
    previousRandom!==settings.randomSound||previousFinish!==settings.finishSound)
   safeWrite('jsb_preview_settings',settings);
 
-const gallery=$('signalGallery');
+const gallery=$('signalGallery'),gallerySecondary=$('signalGallerySecondary');
+const flagshipSounds=new Set(['buzzerPro','bellSport','whistlePro','hornPro']);
 const galleryIcons={
  buzzerPro:'◼',bellSport:'♬',whistlePro:'♫',hornPro:'◉',
  digitalDuo:'▮▮',wood:'◌',pulse:'●',soft:'·'
 };
 function renderSoundGallery(){
- gallery.replaceChildren();
+ gallery.replaceChildren();gallerySecondary.replaceChildren();
  for(const cue of soundLibrary.SOUNDS){
    const button=document.createElement('button');
    button.type='button';button.className='signal-card';button.setAttribute('role','radio');
@@ -970,9 +977,10 @@ function renderSoundGallery(){
      settings.sound=cue.id;
      safeWrite('jsb_preview_settings',settings);
      renderSoundGallery();
+     document.querySelector('[data-sound="'+cue.id+'"]')?.focus();
      void soundEngine.activateAndPlay(cue.id,'effort',settings.volume);
    });
-   gallery.append(button);
+   (flagshipSounds.has(cue.id)?gallery:gallerySecondary).append(button);
  }
  $('currentSoundLabel').textContent=soundLibrary.SOUNDS.find(x=>x.id===settings.sound)?.label||'Signal sportif';
 }
