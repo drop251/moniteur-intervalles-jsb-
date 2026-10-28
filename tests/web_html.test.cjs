@@ -148,6 +148,17 @@ test('settings focus on three steps, with sound gallery and progressive disclosu
   assert.ok(html.includes("soundEngine.activateAndPlay(cue.id,'effort',settings.volume)"));
 });
 
+test('le réglage sonore reste lisible et guidé sur un smartphone', () => {
+  const settingIndex=html.indexOf('<section id="view-settings"');
+  const panel=html.slice(settingIndex,html.indexOf('<nav class="nav"',settingIndex));
+  assert.ok(panel.indexOf('id="signalGallery"')<panel.indexOf('id="volumeRange"'),'Sound first');
+  assert.ok(panel.includes('id="otherSounds"'),'Additional options are folded');
+  assert.ok(panel.includes('id="testBeep"'),'Audible preview button visible');
+  assert.ok(panel.includes('id="audioStatus"'),'Feedback on audio activation');
+  assert.ok(css.includes('.signal-card:focus-visible'),'Keyboard focus');
+  assert.ok(css.includes('.signal-category-heading'),'Clear section names');
+});
+
 test('four authentic recordings are primary; electronic cues are optional', () => {
   const settings=html.slice(html.indexOf('<section id="view-settings"'),html.indexOf('<nav class="nav"',html.indexOf('<section id="view-settings"')));
   assert.ok(settings.includes('id="signalGallery"'));
