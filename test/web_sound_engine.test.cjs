@@ -1,17 +1,27 @@
 const assert=require('node:assert/strict');
+const samples=require('../jsb_audio_samples.js');
 const {SOUNDS,FINISH_SOUNDS,notesFor,pcmWav,normalize,normalizeFinish,
-  normalizeVolume,createEngine}=require('../sound_engine.js');
+  normalizeVolume,sampleWavBase64,createEngine}=require('../sound_engine.js');
 
-assert.deepEqual(SOUNDS.map(s=>s.id),['bellSport','pulse','digitalDuo','wood','soft']);
+assert.deepEqual(SOUNDS.map(s=>s.id),['buzzerPro','bellSport','whistlePro','hornPro','digitalDuo','wood','pulse','soft']);
 assert.deepEqual(FINISH_SOUNDS.map(s=>s.id),['finishBell','finishChime','finishTriple']);
 assert.equal(normalizeFinish('finishChime'),'finishChime');
 assert.equal(normalizeFinish('gong'),'finishChime');
-assert.equal(normalize('buzzer'),'bellSport');
-assert.equal(normalize('unknown'),'bellSport');
+assert.equal(normalize('buzzer'),'buzzerPro');
+assert.equal(normalize('unknown'),'buzzerPro');
 assert.equal(normalizeVolume(105),100);
 assert.equal(normalizeVolume(-3),0);
 assert.equal(normalizeVolume('invalid'),90);
 assert.equal(new Set(SOUNDS.map(s=>s.id)).size,SOUNDS.length);
+assert.ok(samples.ids.includes('buzzerPro'));
+for(const id of samples.ids){
+  const sample=Buffer.from(samples.getWavBase64(id),'base64');
+  assert.equal(sample.toString('ascii',0,4),'RIFF');
+  assert.equal(sample.readUInt32LE(24),22050);
+}
+assert.equal(sampleWavBase64('buzzerPro','effort'),samples.getWavBase64('buzzerPro'));
+assert.equal(sampleWavBase64('finishBell','finish'),samples.getWavBase64('finishBell'));
+
 for(const item of [...SOUNDS,...FINISH_SOUNDS]){
  const event=FINISH_SOUNDS.includes(item)?'finish':'effort';
  const notes=notesFor(item.id,event);
