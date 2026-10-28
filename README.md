@@ -20,7 +20,7 @@ L'identité visuelle JSB utilise le bleu nuit, le blanc ivoire et des accents do
 
 ## Sons et musique
 
-Les signaux sportifs JSB sont générés localement : Cloche sportive, Pulse net, Double digital, Clac sec, Bip doux, ainsi que trois signaux de fin.
+La galerie sonore ne propose désormais que **quatre enregistrements réels CC0** : **Buzzer de combat, Cloche de ring, Sifflet d’arbitre et Corne sportive**. Les anciens bips, percussions et carillons ont été retirés. Dans *Réglages → Choisir les sons par étape*, les sélecteurs de récupération, de bips aléatoires et de fin proposent uniquement ces quatre sons. Les anciennes préférences sont automatiquement remplacées par des valeurs prises en charge. Le décompte réutilise le sifflet d’arbitre.
 
 La **version web** utilise l'audio du navigateur. Elle **ne peut pas commander la baisse de volume de Spotify ou Apple Music**. La superposition de la musique et des alertes dépend du navigateur et du système. Le maintien de l'écran allumé et les vibrations dépendent également des API proposées par l'appareil.
 
@@ -37,7 +37,7 @@ Les réglages et historiques utilisent le stockage local du navigateur (`localSt
 - `index.html` : interface web et logique de navigation.
 - `premium_v2.css` : design responsive, portrait et paysage.
 - `training_modes.js` : définition des modes et de leurs phases.
-- `sound_engine.js` et `audio_cues.js` : audio synthétisé et décomptes.
+- `jsb_audio_samples.js`, `sound_engine.js` et `audio_cues.js` : quatre WAV authentiques hors ligne, lecture et décomptes.
 - `interaction_gate.js`, `workout_manager.js`, `workout_library.js`, `duration_presets.js`, `random_signals.js` : outils de préparation et d'entraînement.
 - `sw.js`, `manifest.webmanifest` et `icon.svg` : PWA et cache hors ligne.
 
