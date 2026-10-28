@@ -1,1 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#0a1019"/><circle cx="256" cy="256" r="160" fill="none" stroke="#34d89b" stroke-width="38" stroke-linecap="round" stroke-dasharray="760 245" transform="rotate(-90 256 256)"/><text x="256" y="287" text-anchor="middle" font-size="122" font-family="Arial,sans-serif" font-weight="800" fill="#f3f7fb">JSB</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Moniteur JSB">
+  <rect width="512" height="512" rx="112" fill="#1F293B"/>
+  <circle cx="256" cy="256" r="183" fill="#1F293B" stroke="#DBAE6B" stroke-width="17"/>
+  <circle cx="256" cy="256" r="160" fill="none" stroke="#DBAE6B" stroke-width="3"/>
+  <text x="256" y="283" text-anchor="middle" font-size="127" font-family="Arial,Helvetica,sans-serif" font-weight="900" letter-spacing="-7" fill="#F8F7F2" stroke="#DBAE6B" stroke-width="2.6" paint-order="stroke">JSB</text>
+  <path d="M173 320h166" stroke="#DBAE6B" stroke-width="3" stroke-linecap="round"/>
+  <text x="256" y="346" text-anchor="middle" font-size="19" font-family="Arial,Helvetica,sans-serif" font-weight="700" letter-spacing="4" fill="#DBAE6B">JUDO</text>
+</svg>
