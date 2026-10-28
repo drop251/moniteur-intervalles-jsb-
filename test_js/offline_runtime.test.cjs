@@ -22,9 +22,10 @@ function createJSB() {
   const context = vm.createContext({
     window,
     btoa: binary => Buffer.from(binary, 'binary').toString('base64'),
+    atob: data => Buffer.from(data, 'base64').toString('binary'),
     console,
   });
-  for (const source of ['sound_engine.js', 'jsb_native_bridge.js',
+  for (const source of ['jsb_audio_samples.js','sound_engine.js', 'jsb_native_bridge.js',
     'training_modes.js', 'random_signals.js', 'audio_cues.js']) {
     vm.runInContext(js(source), context, {filename: source, timeout: 1500});
   }
@@ -176,7 +177,7 @@ test('le nouveau catalogue supprime tous les anciens signaux sonores', () => {
   const {window} = createJSB();
   const audio = window.JSBSoundEngine;
   assert.deepEqual(Array.from(audio.SOUNDS, x => x.id),
-    ['bellSport', 'pulse', 'digitalDuo', 'wood', 'soft']);
+    ['buzzerPro','bellSport','whistlePro','hornPro','digitalDuo','wood','pulse','soft']);
   assert.deepEqual(Array.from(audio.FINISH_SOUNDS, x => x.id),
     ['finishBell', 'finishChime', 'finishTriple']);
   for (const oldId of [
@@ -184,7 +185,7 @@ test('le nouveau catalogue supprime tous les anciens signaux sonores', () => {
     'short','double','triple','whistle','bell','digital',
     'gong','gongDouble','taikoFinal','buzzerFinal','bellFinal',
   ]) {
-    assert.equal(audio.normalize(oldId), 'bellSport', oldId);
+    assert.equal(audio.normalize(oldId), 'buzzerPro', oldId);
     assert.equal(audio.normalizeFinish(oldId), 'finishChime', oldId);
   }
 });
@@ -216,13 +217,15 @@ test('chaque nouveau son possède une signature WAV originale et un niveau utili
 
 test('les réglages JSB proposent un son pour effort, repos et fin', () => {
   const html=js('index.html');
-  for(const id of ['soundChoice','restSoundChoice','randomSoundChoice','finishSoundChoice',
+  for(const id of ['signalGallery','currentSoundLabel','resetSounds','restSoundChoice','randomSoundChoice','finishSoundChoice',
     'testBeep','testRestSound','testRandomSound','testFinishSound']){
     assert.ok(html.includes('id="'+id+'"'),id);
   }
   assert.ok(html.includes("kind==='rest'?settings.restSound:"));
   assert.ok(html.includes("kind==='random'?settings.randomSound:settings.sound"));
   assert.ok(html.includes("soundLibrary.normalize(settings.sound)"));
+  assert.ok(html.includes("renderSoundGallery()"));
+  assert.ok(html.includes('jsb_audio_samples.js'));
   assert.ok(html.includes("soundLibrary.normalizeFinish(settings.finishSound)"));
   assert.ok(!html.includes('<option value="buzzer">'));
   assert.ok(!html.includes('<option value="gong">'));
@@ -291,4 +294,34 @@ test('Chronomètre libre et Golden Score restent deux modes distincts', () => {
   assert.equal(stages[0].label,'CHRONOMÈTRE');
   assert.equal(stages[0].ms,Infinity);
   assert.equal(modes.phasePlan({kind:'golden',prep:0,work:0,rest:0,cycles:1})[0].label,'GOLDEN SCORE');
+});
+
+test('la galerie transmet les vrais échantillons WAV au canal audio iOS', async () => {
+  const {window,messages}=createJSB();
+  const engine=window.JSBSoundEngine.createEngine();
+  for(const sound of ['buzzerPro','whistlePro','hornPro','bellSport','wood']){
+    await engine.activateAndPlay(sound,'effort',95);
+  }
+  const sent=messages.filter(m=>m.type==='cue');
+  assert.equal(sent.length,5);
+  for(const item of sent){
+    const actual=item.wavBase64;
+    const expected=window.JSBRealSignals.getWavBase64(item.sound);
+    assert.equal(actual,expected,item.sound+' should be its original master');
+    const decoded=Buffer.from(actual,'base64');
+    assert.equal(decoded.toString('ascii',0,4),'RIFF');
+    assert.equal(decoded.readUInt32LE(24),22050);
+    assert.equal(item.volume,95);
+  }
+});
+
+test('les réglages essentiels sont visibles et les options avancées repliables', () => {
+  const html=js('index.html');
+  for(const id of ['settingsAudioTitle','settingsGalleryTitle','settingsSessionTitle',
+    'signalGallery','audioControls','resetSounds','advancedSounds','settingsMore']){
+    assert.ok(html.includes('id="'+id+'"'),id);
+  }
+  assert.ok(html.includes('Tout est enregistré automatiquement'));
+  assert.ok(html.includes("soundEngine.activateAndPlay(cue.id,'effort',settings.volume)"));
+  assert.ok(!html.includes('id="soundChoice"'));
 });
