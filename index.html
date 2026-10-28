@@ -497,9 +497,11 @@ const secs=w=>trainingModes.workoutDuration(w);
 const kindSymbol={randori:'🥋',golden:'∞',chrono:'◷',random:'♫',hiit:'↗',tabata:'◉',boxe:'✦'};
 const kindDescription=w=>w.kind==='golden'?'Temps libre · Golden Score':w.kind==='chrono'?'Temps libre · Chronomètre':w.kind==='random'?'Signaux irréguliers · '+pretty(w.work):w.kind==='randori'?w.cycles+' combats · '+pretty(w.work)+' chacun':w.kind==='boxe'?w.cycles+' rounds de '+pretty(w.work):w.cycles+' cycles • '+w.work+' s / '+w.rest+' s';
 function notice(s){$('toast').textContent=s;$('toast').classList.add('active');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('active'),3500)}
+let lastTrainingView='randori';
 function navigate(view){
  const tabs=['randori','tabata','chrono','luc-leger','settings'];
  if(!tabs.includes(view))return;
+ if(view!=='settings')lastTrainingView=view;
  for(const v of tabs){
    $('view-'+v).classList.toggle('active',v===view);
    const button=document.querySelector('[data-nav="'+v+'"]');
@@ -508,6 +510,10 @@ function navigate(view){
      else button.removeAttribute('aria-current');
    }
  }
+ const isSettings=view==='settings';
+ $('settingsQuick').setAttribute('aria-label',
+   isSettings?'Revenir à '+(lastTrainingView==='luc-leger'?'Luc Léger':lastTrainingView==='chrono'?'Chronomètre':lastTrainingView==='tabata'?'Tabata':'Randori'):'Ouvrir les réglages');
+ $('settingsQuick').setAttribute('aria-pressed',String(isSettings));
  window.scrollTo({top:0,behavior:'instant'});
 }
 function tabForTimer(kind){
@@ -783,6 +789,10 @@ function startWorkout(w){
  if(session||!trainingModes.isAvailable(w.kind)||!gate.allow('start-workout',600))return;
  clearInterval(frame);frame=null;
  recentWorkout={...w};safeWrite('jsb_v2_recent_workout',recentWorkout);
+ // Remember the last timer actually started; do not auto-play at next launch.
+ const lastTimerTab=tabForTimer(w.kind);
+ safeWrite('jsb_v2_last_started_tab',lastTimerTab);
+ lastTrainingView=lastTimerTab;
  if(['randori','golden','chrono','random','tabata'].includes(w.id)){
    modeSettings[w.id]={...w};safeWrite('jsb_v2_mode_settings',modeSettings);
  }
@@ -915,7 +925,10 @@ document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;
  if($('sessionSummary').classList.contains('active')){e.preventDefault();$('summaryHome').click();return;}
  if($('editorModal').classList.contains('active')){e.preventDefault();closeEditor();return;}
  closeWorkoutMenus();});
-for(const n of document.querySelectorAll('[data-nav]'))n.addEventListener('click',()=>navigate(n.dataset.nav));$('settingsQuick').addEventListener('click',()=>navigate('settings'));$('newWorkout').addEventListener('click',()=>openEditor());$('closeEditor').addEventListener('click',closeEditor);$('cancelEditor').addEventListener('click',closeEditor);$('editorModal').addEventListener('click',e=>{if(e.target===$('editorModal'))closeEditor()});for(const id of ['preparation','effort','repos']){
+for(const n of document.querySelectorAll('[data-nav]'))n.addEventListener('click',()=>navigate(n.dataset.nav));
+$('settingsQuick').addEventListener('click',()=>{
+  navigate($('view-settings').classList.contains('active')?lastTrainingView:'settings');
+});$('newWorkout').addEventListener('click',()=>openEditor());$('closeEditor').addEventListener('click',closeEditor);$('cancelEditor').addEventListener('click',closeEditor);$('editorModal').addEventListener('click',e=>{if(e.target===$('editorModal'))closeEditor()});for(const id of ['preparation','effort','repos']){
   for(const suffix of ['Minutes','Seconds']){
     $(id+suffix).addEventListener('change',()=>updateDurationOptions(id));
   }
@@ -1116,7 +1129,15 @@ for(const [id,key] of [
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&session&&!session.paused){nativeAudio?.release();releaseWakeLock();}else if(!document.hidden&&session&&!session.paused){nativeAudio?.reset();requestWakeLock();updateTimer();}});
 // Open only one category at a time; keep the last-used category between sessions.
 // Native <details>/<summary> also works with keyboard and VoiceOver/TalkBack.
-renderWorkouts();})();
+renderWorkouts();
+// Restore the space of the last STARTED timer, not an automatic running session.
+// New installs default to Randori; visits to Settings or Luc Léger never
+// replace the last actual training mode.
+const persistedTab=read('jsb_v2_last_started_tab',null);
+const initialTab=['randori','tabata','chrono'].includes(persistedTab)?persistedTab:
+  recentWorkout?tabForTimer(recentWorkout.kind):'randori';
+navigate(initialTab);
+})();
 </script>
 <script>
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
