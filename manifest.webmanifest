@@ -1,13 +1,13 @@
 {
-  "name": "Moniteur JSB – Minuteur sportif",
+  "name": "Moniteur JSB – Judo Sans Barrière",
   "short_name": "Moniteur JSB",
-  "description": "Minuteur d'intervalles sportifs hors ligne",
+  "description": "Randori, Golden Score, Tabata, chronomètre libre et bips aléatoires. Test Luc Léger expérimental masqué.",
   "lang": "fr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0a1019",
-  "theme_color": "#0a1019",
+  "background_color": "#1F293B",
+  "theme_color": "#1F293B",
   "icons": [
     {
       "src": "./icon.svg",
