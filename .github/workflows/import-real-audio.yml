@@ -129,4 +129,7 @@ jobs:
           git add assets/audio/ jsb_audio_samples.js
           git diff --cached --quiet && exit 0
           git commit -m "feat(audio): ajouter de vrais sifflet, cloche, buzzer et corne CC0 masterisés"
+          # Preserve UI/test commits pushed while this job downloads sources.
+          git fetch origin main
+          git rebase origin/main
           git push origin HEAD:main
