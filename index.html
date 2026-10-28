@@ -393,6 +393,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
 <script src="./duration_presets.js"></script>
 <script src="./training_modes.js"></script>
 <script src="./random_signals.js"></script>
+<script src="./jsb_audio_samples.js"></script>
 <script src="./sound_engine.js"></script>
 <script src="./audio_cues.js"></script>
 <script>
@@ -401,7 +402,7 @@ const $=id=>document.getElementById(id);
 const standard=[{id:'randori',name:'Randori · 5 × 4 min',prep:10,work:240,rest:60,cycles:5,kind:'randori',symbol:'🥋'},{id:'golden',name:'Golden Score · Libre',prep:10,work:0,rest:0,cycles:1,kind:'golden',symbol:'∞'},{id:'chrono',name:'Chronomètre libre',prep:0,work:0,rest:0,cycles:1,kind:'chrono',symbol:'◷'},{id:'random',name:'Bips aléatoires · Burpees',prep:10,work:180,rest:0,cycles:1,kind:'random',symbol:'♫',frequency:'medium',progressive:true},{id:'tabata',name:'Tabata classique',prep:10,work:20,rest:10,cycles:8,kind:'tabata',symbol:'◉'},{id:'hiit',name:'HIIT 40 / 20',prep:10,work:40,rest:20,cycles:10,kind:'hiit',symbol:'↗'},{id:'boxe',name:'Boxe · 3 rounds',prep:10,work:180,rest:60,cycles:3,kind:'boxe',symbol:'✦'}];
 const read=(key,fallback)=>{try{const parsed=JSON.parse(localStorage.getItem(key));return parsed===null?fallback:parsed}catch{return fallback}};
 let customs=read('jsb_preview_customs',[]);if(!Array.isArray(customs))customs=[];let history=read('jsb_preview_history',[]);if(!Array.isArray(history))history=[];
-const storedSettings=read('jsb_preview_settings',{});let settings={audio:true,vibrate:true,keepAwake:false,volume:90,sound:'bellSport',restSound:'soft',randomSound:'pulse',audioMethod:'web',finishSound:'finishChime',countdown:true,...storedSettings};
+const storedSettings=read('jsb_preview_settings',{});let settings={audio:true,vibrate:true,keepAwake:false,volume:90,sound:'buzzerPro',restSound:'soft',randomSound:'digitalDuo',audioMethod:'web',finishSound:'finishBell',countdown:true,...storedSettings};
 settings.volume=Number.isFinite(Number(settings.volume))?Math.min(100,Math.max(0,Number(settings.volume))):90;
 // Migration : l'ancien mode média était parfois sélectionné pour corriger le silence ;
 // privilégier maintenant le mixage ambiant et éviter toute interruption involontaire.
@@ -418,7 +419,7 @@ const soundEngine=window.JSBSoundEngine.createEngine();
 const nativeAudio=window.JSBNativeAudio||null;
 const audioCues=window.JSBAudioCues;
 soundEngine.setMode(settings.audioMethod);
-soundEngine.onStatus(state=>{const el=$('audioStatus');if(!el)return;el.dataset.state=state;el.textContent=({ready:'Audio activé',inactive:'Audio non activé : touche Tester',blocked:'Audio bloqué : touche Tester. Ne passe en priorité audio que si tu acceptes une interruption musicale',unsupported:'Audio non pris en charge',muted:'Volume réglé sur 0 %'})[state]||'Audio non testé';});
+soundEngine.onStatus(state=>{const el=$('audioStatus');if(!el)return;el.dataset.state=state;el.textContent=({ready:'Audio activé',inactive:'Audio non activé : touche Tester',blocked:'Le navigateur bloque le son : appuie sur Tester après avoir activé le volume du téléphone',unsupported:'Audio non pris en charge',muted:'Volume réglé sur 0 %'})[state]||'Audio non testé';});
 const gate=window.JSBInteractionGate.createInteractionGate();
 let modalBusy=false;
 let editingWorkoutId=null;
