@@ -128,7 +128,7 @@ test('existing custom sessions, favorites, settings and history are retained', (
 });
 
 test('settings focus on three steps, with sound gallery and progressive disclosure', () => {
-  const panel = html.slice(html.indexOf('<section id="view-settings"'),html.indexOf('</section>',html.indexOf('<section id="view-settings"'))+10);
+  const panel = html.slice(html.indexOf('<section id="view-settings"'),html.indexOf('<nav class="nav"',html.indexOf('<section id="view-settings"')));
   for(const id of ['audioEnabled','volumeRange','testBeep','signalGallery','currentSoundLabel',
     'resetSounds','advancedSounds','restSoundChoice','randomSoundChoice','finishSoundChoice',
     'countdownEnabled','vibrateEnabled','keepAwake','settingsMore','showLucLeger']){
