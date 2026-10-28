@@ -233,42 +233,38 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
       </summary>
       <div class="mode-accordion-body" id="modeOptionsChrono"></div>
     </details>
-    <details class="mode-accordion experimental-mode" id="lucLegerCategory" data-group="luc" hidden>
-      <summary class="mode-accordion-head">
-        <span class="mode-group-icon" aria-hidden="true">↗</span>
-        <span class="mode-group-title"><strong>Test Luc Léger</strong><small>Module expérimental · non validé</small></span>
-        <span class="mode-chevron" aria-hidden="true">⌄</span>
-      </summary>
-      <div class="mode-accordion-body">
-        <p class="luc-warning">Le protocole, les paliers et les bips doivent être validés avant toute utilisation sportive. Ce test ne peut pas encore être lancé.</p>
-        <button class="secondary luc-disabled" type="button" disabled>En cours de validation</button>
-      </div>
-    </details>
+    
   </div>
   
 </section>
-<section id="view-tests" class="view" aria-label="Tests physiques"><div class="top-intro"><div class="eyebrow">ÉVALUE TA PROGRESSION</div><h1>Tests physiques</h1><p class="lead">Chronométrage progressif et résultats enregistrés.</p></div><div class="panel"><span class="flag">Validation en cours</span><h2 style="margin:19px 0 9px">Test Luc Léger</h2><p class="muted" style="line-height:1.55">Le module est prévu pour un test navette de 20 mètres. La table officielle des paliers et des bips doit encore être validée avant utilisation réelle.</p><button class="secondary" style="margin-top:20px;width:100%" disabled>Disponible dans une prochaine version</button></div></section>
-<section id="view-history" class="view" aria-label="Historique"><div class="top-intro"><div class="eyebrow">SUIVI PERSONNEL</div><h1>Historique</h1><p class="lead">Tes dernières séances, enregistrées uniquement sur cet appareil.</p></div><div class="panel" id="historyList"></div>
-<details class="library-panel" id="libraryDetails">
-    <summary>Mes séances personnalisées <span class="custom-count" id="customCount">0 séance</span></summary>
-    <div class="library-content">
-      <div class="section-head"><h2>Bibliothèque</h2><button id="newWorkout" type="button">+ Créer</button></div>
-      <div class="library-search"><label for="workoutSearch">Rechercher une séance</label>
-        <input id="workoutSearch" type="search" placeholder="Nom de la séance…" autocomplete="off" aria-controls="presetList" /></div>
-      <div class="library-tools">
-        <div class="library-filter"><label for="workoutFilter">Mode</label><select id="workoutFilter">
-          <option value="all">Tous les modes</option><option value="randori">Randori</option>
-          <option value="golden">Golden Score</option><option value="random">Bip aléatoire</option>
-          <option value="tabata">Tabata</option><option value="hiit">HIIT (archives)</option>
-          <option value="boxe">Boxe (archives)</option></select></div>
-        <label class="favorites-toggle" for="favoritesOnly"><input type="checkbox" id="favoritesOnly" /> ★ Favoris</label></div>
-      <div class="library-order-toolbar"><p class="library-count" id="workoutCount" role="status"></p>
-        <button type="button" class="library-reorder-button" id="reorderFavorites" aria-pressed="false">↕ Classer</button></div>
-      <p class="library-reorder-hint" id="reorderHint" hidden>Utilise les flèches ↑ et ↓ pour réorganiser les favoris.</p>
-      <div class="cards" id="presetList"></div>
-      <p class="footnote">Tes anciennes séances restent disponibles et enregistrées sur cet appareil.</p>
+<section id="view-luc-leger" class="view" aria-label="Espace Test Luc Léger">
+  <div class="top-intro luc-hero">
+    <div class="eyebrow">ÉVALUATION PHYSIQUE · ESPACE DÉDIÉ</div>
+    <h1>Test Luc Léger</h1>
+    <p class="lead">Un espace indépendant des minuteurs d’entraînement pour le test navette de 20 mètres.</p>
+  </div>
+  <div class="luc-feature-card">
+    <div class="luc-feature-icon" aria-hidden="true">↗</div>
+    <div class="luc-feature-text">
+      <span class="luc-status">En préparation</span>
+      <h2>Test de course navette</h2>
+      <p>Parcours de 20 mètres, paliers progressifs et bips de cadence synchronisés.</p>
     </div>
-  </details><button class="secondary" id="clearHistory" style="width:100%">Effacer l'historique</button></section>
+  </div>
+  <div class="luc-info-list" aria-label="Éléments du futur test">
+    <div class="luc-info-item"><span class="luc-info-mark" aria-hidden="true">01</span>
+      <div><strong>Distance</strong><small>Deux repères espacés de 20 mètres</small></div></div>
+    <div class="luc-info-item"><span class="luc-info-mark" aria-hidden="true">02</span>
+      <div><strong>Cadence progressive</strong><small>Les changements de palier seront annoncés par des signaux dédiés</small></div></div>
+    <div class="luc-info-item"><span class="luc-info-mark" aria-hidden="true">03</span>
+      <div><strong>Résultat du test</strong><small>Palier atteint et durée, sans les confondre avec les séances de judo</small></div></div>
+  </div>
+  <div class="luc-safety-note" role="status">
+    <strong>Protocole en cours de validation</strong>
+    <p>Les durées officielles des paliers et les bips n’ont pas encore été vérifiés. Le lancement reste désactivé pour éviter un résultat sportif incorrect.</p>
+  </div>
+  <button class="secondary luc-disabled luc-main-action" type="button" disabled aria-disabled="true">Lancement disponible après validation</button>
+</section>
 <section id="view-settings" class="view" aria-label="Réglages">
   <div class="top-intro settings-intro">
     <div class="eyebrow">UN RÉGLAGE SIMPLE, UNE SÉANCE PRÊTE</div>
@@ -349,24 +345,40 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
       </label>
     </section>
     <details class="settings-detail settings-more" id="settingsMore">
-      <summary>Aide et options avancées <span class="settings-detail-caption">Musique · Luc Léger</span></summary>
+      <summary>Aide et options avancées <span class="settings-detail-caption">Musique et assistance</span></summary>
       <div class="settings-more-body">
         <h3>Musique Spotify / Apple Music</h3>
         <p>Sur la version HTML, les signaux passent par le navigateur : il ne peut pas réduire automatiquement Spotify ou Apple Music. L’application mobile native JSB prend en charge cette demande d’atténuation.</p>
-        <h3>Fonctions expérimentales</h3>
-        <label class="settings-switch" for="showLucLeger">
-          <span><strong>Afficher le test Luc Léger</strong><small>Non validé · impossible à lancer pour le moment</small></span>
-          <input class="toggle" id="showLucLeger" type="checkbox" />
-        </label>
-        <p class="settings-note">Les réglages et l'historique sont enregistrés sur cet appareil. Aucun compte n'est requis.</p>
+        <p class="settings-note">Les réglages et les séances personnalisées sont conservés sur cet appareil. Aucun compte n'est requis.</p>
       </div>
     </details>
   </div>
+  <details class="library-panel settings-library" id="libraryDetails">
+    <summary>Mes séances personnalisées <span class="custom-count" id="customCount">0 séance</span></summary>
+    <div class="library-content">
+      <div class="section-head"><h2>Bibliothèque</h2><button id="newWorkout" type="button">+ Créer</button></div>
+      <div class="library-search"><label for="workoutSearch">Rechercher une séance</label>
+        <input id="workoutSearch" type="search" placeholder="Nom de la séance…" autocomplete="off" aria-controls="presetList" /></div>
+      <div class="library-tools">
+        <div class="library-filter"><label for="workoutFilter">Mode</label><select id="workoutFilter">
+          <option value="all">Tous les modes</option><option value="randori">Randori</option>
+          <option value="golden">Golden Score</option><option value="chrono">Chronomètre</option>
+          <option value="random">Bip aléatoire</option><option value="tabata">Tabata</option>
+          <option value="hiit">HIIT (archives)</option><option value="boxe">Boxe (archives)</option></select></div>
+        <label class="favorites-toggle" for="favoritesOnly"><input type="checkbox" id="favoritesOnly" /> ★ Favoris</label>
+      </div>
+      <div class="library-order-toolbar"><p class="library-count" id="workoutCount" role="status"></p>
+        <button type="button" class="library-reorder-button" id="reorderFavorites" aria-pressed="false">↕ Classer</button></div>
+      <p class="library-reorder-hint" id="reorderHint" hidden>Utilise les flèches ↑ et ↓ pour réorganiser les favoris.</p>
+      <div class="cards" id="presetList"></div>
+      <p class="footnote">Les anciennes séances personnalisées sont conservées sur ton appareil, sans rubrique Historique.</p>
+    </div>
+  </details>
 </section>
 </main>
 <nav class="nav" aria-label="Navigation principale">
   <button type="button" data-nav="sessions" aria-current="page"><span class="ni" aria-hidden="true">◷</span><span class="nl">Minuteurs</span></button>
-  <button type="button" data-nav="history"><span class="ni" aria-hidden="true">▤</span><span class="nl">Historique</span></button>
+  <button type="button" data-nav="luc-leger"><span class="ni" aria-hidden="true">↗</span><span class="nl">Luc Léger</span></button>
   <button type="button" data-nav="settings"><span class="ni" aria-hidden="true">⚙</span><span class="nl">Réglages</span></button>
 </nav>
 </div>
@@ -402,7 +414,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
 const $=id=>document.getElementById(id);
 const standard=[{id:'randori',name:'Randori · 5 × 4 min',prep:10,work:240,rest:60,cycles:5,kind:'randori',symbol:'🥋'},{id:'golden',name:'Golden Score · Libre',prep:10,work:0,rest:0,cycles:1,kind:'golden',symbol:'∞'},{id:'chrono',name:'Chronomètre libre',prep:0,work:0,rest:0,cycles:1,kind:'chrono',symbol:'◷'},{id:'random',name:'Bips aléatoires · Burpees',prep:10,work:180,rest:0,cycles:1,kind:'random',symbol:'♫',frequency:'medium',progressive:true},{id:'tabata',name:'Tabata classique',prep:10,work:20,rest:10,cycles:8,kind:'tabata',symbol:'◉'},{id:'hiit',name:'HIIT 40 / 20',prep:10,work:40,rest:20,cycles:10,kind:'hiit',symbol:'↗'},{id:'boxe',name:'Boxe · 3 rounds',prep:10,work:180,rest:60,cycles:3,kind:'boxe',symbol:'✦'}];
 const read=(key,fallback)=>{try{const parsed=JSON.parse(localStorage.getItem(key));return parsed===null?fallback:parsed}catch{return fallback}};
-let customs=read('jsb_preview_customs',[]);if(!Array.isArray(customs))customs=[];let history=read('jsb_preview_history',[]);if(!Array.isArray(history))history=[];
+let customs=read('jsb_preview_customs',[]);if(!Array.isArray(customs))customs=[];// Previous history remains untouched in localStorage, but is not displayed or extended.
 const storedSettings=read('jsb_preview_settings',{});let settings={audio:true,vibrate:true,keepAwake:false,volume:90,sound:'buzzerPro',restSound:'bellSport',randomSound:'whistlePro',audioMethod:'web',finishSound:'bellSport',countdown:true,...storedSettings};
 settings.volume=Number.isFinite(Number(settings.volume))?Math.min(100,Math.max(0,Number(settings.volume))):90;
 // Migration : l'ancien mode média était parfois sélectionné pour corriger le silence ;
@@ -441,7 +453,7 @@ const secs=w=>trainingModes.workoutDuration(w);
 const kindSymbol={randori:'🥋',golden:'∞',chrono:'◷',random:'♫',hiit:'↗',tabata:'◉',boxe:'✦'};
 const kindDescription=w=>w.kind==='golden'?'Temps libre · Golden Score':w.kind==='chrono'?'Temps libre · Chronomètre':w.kind==='random'?'Signaux irréguliers · '+pretty(w.work):w.kind==='randori'?w.cycles+' combats · '+pretty(w.work)+' chacun':w.kind==='boxe'?w.cycles+' rounds de '+pretty(w.work):w.cycles+' cycles • '+w.work+' s / '+w.rest+' s';
 function notice(s){$('toast').textContent=s;$('toast').classList.add('active');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('active'),3500)}
-function navigate(view){['sessions','history','settings'].forEach(v=>{ $('view-'+v).classList.toggle('active',v===view);const n=document.querySelector('[data-nav="'+v+'"]');if(v===view)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current');});if(view==='history')renderHistory();window.scrollTo({top:0,behavior:'instant'});}
+function navigate(view){['sessions','luc-leger','settings'].forEach(v=>{ $('view-'+v).classList.toggle('active',v===view);const n=document.querySelector('[data-nav="'+v+'"]');if(v===view)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current');});window.scrollTo({top:0,behavior:'instant'});}
 function closeWorkoutMenus(){for(const menu of document.querySelectorAll('.workout-menu'))menu.hidden=true;for(const btn of document.querySelectorAll('.workout-menu-button'))btn.setAttribute('aria-expanded','false');workoutMenuId=null}
 function primaryWorkout(base){
  const stored=modeSettings[base.id];
@@ -568,32 +580,6 @@ function deleteWorkout(w){
  if(session||!gate.allow('delete-workout',450)||!customs.some(x=>x.id===w.id))return;
  if(!confirm('Supprimer définitivement « '+w.name+' » ?'))return;
  customs=manager.removeCustom(customs,w.id);favorites=library.normalizeFavorites(favorites,[...standard,...customs].map(x=>x.id));safeWrite('jsb_preview_favorites',favorites);safeWrite('jsb_preview_customs',customs);renderWorkouts();notice('Minuteur supprimé');
-}
-function renderHistory(){
- const el=$('historyList');el.replaceChildren();
- if(!history.length){
-   const empty=document.createElement('div');empty.className='empty';
-   empty.textContent='Aucune séance pour le moment. Ton activité apparaîtra ici.';
-   el.append(empty);return;
- }
- for(const h of history){
-   const row=document.createElement('div');row.className='hist-row';
-   const left=document.createElement('div');
-   const title=document.createElement('b');title.textContent=h.name||'Séance';
-   const stamp=document.createElement('small');
-   stamp.textContent=(h.date||'')+' · '+pretty(h.elapsed||0)+
-      (Number.isInteger(h.signals)?' · '+h.signals+' bips':Number.isInteger(h.rounds)?' · '+h.rounds+' tours':'');
-   left.append(title,stamp);
-   const status=document.createElement('span');status.className='status'+(h.completed?'':' interrupted');
-   status.textContent=h.completed?'Terminée':'Interrompue';
-   const trailing=document.createElement('div');trailing.className='history-actions';
-   if(trainingModeIsValid(h.workout)){
-     const replay=document.createElement('button');replay.type='button';replay.className='history-replay';
-     replay.textContent='▶';replay.setAttribute('aria-label','Rejouer '+h.workout.name);
-     replay.addEventListener('click',()=>startWorkout(h.workout));trailing.append(replay);
-   }
-   trailing.append(status);row.append(left,trailing);el.append(row);
- }
 }
 function openEditor(workout=null){
  if(!gate.allow('editor-open',350)||session||$('editorModal').classList.contains('active'))return;
@@ -821,13 +807,13 @@ function finish(completed){
    elapsed,completed,kind:current.workout.kind,cyclesDone:completedEfforts,
    workout:{...current.workout},
    ...(current.workout.kind==='random'?{signals:current.signalsPlayed}:{})};
- history.unshift(entry);history=history.slice(0,60);safeWrite('jsb_preview_history',history);
+ // No new history is collected: the Luc Léger tab replaces the former activity log.
  replayWorkout={...current.workout};
  $('timer').classList.remove('active');
  $('stopConfirm').classList.remove('active');$('stopConfirm').setAttribute('aria-hidden','true');
  $('timer').inert=false;
  document.querySelector('.nav').style.visibility='visible';
- session=null;renderHistory();
+ session=null;
  $('summaryTitle').textContent=completed?'Séance terminée !':'Séance interrompue';
  $('summaryWorkout').textContent=entry.name;
  $('summaryDuration').textContent=pretty(entry.elapsed);
@@ -921,7 +907,6 @@ $('summaryReplay').addEventListener('click',()=>{
  $('sessionSummary').classList.remove('active');$('sessionSummary').setAttribute('aria-hidden','true');
  $('app').inert=false;navigate('sessions');startWorkout(w);
 });
-$('clearHistory').addEventListener('click',()=>{if(history.length&&confirm('Effacer tout l’historique ?')){history=[];safeWrite('jsb_preview_history',history);renderHistory();notice('Historique effacé');}});
 
 const volumeRange=$('volumeRange'),volumeValue=$('volumeValue'),testBeep=$('testBeep');
 const testRestSound=$('testRestSound'),testRandomSound=$('testRandomSound'),testFinishSound=$('testFinishSound');
@@ -1081,18 +1066,7 @@ for(const group of groups){
    if(group.dataset.group!=='luc')safeWrite('jsb_v2_open_group',group.dataset.group);
  });
 }
-// Luc Léger cannot be started until its protocol and pacing signals are
-// verified. Even when explicitly revealed, the action remains disabled.
-const lucPreference=read('jsb_v2_show_luc_leger',false)===true;
-$('showLucLeger').checked=lucPreference;
-$('lucLegerCategory').hidden=!lucPreference;
-$('showLucLeger').addEventListener('change',()=>{
- const enabled=$('showLucLeger').checked;
- $('lucLegerCategory').hidden=!enabled;
- if(!enabled)$('lucLegerCategory').open=false;
- safeWrite('jsb_v2_show_luc_leger',enabled);
-});
-renderWorkouts();renderHistory();})();
+renderWorkouts();})();
 </script>
 <script>
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
