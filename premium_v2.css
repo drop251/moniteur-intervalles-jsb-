@@ -680,3 +680,33 @@ button:disabled { opacity:.50; }
  .recent-timer{flex-direction:row;align-items:center;justify-content:space-between;}
  .recent-actions{width:270px;flex:none;}
 }
+
+/* v2.8 — The top JSB identity bar is fixed, not sticky or scrollable. */
+:root{--jsb-header-height:132px}
+.app > header{
+ position:fixed;top:0;left:50%;transform:translateX(-50%);
+ width:100%;max-width:650px;z-index:35;
+ box-sizing:border-box;
+ /* Preserve the existing branding, proportions, colors and Settings button. */
+}
+.app > main{padding-top:var(--jsb-header-height)}
+html{scroll-padding-top:calc(var(--jsb-header-height) + 12px)}
+.app > header .brand{min-width:0;flex:1}
+.app > header .brand>div:last-child{min-width:0}
+.app > header .subbrand{overflow-wrap:break-word}
+@media (prefers-reduced-motion:reduce){
+ .app > header{backdrop-filter:none;-webkit-backdrop-filter:none}
+}
+/* Timers saved for later are visible directly in their training section. */
+.saved-workouts{margin-top:24px;padding:17px 0 0;border-top:1px solid #7F7157}
+.saved-workouts-heading{display:flex;flex-direction:column;gap:12px;margin-bottom:12px}
+.saved-workouts-heading h2{font-size:18px;line-height:1.25;color:#F8F7F2}
+.saved-workouts-actions{display:flex;flex-wrap:wrap;gap:8px}
+.saved-workouts-actions button{min-height:48px;padding:9px 14px;flex:1;min-width:120px;
+ background:#2E4057;border:1px solid #DBAE6B;border-radius:12px;
+ font-size:13px;font-weight:790;color:#F4D2A4}
+.saved-workouts-actions button:focus-visible{outline:3px solid #F2CA8B;outline-offset:2px}
+.saved-workouts-list{display:grid;gap:10px}
+.saved-workouts-empty{font-size:13px;color:#D5DAE1;line-height:1.55;padding:4px 0 0}
+.saved-workouts-empty[hidden]{display:none}
+.saved-mode-option .mode-option-info strong{overflow-wrap:anywhere}
