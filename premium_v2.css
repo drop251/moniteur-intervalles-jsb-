@@ -710,3 +710,186 @@ html{scroll-padding-top:calc(var(--jsb-header-height) + 12px)}
 .saved-workouts-empty{font-size:13px;color:#D5DAE1;line-height:1.55;padding:4px 0 0}
 .saved-workouts-empty[hidden]{display:none}
 .saved-mode-option .mode-option-info strong{overflow-wrap:anywhere}
+
+/* Moniteur JSB v2.9 — plein écran utile et réglages essentiels.
+ * Barre JSB du haut et navigation inférieure restent fixes. */
+.app{max-width:650px}
+.mode-screen.active{
+ display:flex;flex-direction:column;
+ min-height:calc(100dvh - var(--jsb-header-height) - var(--nav) - var(--safe));
+ padding:0 20px 12px;
+}
+.mode-page-intro{padding:14px 0 12px;gap:12px}
+.mode-page-glyph{width:46px;height:46px;font-size:24px;border-radius:13px}
+.mode-page-intro h1{font-size:clamp(27px,7vw,38px);margin:0 0 4px}
+.mode-page-intro .eyebrow{display:none}
+.mode-page-intro p{font-size:13px;line-height:1.35}
+.mode-page-body{
+ flex:1;min-height:310px;display:grid;
+ grid-template-columns:minmax(0,1fr);
+ grid-template-rows:repeat(2,minmax(150px,1fr));
+ gap:12px;
+}
+#modeOptionsTabata{grid-template-rows:minmax(240px,1fr);min-height:260px}
+.mode-page-body .mode-option{
+ min-height:0;display:flex;flex-direction:column;
+ align-items:stretch;gap:9px;padding:16px;border:1.5px solid #A08356;
+ border-radius:20px;
+}
+.mode-page-body .mode-option-configure{
+ flex:1;min-height:0;display:flex;align-items:stretch;
+ padding:0 2px;gap:10px;
+}
+.mode-page-body .mode-option-info{
+ flex:1;display:flex;flex-direction:column;gap:7px;
+ justify-content:center;min-width:0;
+}
+.mode-page-body .mode-option-info strong{
+ font-size:clamp(20px,5vw,25px);line-height:1.2
+}
+.mode-page-body .mode-option-info small{
+ font-size:clamp(13px,3.2vw,15px);line-height:1.4;color:#D5DAE1
+}
+.mode-page-body .mode-option-duration{
+ font-size:clamp(27px,7vw,43px);
+ line-height:1.15;color:#F4CA91;font-weight:850;
+ font-variant-numeric:tabular-nums;letter-spacing:-.025em;margin-top:4px
+}
+.mode-page-body .mode-option-edit{
+ align-self:flex-start;flex:none;
+ min-width:65px;min-height:48px;display:grid;place-items:center;
+ font-size:14px;border:1px solid #9D8052;
+ border-radius:12px;color:#F4CE95;margin:0;
+}
+.mode-page-body .mode-option-play{
+ flex:none;width:100%;min-height:clamp(65px,9vh,84px);
+ font-size:clamp(19px,5vw,23px);font-weight:880;border-radius:16px;
+}
+.mode-page-tip,.recent-timer{display:none!important}
+.saved-workouts{
+ flex:none;margin:13px 0 0;padding:0;
+ border:1px solid #8F764D;border-radius:15px;background:#24344B;
+}
+.saved-workouts>summary{
+ list-style:none;cursor:pointer;display:flex;align-items:center;
+ justify-content:space-between;padding:10px 15px;
+ min-height:52px;color:#F3D09B;font-size:15px;font-weight:800;
+}
+.saved-workouts>summary::-webkit-details-marker{display:none}
+.saved-workouts>summary::after{content:'⌄';font-size:23px;flex:none}
+.saved-workouts[open]>summary::after{content:'⌃'}
+.saved-workouts-count{
+ display:inline-grid;place-items:center;
+ min-width:26px;height:26px;margin-left:auto;margin-right:14px;
+ background:#34445C;border-radius:9px;color:#F6D8AB;font-size:13px
+}
+.saved-workouts-heading{padding:12px 12px 0;margin:0}
+.saved-workouts-actions button{min-width:105px}
+.saved-workouts-list{padding:12px;display:grid;gap:10px}
+.saved-workouts-empty{padding:7px 12px 14px}
+.saved-workouts-list .mode-option{padding:9px;gap:9px}
+.saved-workouts-list .mode-option-configure{padding:3px;min-height:60px}
+.saved-workouts-list .mode-option-play{width:60px;min-height:60px;font-size:20px}
+.simple-editor-sheet{
+ max-height:min(96dvh,920px);padding:19px 20px calc(8px + var(--safe));
+ overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+.simple-editor-sheet>header{padding:0 0 15px}
+.simple-editor-sheet h2{font-size:clamp(22px,5vw,29px)}
+.simple-editor-sheet .editor-duration{
+ padding:15px 17px;margin-bottom:14px;border-radius:16px;
+}
+.simple-editor-sheet .editor-duration small{font-size:14px}
+.simple-editor-sheet .editor-duration .value{font-size:clamp(23px,6vw,34px)}
+.simple-editor-fields{display:grid;grid-template-columns:1fr;gap:11px;margin:0}
+.simple-editor-fields>.field.wide{grid-column:1}
+.simple-editor-sheet .simple-field{
+ background:#26384F;border:1px solid #8D7856;
+ padding:14px;border-radius:17px;gap:10px;
+}
+.simple-editor-sheet .duration-title{font-size:17px;font-weight:790;color:#F8F7F2}
+.large-stepper{display:grid;grid-template-columns:62px minmax(0,1fr) 62px;align-items:center;gap:10px}
+.large-stepper>button{
+ display:grid;place-items:center;min-width:56px;min-height:60px;
+ background:#344963;border:1px solid #B79462;color:#F8F7F2;
+ font-size:32px;font-weight:750;border-radius:14px;padding:0
+}
+.large-stepper>button:active{background:#526B86}
+.large-stepper-value{
+ display:block;text-align:center;font-size:clamp(30px,8vw,43px);
+ font-weight:850;font-variant-numeric:tabular-nums;letter-spacing:-.04em;
+ color:#F4CF99;white-space:nowrap
+}
+.simple-editor-sheet .cycle-stepper input{
+ box-sizing:border-box;min-width:0;width:100%;height:62px;
+ text-align:center;background:#1B2A41;color:#F4CF99;
+ font-size:clamp(29px,8vw,40px);font-weight:840;
+ font-variant-numeric:tabular-nums;border:1px solid #967A53;border-radius:12px;
+}
+.simple-editor-sheet .cycle-stepper input::-webkit-inner-spin-button,
+.simple-editor-sheet .cycle-stepper input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.simple-editor-sheet #randomFrequency{
+ min-height:62px;font-size:21px;font-weight:780
+}
+.simple-editor-sheet .simple-name-field{gap:8px}
+.simple-editor-sheet .simple-name-field label{font-size:15px}
+.editor-unlimited{
+ display:flex;align-items:center;justify-content:center;gap:15px;
+ border:1px solid #9D8052;background:#273B53;
+ border-radius:18px;padding:25px 18px;color:#D9E3EB;
+ font-size:17px;line-height:1.45
+}
+.editor-unlimited strong{font-size:66px;color:#F4CB90;line-height:1}
+.editor-unlimited[hidden],.simple-editor-sheet [hidden]{display:none!important}
+.duration-precision{border-top:1px solid #6B6C74;padding-top:8px}
+.duration-precision>summary{
+ cursor:pointer;min-height:44px;display:flex;align-items:center;justify-content:space-between;
+ list-style:none;color:#E3C596;font-size:13px;font-weight:720
+}
+.duration-precision>summary::-webkit-details-marker{display:none}
+.duration-precision>summary::after{content:'⌄';font-size:18px}
+.duration-precision[open]>summary::after{content:'⌃'}
+.duration-precision .duration-pickers{padding:8px 0}
+.duration-precision .duration-pickers select{height:60px;font-size:21px}
+.editor-more{
+ margin:14px 0 0;border:1px solid #87714F;background:#24344C;
+ border-radius:16px;overflow:hidden
+}
+.editor-more>summary{
+ list-style:none;display:flex;align-items:center;justify-content:space-between;
+ min-height:58px;padding:14px 17px;color:#F3D09B;
+ font-size:16px;font-weight:790;cursor:pointer
+}
+.editor-more>summary::-webkit-details-marker{display:none}
+.editor-more>summary::after{content:'⌄';font-size:23px}
+.editor-more[open]>summary::after{content:'⌃'}
+.editor-more-inner{padding:8px 13px 16px;display:grid;gap:16px}
+.editor-more-inner .editor-presets{margin:0}
+.editor-more-inner .random-progressive{font-size:15px;min-height:48px}
+.simple-editor-sheet .editor-actions{
+ grid-template-columns:1fr 1.25fr;gap:10px;margin-top:10px;
+ padding:10px 0 calc(14px + var(--safe))
+}
+.simple-editor-sheet .editor-actions button{
+ min-height:66px;border-radius:15px;font-size:clamp(14px,3.6vw,18px);
+ font-weight:820;padding:10px
+}
+@media (max-height:740px) and (orientation:portrait){
+ .mode-page-intro{padding:8px 0}
+ .mode-page-intro p{display:none}
+ .mode-page-body{min-height:270px}
+ .mode-page-body .mode-option{padding:12px}
+ .mode-page-body .mode-option-info{gap:4px}
+ .mode-page-body .mode-option-play{min-height:62px}
+}
+@media (orientation:landscape) and (max-height:600px){
+ .mode-screen.active{min-height:calc(100dvh - var(--jsb-header-height) - var(--nav) - var(--safe))}
+ .mode-page-body{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:minmax(170px,1fr);min-height:170px}
+ #modeOptionsTabata{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:370px){
+ .large-stepper{grid-template-columns:54px minmax(0,1fr) 54px;gap:6px}
+ .large-stepper>button{min-width:54px;min-height:58px}
+ .mode-page-body .mode-option-edit{min-width:58px}
+ .mode-page-body .mode-option-duration{font-size:28px}
+}
