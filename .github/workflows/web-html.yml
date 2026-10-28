@@ -1,0 +1,43 @@
+name: Validation HTML / PWA JSB
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'premium_v2.css'
+      - 'sw.js'
+      - 'manifest.webmanifest'
+      - 'icon.svg'
+      - '*.js'
+      - 'tests/web_html.test.cjs'
+      - '.github/workflows/web-html.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'premium_v2.css'
+      - 'sw.js'
+      - 'manifest.webmanifest'
+      - 'icon.svg'
+      - '*.js'
+      - 'tests/web_html.test.cjs'
+      - '.github/workflows/web-html.yml'
+
+concurrency:
+  group: html-jsb-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  html-pwa:
+    name: Vérifier interface HTML et audio navigateur
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer les fichiers
+        uses: actions/checkout@v4
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Valider les scripts et la PWA
+        run: node --test tests/web_html.test.cjs
