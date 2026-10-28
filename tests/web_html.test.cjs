@@ -100,7 +100,7 @@ test('browser uses JSB audio, not unavailable native iOS ducking', () => {
   assert.ok(html.includes('settings.restSound'));
   const api=loadModules().JSBSoundEngine;
   assert.deepEqual(Array.from(api.SOUNDS,x=>x.id),
-    ['buzzerPro','bellSport','whistlePro','hornPro','digitalDuo','wood','pulse','soft']);
+    ['buzzerPro','bellSport','whistlePro','hornPro']);
   assert.equal(api.normalize('buzzer'),'buzzerPro');
   const wave=Buffer.from(api.sampleWavBase64('buzzerPro','effort'),'base64');
   assert.equal(wave.toString('ascii',0,4),'RIFF');
@@ -109,7 +109,7 @@ test('browser uses JSB audio, not unavailable native iOS ducking', () => {
 });
 
 test('offline PWA cache, icon and manifest match the web release', () => {
-  assert.ok(serviceWorker.includes("moniteur-jsb-web-v25"));
+  assert.ok(serviceWorker.includes("moniteur-jsb-web-v26"));
   assert.ok(serviceWorker.includes("'./premium_v2.css'"));
   for (const script of ['training_modes.js','jsb_audio_samples.js','sound_engine.js','audio_cues.js',
     'assets/audio/sifflet_arbitre.wav','assets/audio/cloche_ring.wav',
@@ -152,22 +152,39 @@ test('le réglage sonore reste lisible et guidé sur un smartphone', () => {
   const settingIndex=html.indexOf('<section id="view-settings"');
   const panel=html.slice(settingIndex,html.indexOf('<nav class="nav"',settingIndex));
   assert.ok(panel.indexOf('id="signalGallery"')<panel.indexOf('id="volumeRange"'),'Sound first');
-  assert.ok(panel.includes('id="otherSounds"'),'Additional options are folded');
+  assert.ok(!panel.includes('id="otherSounds"'),'Unwanted secondary gallery was removed');
   assert.ok(panel.includes('id="testBeep"'),'Audible preview button visible');
   assert.ok(panel.includes('id="audioStatus"'),'Feedback on audio activation');
   assert.ok(css.includes('.signal-card:focus-visible'),'Keyboard focus');
   assert.ok(css.includes('.signal-category-heading'),'Clear section names');
 });
 
-test('four authentic recordings are primary; electronic cues are optional', () => {
-  const settings=html.slice(html.indexOf('<section id="view-settings"'),html.indexOf('<nav class="nav"',html.indexOf('<section id="view-settings"')));
+test('la galerie et les réglages avancés ne proposent que quatre sons', () => {
+  const settings=html.slice(html.indexOf('<section id="view-settings"'),
+    html.indexOf('<nav class="nav"',html.indexOf('<section id="view-settings"')));
   assert.ok(settings.includes('id="signalGallery"'));
-  assert.ok(settings.includes('id="signalGallerySecondary"'));
-  assert.ok(settings.includes('id="otherSounds"'));
-  assert.ok(settings.includes('Quatre vrais signaux de combat'));
-  assert.ok(html.includes("new Set(['buzzerPro','bellSport','whistlePro','hornPro'])"));
-  assert.ok(html.includes('(flagshipSounds.has(cue.id)?gallery:gallerySecondary).append(button)'));
-  assert.ok(settings.indexOf('settingsGalleryTitle')<settings.indexOf('settingsAudioTitle'),'Choose sound before volume');
+  assert.ok(!settings.includes('id="signalGallerySecondary"'));
+  assert.ok(!settings.includes('id="otherSounds"'));
+  assert.ok(settings.includes('Les 4 sons disponibles'));
+  assert.ok(settings.includes('4 choix uniquement'));
+  assert.ok(html.includes('gallery.append(button)'));
+  assert.ok(!html.includes('flagshipSounds'));
+  const audio=loadModules().JSBSoundEngine;
+  const allowed=['buzzerPro','bellSport','whistlePro','hornPro'];
+  assert.deepEqual(Array.from(audio.SOUNDS,c=>c.id),allowed);
+  assert.deepEqual(Array.from(audio.FINISH_SOUNDS,c=>c.id),allowed);
+  assert.deepEqual(Array.from(loadModules().JSBRealSignals.ids),allowed);
+  for(const removed of ['digitalDuo','wood','pulse','soft','finishBell','finishChime',
+    'finishTriple','countdown','buzzer','gong']){
+    assert.ok(!audio.SOUNDS.some(c=>c.id===removed),removed);
+    assert.ok(!audio.FINISH_SOUNDS.some(c=>c.id===removed),removed);
+    assert.equal(audio.normalize(removed),'buzzerPro',removed);
+    assert.equal(audio.normalizeFinish(removed),'bellSport',removed);
+  }
+  assert.equal(audio.sampleWavBase64('countdown','countdown'),
+    loadModules().JSBRealSignals.getWavBase64('whistlePro'));
+  assert.equal(audio.sampleWavBase64('bellSport','finish'),
+    loadModules().JSBRealSignals.getWavBase64('bellSport'));
 });
 
 test('the four actual CC0 recordings are bundled and used by the sound engine', () => {
@@ -177,7 +194,6 @@ test('the four actual CC0 recordings are bundled and used by the sound engine', 
     bellSport:'cloche_ring.wav',
     whistlePro:'sifflet_arbitre.wav',
     hornPro:'corne_sportive.wav',
-    finishBell:'cloche_finale.wav',
   };
   for(const [id,name] of Object.entries(files)){
     const file=path.join(root,'assets','audio',name);
@@ -197,7 +213,7 @@ test('the four actual CC0 recordings are bundled and used by the sound engine', 
 test('all mastered WAV samples are PCM, loud and without digital clipping', () => {
   const root=loadModules();
   const ids=root.JSBRealSignals.ids;
-  assert.equal(ids.length,12);
+  assert.equal(ids.length,4);
   const hashes=new Set();
   for(const id of ids){
     const b64=root.JSBRealSignals.getWavBase64(id);
