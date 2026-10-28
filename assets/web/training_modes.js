@@ -3,11 +3,12 @@
  */
 (function(root){
   'use strict';
-  const AVAILABLE=Object.freeze(['randori','golden','random','tabata','hiit','boxe']);
+  const AVAILABLE=Object.freeze(['randori','golden','random','tabata','chrono','hiit','boxe']);
   const LEGACY=Object.freeze(['emom','amrap']);
   const DEFAULTS=Object.freeze({
     randori:Object.freeze({work:240,rest:60,cycles:5,prep:10}),
     golden:Object.freeze({work:0,rest:0,cycles:1,prep:10}),
+    chrono:Object.freeze({work:0,rest:0,cycles:1,prep:0}),
     random:Object.freeze({work:180,rest:0,cycles:1,prep:10,frequency:'medium',progressive:true}),
     tabata:Object.freeze({work:20,rest:10,cycles:8,prep:10}),
     hiit:Object.freeze({work:30,rest:15,cycles:8,prep:10}),
@@ -15,15 +16,15 @@
   });
   function isAvailable(kind){return AVAILABLE.includes(kind);}
   function workoutDuration(w){
-    if(w.kind==='golden')return Infinity;
+    if(w.kind==='golden'||w.kind==='chrono')return Infinity;
     if(w.kind==='random')return w.prep+w.work;
     return w.prep+w.work*w.cycles+w.rest*(w.cycles-1);
   }
   function phasePlan(w){
     const result=[];
     if(w.prep>0)result.push({kind:'prep',label:'PRÉPARATION',ms:w.prep*1000,cycle:0});
-    if(w.kind==='golden'){
-      result.push({kind:'effort',label:'GOLDEN SCORE',ms:Infinity,cycle:1});
+    if(w.kind==='golden'||w.kind==='chrono'){
+      result.push({kind:'effort',label:w.kind==='chrono'?'CHRONOMÈTRE':'GOLDEN SCORE',ms:Infinity,cycle:1});
       return result;
     }
     if(w.kind==='random'){
