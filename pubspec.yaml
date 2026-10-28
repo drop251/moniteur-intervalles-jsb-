@@ -1,7 +1,7 @@
 name: moniteur_intervalles
-description: Moniteur d'intervalles et tests physiques (Tabata, HIIT, Luc Léger). Données locales uniquement.
+description: Moniteur JSB — Randori, Golden Score, Tabata et chronomètres. Données locales uniquement.
 publish_to: "none"
-version: 0.1.0+1
+version: 0.2.5+7
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  shared_preferences: ^2.3.2
+  webview_flutter: ^4.13.0
 
 dev_dependencies:
   flutter_test:
@@ -17,3 +19,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/web/

@@ -37,12 +37,14 @@ const int countdownFrequencyHz = 800;
 /// de début de phase. Les instants négatifs (début de séance) sont ignorés.
 List<Cue> buildCues(List<Phase> phases) {
   final cues = <Cue>[];
+  // Un changement de phase prime sur un bip de décompte au même instant.
+  final startBoundaries = phaseStarts(phases).toSet();
   var start = 0;
   for (final phase in phases) {
     if (phase.type == PhaseType.effort || phase.type == PhaseType.prep) {
       for (final sec in const [3, 2, 1]) {
         final at = start - sec * 1000;
-        if (at >= 0) {
+        if (at >= 0 && !startBoundaries.contains(at)) {
           cues.add(Cue(atMs: at, frequencyHz: countdownFrequencyHz, durationMs: 120));
         }
       }
@@ -54,7 +56,23 @@ List<Cue> buildCues(List<Phase> phases) {
     ));
     start += phase.durationMs;
   }
+  // Court work/rest cycles may cause a countdown to fall earlier than the
+  // preceding phase cue. Consumers require chronological events.
+  cues.sort((a, b) => a.atMs.compareTo(b.atMs));
   return cues;
+}
+
+/// Moments at which the native system should start ducking music BEFORE a cue.
+/// Multiple cues may share a preparation instant; always dispatch it once.
+/// When a cue falls within the lead-in at workout start, duck from t=0.
+/// At t=0 no earlier preparation is possible without delaying the workout.
+List<int> duckLeadTimes(List<Cue> cues, {int leadMs = 3000}) {
+  assert(leadMs >= 0);
+  final times = <int>{
+    for (final cue in cues)
+      if (cue.atMs > 0) (cue.atMs - leadMs).clamp(0, cue.atMs),
+  };
+  return times.toList()..sort();
 }
 
 /// Instant de début de chaque phase, en millisecondes depuis le départ.
