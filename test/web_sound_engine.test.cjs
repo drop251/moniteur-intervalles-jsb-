@@ -3,10 +3,10 @@ const samples=require('../jsb_audio_samples.js');
 const {SOUNDS,FINISH_SOUNDS,notesFor,pcmWav,normalize,normalizeFinish,
   normalizeVolume,sampleWavBase64,createEngine}=require('../sound_engine.js');
 
-assert.deepEqual(SOUNDS.map(s=>s.id),['buzzerPro','bellSport','whistlePro','hornPro','digitalDuo','wood','pulse','soft']);
-assert.deepEqual(FINISH_SOUNDS.map(s=>s.id),['finishBell','finishChime','finishTriple']);
-assert.equal(normalizeFinish('finishChime'),'finishChime');
-assert.equal(normalizeFinish('gong'),'finishChime');
+assert.deepEqual(SOUNDS.map(s=>s.id),['buzzerPro','bellSport','whistlePro','hornPro']);
+assert.deepEqual(FINISH_SOUNDS.map(s=>s.id),['buzzerPro','bellSport','whistlePro','hornPro']);
+assert.equal(normalizeFinish('finishChime'),'bellSport');
+assert.equal(normalizeFinish('gong'),'bellSport');
 assert.equal(normalize('buzzer'),'buzzerPro');
 assert.equal(normalize('unknown'),'buzzerPro');
 assert.equal(normalizeVolume(105),100);
@@ -20,7 +20,9 @@ for(const id of samples.ids){
   assert.equal(sample.readUInt32LE(24),22050);
 }
 assert.equal(sampleWavBase64('buzzerPro','effort'),samples.getWavBase64('buzzerPro'));
-assert.equal(sampleWavBase64('finishBell','finish'),samples.getWavBase64('finishBell'));
+assert.equal(sampleWavBase64('bellSport','finish'),samples.getWavBase64('bellSport'));
+assert.equal(sampleWavBase64('countdown','countdown'),samples.getWavBase64('whistlePro'));
+assert.deepEqual(samples.ids,['buzzerPro','bellSport','whistlePro','hornPro']);
 
 for(const item of [...SOUNDS,...FINISH_SOUNDS]){
  const event=FINISH_SOUNDS.includes(item)?'finish':'effort';
@@ -38,9 +40,9 @@ for(const item of [...SOUNDS,...FINISH_SOUNDS]){
  }
  assert.ok(peak>3000&&peak<32767,item.id+' : amplitude valide');
 }
-assert.ok(notesFor('finishBell','finish').some(n=>n.duration>=2));
-assert.ok(notesFor('finishChime','finish').some(n=>n.time>0));
-assert.ok(notesFor('finishTriple','finish').filter(n=>n.time>0).length>=2);
+assert.ok(notesFor('bellSport','finish').some(n=>n.duration>=.75));
+assert.ok(notesFor('hornPro','finish').some(n=>n.duration>=1));
+assert.ok(notesFor('whistlePro','countdown').some(n=>n.freq>1500));
 
 const events=[];
 class FakeOscillator{
@@ -63,12 +65,12 @@ class FakeContext{
 }
 (async()=>{
  const engine=createEngine({AudioContextCtor:FakeContext,AudioCtor:null});
- assert.equal(engine.play('digitalDuo','effort',90),false);
- assert.equal(await engine.activateAndPlay('digitalDuo','effort',90),true);
+ assert.equal(engine.play('hornPro','effort',90),false);
+ assert.equal(await engine.activateAndPlay('hornPro','effort',90),true);
  assert.equal(engine.getState(),'ready');
  assert.ok(events.includes('resumed'));
  assert.ok(events.filter(x=>x==='started').length>=3);
- assert.equal(engine.play('digitalDuo','effort',0),false);
+ assert.equal(engine.play('hornPro','effort',0),false);
  engine.destroy();
  console.log('Nouveaux signaux JSB et déblocage Web Audio : tests réussis');
 })().catch(e=>{console.error(e);process.exitCode=1});
