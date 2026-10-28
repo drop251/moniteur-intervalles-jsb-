@@ -135,7 +135,21 @@ test('JSB Performance v2 preserves four core modes and three bottom tabs', () =>
   const tabs = [...mainNav.matchAll(/data-nav="([^"]+)"/g)].map(m => m[1]);
   assert.deepEqual(tabs, ['sessions','history','settings']);
   assert.ok(html.includes('id="coreModes"'));
-  assert.ok(html.includes("for(const key of ['randori','golden','random','tabata'])"));
+  for (const group of ['randori','tabata','chrono']) {
+    assert.ok(html.includes('data-group="'+group+'"'), group);
+  }
+  for (const id of ['modeOptionsRandori','modeOptionsTabata','modeOptionsChrono']) {
+    assert.ok(html.includes('id="'+id+'"'),id);
+  }
+  for (const key of ['randori','golden','tabata','chrono','random']) {
+    assert.ok(html.includes("'"+key+"'"), key);
+  }
+  assert.ok(html.includes("['modeOptionsRandori',['randori','golden']]"));
+  assert.ok(html.includes("['modeOptionsTabata',['tabata']]"));
+  assert.ok(html.includes("['modeOptionsChrono',['chrono','random']]"));
+  assert.ok(html.includes('id="lucLegerCategory"'));
+  assert.ok(html.includes('data-group="luc" hidden'));
+  assert.ok(html.includes('id="showLucLeger"'));
   assert.ok(html.includes('id="libraryDetails"'));
   assert.ok(html.includes('id="launchConfigured"'));
   assert.ok(html.includes('id="stopConfirm"'));
@@ -244,4 +258,37 @@ test('intensité des nouveaux sons renforcée sans écrêtage PCM', () => {
   }
   const punch=measure('pulse','effort',90);
   assert.ok(punch.peak>17000, 'pulse has a clear prominent attack');
+});
+
+test('Les trois rubriques gardent les minuteurs et Luc Léger est masqué', () => {
+  const html=js('index.html');
+  const styles=js('premium_v2.css');
+  const groupIds=['randori','tabata','chrono'];
+  for(const key of groupIds) {
+    assert.ok(html.includes('data-group="'+key+'"'));
+    assert.ok(html.includes("group.dataset.group===openGroup"));
+  }
+  const testBlock=html.slice(html.indexOf('id="lucLegerCategory"'),
+    html.indexOf('</details>',html.indexOf('id="lucLegerCategory"')));
+  assert.ok(testBlock.includes('hidden'));
+  assert.ok(testBlock.includes('disabled'));
+  assert.ok(html.includes("'jsb_v2_show_luc_leger'"));
+  assert.ok(styles.includes('.mode-accordion[hidden]{display:none!important;}'));
+  assert.ok(styles.includes('min-height:54px'));
+  const initial=html.indexOf('<section id="view-sessions"');
+  const history=html.indexOf('<section id="view-history"');
+  const library=html.indexOf('id="libraryDetails"');
+  assert.ok(library>history && library>initial);
+});
+
+test('Chronomètre libre et Golden Score restent deux modes distincts', () => {
+  const {window}=createJSB();
+  const modes=window.JSBTrainingModes;
+  assert.ok(modes.isAvailable('chrono'));
+  assert.equal(modes.workoutDuration({kind:'chrono',prep:0,work:0,rest:0,cycles:1}),Infinity);
+  const stages=modes.phasePlan({kind:'chrono',prep:0,work:0,rest:0,cycles:1});
+  assert.equal(stages.length,1);
+  assert.equal(stages[0].label,'CHRONOMÈTRE');
+  assert.equal(stages[0].ms,Infinity);
+  assert.equal(modes.phasePlan({kind:'golden',prep:0,work:0,rest:0,cycles:1})[0].label,'GOLDEN SCORE');
 });
