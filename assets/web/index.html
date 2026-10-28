@@ -577,16 +577,16 @@ function updateDurationOptions(id){
 function syncAllDurationPickers(){for(const id of ['preparation','effort','repos'])syncDurationPickers(id)}
 function applyMode(){
  const mode=$('workoutMode').value;
- const hints={randori:'Combats avec récupération et bips de début/fin.',golden:'Chronomètre croissant sans limite ; arrêt manuel.',random:'Bips irréguliers pendant un temps de travail donné. Ex. : burpee à chaque bip.',tabata:'20 s effort et 10 s repos par défaut.',hiit:'Alternance effort / repos sans repos final.',boxe:'Rounds avec récupération.'};
+ const hints={randori:'Combats avec récupération et bips de début/fin.',golden:'Chronomètre croissant sans limite ; arrêt manuel.',chrono:'Chronomètre libre : temps croissant et arrêt manuel.',random:'Bips irréguliers pendant un temps de travail donné. Ex. : burpee à chaque bip.',tabata:'20 s effort et 10 s repos par défaut.',hiit:'Alternance effort / repos sans repos final.',boxe:'Rounds avec récupération.'};
  $('modeHint').textContent=hints[mode]||'Mode non disponible';
- $('restField').hidden=['golden','random'].includes(mode);
- $('effortField').hidden=mode==='golden';
- $('cyclesField').hidden=['golden','random'].includes(mode);
+ $('restField').hidden=['golden','chrono','random'].includes(mode);
+ $('effortField').hidden=['golden','chrono'].includes(mode);
+ $('cyclesField').hidden=['golden','chrono','random'].includes(mode);
  $('randomOptions').hidden=mode!=='random';
  $('effortLabel').textContent=mode==='random'?'Temps de travail':mode==='randori'?'Durée du randori':mode==='boxe'?'Durée du round':'Effort';
  $('cyclesLabel').textContent=mode==='randori'?'Nombre de randoris':mode==='boxe'?'Rounds':'Cycles';
- $('cycles').disabled=['golden','random'].includes(mode);
- if(mode==='golden'){$('effort').value='0';$('repos').value='0';$('cycles').value='1'}
+ $('cycles').disabled=['golden','chrono','random'].includes(mode);
+ if(mode==='golden'||mode==='chrono'){$('effort').value='0';$('repos').value='0';$('cycles').value='1'}
  if(mode==='random'){$('repos').value='0';$('cycles').value='1'}
  syncAllDurationPickers();updateConfigDuration();renderQuickPresets();
 }
@@ -600,6 +600,7 @@ function renderQuickPresets(){
            ['5 × 4 min',{work:240,rest:60,cycles:5}],
            ['6 × 2 min',{work:120,rest:45,cycles:6}]],
   golden:[['Direct',{prep:0}],['Prépa 10 s',{prep:10}],['Prépa 30 s',{prep:30}]],
+  chrono:[['Direct',{prep:0}],['Prépa 10 s',{prep:10}],['Prépa 30 s',{prep:30}]],
   random:[['Espacés',{frequency:'low'}],['Modérés',{frequency:'medium'}],
           ['Fréquents',{frequency:'high'}]],
   tabata:[['20 / 10',{work:20,rest:10,cycles:8}],
@@ -624,7 +625,7 @@ function configuredWorkout(){
  const kind=$('workoutMode').value;
  const name=$('workoutName').value.trim(),prep=Number($('preparation').value);
  const work=Number($('effort').value),rest=Number($('repos').value),cycles=Number($('cycles').value);
- const minWork=kind==='golden'?0:1;
+ const minWork=['golden','chrono'].includes(kind)?0:1;
  if(!name||name.length>50||!trainingModes.isAvailable(kind)||
    ![prep,work,rest,cycles].every(Number.isSafeInteger)||
    prep<0||prep>600||work<minWork||work>3600||
@@ -634,8 +635,8 @@ function configuredWorkout(){
  const existing=customs.find(w=>w.id===editingWorkoutId);
  const original=standard.find(w=>w.id===editingWorkoutId);
  return {id:editingWorkoutId||(existing?.id)||'draft-'+Date.now(),name,
-   prep,work,rest:['golden','random'].includes(kind)?0:rest,
-   cycles:['golden','random'].includes(kind)?1:cycles,kind,
+   prep,work,rest:['golden','chrono','random'].includes(kind)?0:rest,
+   cycles:['golden','chrono','random'].includes(kind)?1:cycles,kind,
    symbol:original?.symbol||existing?.symbol||kindSymbol[kind],
    ...(kind==='random'?{frequency:$('randomFrequency').value,
      progressive:$('randomProgressive').checked}:{})};
@@ -729,7 +730,7 @@ function updateTimer(){
    if(t-target<=180){beep('random');session.signalsPlayed++;}
   }
  }
- const growing=session.workout.kind==='golden'&&p.kind==='effort';
+ const growing=['golden','chrono'].includes(session.workout.kind)&&p.kind==='effort';
  const remain=Math.max(0,p.ms-(t-p.start));
  $('timer').dataset.phase=p.kind;
  $('phaseLabel').textContent=p.label;
@@ -737,8 +738,8 @@ function updateTimer(){
  $('clockText').textContent=display;
  $('clockText').dataset.digits=String(display.length);
  $('clockText').setAttribute('aria-label',growing?'Temps écoulé '+display:'Temps restant '+display);
- $('cycleLabel').textContent=p.cycle?(session.workout.kind==='golden'?'Temps supplémentaire':session.workout.kind==='random'?'Réagis à chaque bip':session.workout.kind==='randori'?'Randori '+p.cycle+' / '+session.workout.cycles:session.workout.kind==='boxe'?'Round '+p.cycle+' / '+session.workout.cycles:'Cycle '+p.cycle+' / '+session.workout.cycles):'Préparation';
- $('totalRemaining').textContent=session.workout.kind==='golden'?(growing?'Chronomètre libre':'Départ dans '+pretty(remain/1000)):pretty((session.total-t)/1000)+' restantes';
+ $('cycleLabel').textContent=p.cycle?(session.workout.kind==='golden'?'Temps supplémentaire':session.workout.kind==='chrono'?'Chronomètre libre':session.workout.kind==='random'?'Réagis à chaque bip':session.workout.kind==='randori'?'Randori '+p.cycle+' / '+session.workout.cycles:session.workout.kind==='boxe'?'Round '+p.cycle+' / '+session.workout.cycles:'Cycle '+p.cycle+' / '+session.workout.cycles):'Préparation';
+ $('totalRemaining').textContent=['golden','chrono'].includes(session.workout.kind)?(growing?'Chronomètre libre':'Départ dans '+pretty(remain/1000)):pretty((session.total-t)/1000)+' restantes';
  const percent=growing?0:Math.min(100,Math.max(0,Math.round(100*(t-p.start)/p.ms)));
  $('progressBar').style.width=percent+'%';
  $('progress').setAttribute('aria-valuenow',percent);
@@ -773,10 +774,10 @@ function finish(completed){
  $('summaryTitle').textContent=completed?'Séance terminée !':'Séance interrompue';
  $('summaryWorkout').textContent=entry.name;
  $('summaryDuration').textContent=pretty(entry.elapsed);
- $('summaryDetail').textContent=entry.kind==='golden'?'∞':
+ $('summaryDetail').textContent=['golden','chrono'].includes(entry.kind)?'∞':
    entry.kind==='random'?String(entry.signals):String(completedEfforts)+' / '+entry.workout.cycles;
  $('summaryDetailLabel').textContent=entry.kind==='randori'?'Combats':
-   entry.kind==='random'?'Bips émis':entry.kind==='golden'?'Temps libre':'Cycles';
+   entry.kind==='random'?'Bips émis':['golden','chrono'].includes(entry.kind)?'Temps libre':'Cycles';
  $('sessionSummary').classList.add('active');$('sessionSummary').setAttribute('aria-hidden','false');
  $('summaryReplay').focus();
 }
@@ -843,15 +844,15 @@ $('amrapMinus').addEventListener('click',()=>{if(session&&session.workout.kind==
  }
  updateTimer();modalBusy=true;
  $('timer').inert=true;
- $('stopConfirmText').textContent=session.workout.kind==='golden'?
-   'Le Golden Score sera terminé et le temps écoulé enregistré.':
+ $('stopConfirmText').textContent=['golden','chrono'].includes(session.workout.kind)?
+   'Le chronomètre sera arrêté et le temps écoulé enregistré.':
    'La séance sera enregistrée comme interrompue.';
  $('stopConfirm').classList.add('active');$('stopConfirm').setAttribute('aria-hidden','false');
  $('continueWorkout').focus();
 });
 $('continueWorkout').addEventListener('click',()=>closeStopConfirmation(true));
 $('confirmStop').addEventListener('click',()=>{if(!session)return;
- const completed=session.workout.kind==='golden';
+ const completed=['golden','chrono'].includes(session.workout.kind);
  closeStopConfirmation(false);finish(completed);
 });
 $('summaryHome').addEventListener('click',()=>{
