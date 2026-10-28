@@ -95,7 +95,7 @@ test('Luc Léger has its own page and cannot be started with unverified pacing',
  assert.ok(view.includes('Test Luc Léger'));
  assert.ok(view.includes('20 mètres'));
  assert.ok(view.includes('disabled'));
- assert.ok(view.includes('protocole'));
+ assert.match(view,/protocole/i);
  assert.ok(!html.includes('id="showLucLeger"'));
  assert.ok(!html.includes('id="lucLegerCategory"'));
 });
