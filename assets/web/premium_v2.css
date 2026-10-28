@@ -238,3 +238,107 @@ button:disabled { opacity:.50; }
  color:#152035;}
 .history-actions{display:flex;gap:12px;align-items:center;flex:none;}
 .history-actions .status{font-size:11px;}
+
+/* v2.3 — only three visible collapsible families on the timer home.
+   Native <details> offers touch, keyboard and screen reader semantics. */
+.mode-accordion-group{
+  display:grid;grid-template-columns:minmax(0,1fr);gap:12px;
+  padding-bottom:22px;
+}
+.mode-accordion{
+  border:1px solid #A88956;background:#25364D;
+  border-radius:20px;overflow:hidden;
+  box-shadow:0 4px 16px #06132524;
+}
+.mode-accordion[hidden]{display:none!important;}
+.mode-accordion[open]{border-color:#DBAE6B;background:#26384F;}
+.mode-accordion-head{
+  cursor:pointer;display:flex;align-items:center;gap:14px;
+  list-style:none;min-height:84px;padding:14px 16px;
+  user-select:none;-webkit-user-select:none;
+}
+.mode-accordion-head::-webkit-details-marker{display:none;}
+.mode-accordion-head::marker{content:'';}
+.mode-accordion-head:focus-visible{
+  outline:3px solid #F2CA8B;outline-offset:-5px;border-radius:17px;
+}
+.mode-group-icon{
+  flex:none;width:52px;height:52px;border-radius:15px;
+  display:grid;place-items:center;color:#F4CE93;
+  background:#35465F;border:1px solid #94774D;
+  font-size:24px;font-weight:850;
+}
+.mode-group-title{
+  display:flex;flex:1;flex-direction:column;gap:5px;min-width:0;
+}
+.mode-group-title strong{font-size:19px;font-weight:830;color:#F8F7F2;}
+.mode-group-title small{font-size:13px;line-height:1.35;color:#D5DAE1;}
+.mode-chevron{
+  display:grid;place-items:center;flex:none;width:32px;height:48px;
+  color:#E8BF84;font-size:25px;transition:transform .16s ease;
+}
+.mode-accordion[open] .mode-chevron{transform:rotate(180deg);}
+.mode-accordion-body{
+  padding:3px 12px 13px;border-top:1px solid #A8895655;
+  display:grid;gap:7px;
+}
+.mode-option{
+  display:flex;align-items:stretch;gap:7px;
+  border:1px solid #6D7790;background:#1E2D42;
+  border-radius:14px;padding:7px;
+}
+.mode-option-configure{
+  display:flex;align-items:center;gap:6px;flex:1;min-width:0;
+  border:0;background:transparent;text-align:left;
+  padding:7px 5px 7px 8px;color:#F8F7F2;
+  min-height:59px;
+}
+.mode-option-info{
+  display:flex;flex-direction:column;flex:1;min-width:0;gap:3px;
+}
+.mode-option-info strong{
+  font-size:16px;font-weight:740;line-height:1.25;
+}
+.mode-option-info small{
+  font-size:12px;color:#D5DAE1;line-height:1.35;
+}
+.mode-option-duration{
+  font-size:11px;color:#EBC38B;font-weight:700;
+}
+.mode-option-edit{
+  align-self:center;color:#EBC38B;
+  font-size:12px;font-weight:800;margin-right:3px;
+}
+.mode-option-play{
+  display:grid;place-items:center;flex:none;
+  width:54px;min-height:54px;border-radius:12px;
+  color:#17243A;background:#DBAE6B;
+  border:1px solid #DBAE6B;font-size:21px;font-weight:900;
+}
+.mode-option-play:active{background:#F2CA8B;}
+.mode-option button:focus-visible{outline:3px solid #F2CA8B;outline-offset:0;}
+.advanced-settings{
+  border:1px solid #756744;border-radius:15px;
+  margin-top:18px;padding:0 14px;background:#223148;
+}
+.advanced-settings>summary{
+  list-style:none;cursor:pointer;
+  min-height:55px;display:flex;align-items:center;justify-content:space-between;
+  font-size:14px;font-weight:710;color:#E8C793;
+}
+.advanced-settings>summary::after{content:'⌄';font-size:21px;}
+.advanced-settings[open]>summary::after{content:'⌃';}
+.advanced-settings>.setting{border-top:1px solid #94764A55;}
+.luc-warning{font-size:13px;line-height:1.5;color:#E3E6EC;padding:9px 2px 4px;}
+.luc-disabled{min-height:48px;width:100%;border-radius:12px;}
+#view-history .library-panel{margin-top:22px;margin-bottom:18px;}
+#view-history #clearHistory{margin-top:12px;}
+@media (max-width:360px){
+  .mode-accordion-head{padding:12px 10px;gap:9px;}
+  .mode-option{gap:4px;}
+  .mode-option-play{width:50px;}
+  .mode-option-edit{font-size:11px;}
+}
+@media (prefers-reduced-motion:reduce){
+ .mode-chevron{transition:none!important;}
+}
