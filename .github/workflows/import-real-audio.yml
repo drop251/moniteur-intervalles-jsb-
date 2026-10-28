@@ -76,7 +76,7 @@ jobs:
             selected=pcm[offset:offset+target]
             if len(selected)<target:selected.extend([0]*(target-len(selected)))
             power=math.sqrt(sum((x/32768.0)**2 for x in selected)/len(selected))
-            gain=min(3.8,.27/max(.01,power))
+            gain=min(11.0,.29/max(.008,power))
             result=array.array('h')
             fade_in=int(.007*22050);fade_out=int(.085*22050)
             for i,v in enumerate(selected):
