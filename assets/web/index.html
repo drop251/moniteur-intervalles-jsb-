@@ -288,7 +288,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
   <select id="finishSoundChoice"></select>
   <button type="button" class="secondary volume-test" id="testFinishSound">▶ Écouter la fin</button>
   <small>Trois nouvelles fins distinctes des signaux d’effort.</small>
-</div><div class="field" style="margin-top:14px"><label for="audioMethod">Mixage musical natif</label><select id="audioMethod"><option value="web">Spotify / Apple Music : lecture continue, atténuation iOS</option><option value="media">Lecture continue via le moteur natif</option></select><small>Musique réduite 3 s avant les signaux prévisibles et maintenue 3 s après le dernier bip. iOS définit le niveau de réduction.</small></div><p id="audioStatus" class="audio-status" role="status" aria-live="polite">Audio non testé</p>
+</div><p class="music-ducking-info">Spotify et Apple Music restent actifs. Sur iPhone, Moniteur JSB demande une atténuation 3 secondes avant et 3 secondes après le signal ; iOS détermine l'intensité de la baisse.</p><p id="audioStatus" class="audio-status" role="status" aria-live="polite">Audio non testé</p>
   <div class="volume-heading"><label for="volumeRange">Volume des bips</label><output id="volumeValue" for="volumeRange">90 %</output></div>
   <input type="range" id="volumeRange" min="0" max="100" value="90" step="5" aria-describedby="volumeHelp" />
   <div class="volume-scale" aria-hidden="true"><span>Muet</span><span>Maximum</span></div>
@@ -897,8 +897,7 @@ $('soundChoice').addEventListener('change',()=>{settings.sound=$('soundChoice').
 $('restSoundChoice').addEventListener('change',()=>{settings.restSound=$('restSoundChoice').value;safeWrite('jsb_preview_settings',settings);});
 $('randomSoundChoice').addEventListener('change',()=>{settings.randomSound=$('randomSoundChoice').value;safeWrite('jsb_preview_settings',settings);});
 $('finishSoundChoice').addEventListener('change',()=>{settings.finishSound=$('finishSoundChoice').value;safeWrite('jsb_preview_settings',settings);});
-$('audioMethod').value=settings.audioMethod==='media'?'media':'web';
-$('audioMethod').addEventListener('change',()=>{settings.audioMethod=$('audioMethod').value;soundEngine.setMode(settings.audioMethod);safeWrite('jsb_preview_settings',settings);});
+
 function renderVolume(){const v=Math.round(settings.volume);volumeRange.value=String(v);volumeRange.setAttribute('aria-valuetext',v===0?'Muet':v+' pour cent');volumeValue.textContent=v+' %';testBeep.disabled=!settings.audio||v===0;testFinishSound.disabled=!settings.audio||v===0;testRestSound.disabled=!settings.audio||v===0;testRandomSound.disabled=!settings.audio||v===0}
 renderVolume();
 volumeRange.addEventListener('input',()=>{settings.volume=Number(volumeRange.value);renderVolume();safeWrite('jsb_preview_settings',settings)});
