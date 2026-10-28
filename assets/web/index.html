@@ -547,7 +547,10 @@ function openEditor(workout=null){
  closeWorkoutMenus();$('editorForm').reset();editingWorkoutId=workout?workout.id:null;
  if(!workout){const defaults=trainingModes.DEFAULTS[$('workoutMode').value];$('preparation').value=String(defaults.prep);$('effort').value=String(defaults.work);$('repos').value=String(defaults.rest);$('cycles').value=String(defaults.cycles);}
  $('editorTitle').textContent=workout?'Configurer '+workout.name:'Nouvelle séance';
- $('workoutMode').disabled=Boolean(workout&&['randori','golden','chrono','random','tabata'].includes(workout.id));
+ const fixedMode=Boolean(workout&&['randori','golden','chrono','random','tabata'].includes(workout.id));
+ $('workoutMode').disabled=fixedMode;
+ $('workoutMode').closest('.field').hidden=fixedMode;
+ $('workoutName').closest('.field').hidden=fixedMode;
  if(workout){
    if(!trainingModes.isAvailable(workout.kind)){notice('Mode en cours d’analyse');return;}
    $('workoutMode').value=workout.kind||'hiit';
@@ -591,7 +594,7 @@ function applyMode(){
  if(mode==='random'){$('repos').value='0';$('cycles').value='1'}
  syncAllDurationPickers();updateConfigDuration();renderQuickPresets();
 }
-function closeEditor(){$('editorModal').classList.remove('active');editingWorkoutId=null;$('workoutMode').disabled=false;$('app').inert=false}
+function closeEditor(){$('editorModal').classList.remove('active');editingWorkoutId=null;$('workoutMode').disabled=false;$('workoutMode').closest('.field').hidden=false;$('workoutName').closest('.field').hidden=false;$('app').inert=false}
 function renderQuickPresets(){
  const group=$('presetChips');if(!group)return;
  group.replaceChildren();
