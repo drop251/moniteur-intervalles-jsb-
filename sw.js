@@ -1,12 +1,12 @@
 // Moniteur JSB v2.3 — précache des ressources de la version HTML.
 // Une nouvelle version de cache évite de conserver l'ancienne interface.
-const CACHE = 'moniteur-jsb-web-v23';
+const CACHE = 'moniteur-jsb-web-v24';
 const ASSETS = [
   './','./index.html','./premium_v2.css',
   './manifest.webmanifest','./icon.svg',
   './interaction_gate.js','./workout_manager.js','./workout_library.js',
   './duration_presets.js','./training_modes.js','./random_signals.js',
-  './sound_engine.js','./audio_cues.js'
+  './jsb_audio_samples.js','./sound_engine.js','./audio_cues.js'
 ];
 self.addEventListener('install', event => {
   event.waitUntil(
