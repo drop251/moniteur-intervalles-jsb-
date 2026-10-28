@@ -209,6 +209,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
     <div><div class="eyebrow">MINUTEUR COMBAT</div><h1>Randori</h1>
     <p>Combats chronométrés et Golden Score.</p></div>
   </div>
+  <section class="recent-timer" id="lastUsedRandori" aria-label="Dernier minuteur utilisé" hidden></section>
   <div class="mode-page-body" id="modeOptionsRandori" aria-label="Minuteurs Randori et Golden Score"></div>
   <p class="mode-page-tip">Choisis <strong>Régler</strong> pour modifier une séance, ou <strong>▶</strong> pour la lancer avec les dernières valeurs.</p>
 </section>
@@ -218,6 +219,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
     <div><div class="eyebrow">INTERVALLES</div><h1>Tabata</h1>
     <p>Effort, récupération et cycles.</p></div>
   </div>
+  <section class="recent-timer" id="lastUsedTabata" aria-label="Dernier minuteur utilisé" hidden></section>
   <div class="mode-page-body" id="modeOptionsTabata" aria-label="Minuteur Tabata"></div>
   <p class="mode-page-tip">Les temps d'effort et de repos peuvent aussi être corrigés <strong>pendant la pause</strong>.</p>
 </section>
@@ -227,6 +229,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
     <div><div class="eyebrow">TEMPS & RÉACTIVITÉ</div><h1>Chronomètre</h1>
     <p>Temps libre ou bips imprévisibles.</p></div>
   </div>
+  <section class="recent-timer" id="lastUsedChrono" aria-label="Dernier minuteur utilisé" hidden></section>
   <div class="mode-page-body" id="modeOptionsChrono" aria-label="Chronomètre libre et bips aléatoires"></div>
   <p class="mode-page-tip">Le <strong>Golden Score</strong> se trouve dans l'onglet Randori.</p>
 </section>
@@ -571,7 +574,36 @@ function buildModeOption(key) {
  row.append(configure,play);
  return row;
 }
+function renderLastUsed(){
+ const containers={
+   randori:$('lastUsedRandori'),tabata:$('lastUsedTabata'),chrono:$('lastUsedChrono')
+ };
+ for(const card of Object.values(containers)){
+   card.replaceChildren();card.hidden=true;
+ }
+ if(!recentWorkout||!trainingModeIsValid(recentWorkout))return;
+ const tab=tabForTimer(recentWorkout.kind),card=containers[tab];
+ if(!card)return;
+ const heading=document.createElement('span');
+ heading.className='recent-eyebrow';heading.textContent='DERNIER MINUTEUR UTILISÉ';
+ const title=document.createElement('strong');
+ title.textContent=recentWorkout.name;
+ const total=secs(recentWorkout);
+ const duration=document.createElement('small');
+ duration.textContent=Number.isFinite(total)?pretty(total)+' · derniers paramètres':'Temps libre · derniers paramètres';
+ const info=document.createElement('div');info.className='recent-info';
+ info.append(heading,title,duration);
+ const actions=document.createElement('div');actions.className='recent-actions';
+ const configure=document.createElement('button');configure.type='button';configure.className='secondary';
+ configure.textContent='Régler';configure.setAttribute('aria-label','Régler '+recentWorkout.name);
+ configure.addEventListener('click',()=>openEditor({...recentWorkout}));
+ const launch=document.createElement('button');launch.type='button';launch.className='primary';
+ launch.textContent='▶ Démarrer';launch.setAttribute('aria-label','Relancer '+recentWorkout.name);
+ launch.addEventListener('click',()=>startWorkout({...recentWorkout}));
+ actions.append(configure,launch);card.append(info,actions);card.hidden=false;
+}
 function renderWorkouts(){
+ renderLastUsed();
  for(const [containerId,keys] of [
    ['modeOptionsRandori',['randori','golden']],
    ['modeOptionsTabata',['tabata']],
@@ -793,6 +825,7 @@ function startWorkout(w){
  const lastTimerTab=tabForTimer(w.kind);
  safeWrite('jsb_v2_last_started_tab',lastTimerTab);
  lastTrainingView=lastTimerTab;
+ renderLastUsed();
  if(['randori','golden','chrono','random','tabata'].includes(w.id)){
    modeSettings[w.id]={...w};safeWrite('jsb_v2_mode_settings',modeSettings);
  }
