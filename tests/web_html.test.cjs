@@ -109,9 +109,11 @@ test('browser uses JSB audio, not unavailable native iOS ducking', () => {
 });
 
 test('offline PWA cache, icon and manifest match the web release', () => {
-  assert.ok(serviceWorker.includes("moniteur-jsb-web-v24"));
+  assert.ok(serviceWorker.includes("moniteur-jsb-web-v25"));
   assert.ok(serviceWorker.includes("'./premium_v2.css'"));
-  for (const script of ['training_modes.js','jsb_audio_samples.js','sound_engine.js','audio_cues.js']) {
+  for (const script of ['training_modes.js','jsb_audio_samples.js','sound_engine.js','audio_cues.js',
+    'assets/audio/sifflet_arbitre.wav','assets/audio/cloche_ring.wav',
+    'assets/audio/buzzer_combat.wav','assets/audio/corne_sportive.wav']) {
     assert.ok(serviceWorker.includes(script));
   }
   assert.equal(manifest.theme_color,'#1F293B');
@@ -144,6 +146,41 @@ test('settings focus on three steps, with sound gallery and progressive disclosu
   assert.ok(!panel.includes('id="soundChoice"'));
   assert.ok(html.includes("renderSoundGallery()"));
   assert.ok(html.includes("soundEngine.activateAndPlay(cue.id,'effort',settings.volume)"));
+});
+
+test('four authentic recordings are primary; electronic cues are optional', () => {
+  const settings=html.slice(html.indexOf('<section id="view-settings"'),html.indexOf('<nav class="nav"',html.indexOf('<section id="view-settings"')));
+  assert.ok(settings.includes('id="signalGallery"'));
+  assert.ok(settings.includes('id="signalGallerySecondary"'));
+  assert.ok(settings.includes('id="otherSounds"'));
+  assert.ok(settings.includes('Quatre vrais signaux de combat'));
+  assert.ok(html.includes("new Set(['buzzerPro','bellSport','whistlePro','hornPro'])"));
+  assert.ok(html.includes('(flagshipSounds.has(cue.id)?gallery:gallerySecondary).append(button)'));
+  assert.ok(settings.indexOf('settingsGalleryTitle')<settings.indexOf('settingsAudioTitle'),'Choose sound before volume');
+});
+
+test('the four actual CC0 recordings are bundled and used by the sound engine', () => {
+  const real=loadModules().JSBRealSignals;
+  const files={
+    buzzerPro:'buzzer_combat.wav',
+    bellSport:'cloche_ring.wav',
+    whistlePro:'sifflet_arbitre.wav',
+    hornPro:'corne_sportive.wav',
+    finishBell:'cloche_finale.wav',
+  };
+  for(const [id,name] of Object.entries(files)){
+    const file=path.join(root,'assets','audio',name);
+    assert.ok(fs.existsSync(file),name);
+    const bundled=Buffer.from(real.getWavBase64(id),'base64');
+    assert.equal(
+      crypto.createHash('sha256').update(bundled).digest('hex'),
+      crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'),
+      id+' does not match the recorded source');
+  }
+  assert.ok(get('AUDIO_CREDITS.md').includes('SpliceSound'));
+  assert.ok(get('AUDIO_CREDITS.md').includes('Umplix'));
+  assert.ok(get('AUDIO_CREDITS.md').includes('Naïma'));
+  assert.ok(get('AUDIO_CREDITS.md').includes('guitarguy1985'));
 });
 
 test('all mastered WAV samples are PCM, loud and without digital clipping', () => {
