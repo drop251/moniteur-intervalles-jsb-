@@ -183,6 +183,7 @@
     const BlobCtor=deps.BlobCtor||host.Blob;
     let context=null,media=null,mode='web',status='inactive';
     const cached=new Map(),buffers=new Map(),listeners=new Set();
+    let activeSource=null;
 
     function emit(value){
       status=value;
@@ -268,11 +269,11 @@
     function playSampleBuffer(ctx,sound,event,volume){
       if(typeof ctx.createBuffer!=='function'||typeof ctx.createBufferSource!=='function')
         return false;
-      const bytes=sampleBytesFor(sound,event);
-      if(!bytes||bytes.length<=44)return false;
       const key=event==='countdown'?'countdown':event==='finish'?normalizeFinish(sound):normalize(sound);
       let buffer=buffers.get(key);
       if(!buffer){
+        const bytes=sampleBytesFor(sound,event);
+        if(!bytes||bytes.length<=44)return false;
         const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
         const hz=view.getUint32(24,true),count=view.getUint32(40,true)/2;
         if(hz!==22050||count<1||count>22050*4)return false;
@@ -281,12 +282,18 @@
         for(let i=0;i<count;i++)channel[i]=view.getInt16(44+i*2,true)/32768;
         buffers.set(key,buffer);
       }
+      // Previewing several cues quickly should not stack them together.
+      if(activeSource)try{activeSource.stop()}catch{}
       const src=ctx.createBufferSource(),gain=ctx.createGain();
+      activeSource=src;
       src.buffer=buffer;
       gain.gain.setValueAtTime(Math.pow(normalizeVolume(volume)/100,.91),ctx.currentTime);
       src.connect(gain);gain.connect(ctx.destination);
       src.start(ctx.currentTime+.004);
-      src.onended=()=>{try{src.disconnect();gain.disconnect()}catch{}};
+      src.onended=()=>{
+        if(activeSource===src)activeSource=null;
+        try{src.disconnect();gain.disconnect()}catch{}
+      };
       emit('ready');
       return true;
     }
@@ -356,6 +363,8 @@
       if(media)try{media.pause();media.src='';}catch{}
       for(const url of cached.values())try{revokeUrl(url)}catch{}
       cached.clear();buffers.clear();
+      if(activeSource)try{activeSource.stop()}catch{}
+      activeSource=null;
       if(context&&typeof context.close==='function')context.close().catch(()=>{});
       context=null;media=null;emit('inactive');
     }
