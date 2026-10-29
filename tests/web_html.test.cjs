@@ -402,3 +402,72 @@ test('real Settings click opens the editor for every timer mode without starting
    $('app').inert=false;
  }
 });
+
+test('native Safari dialog opens and closes for each timer without starting it',()=>{
+ const openStart=html.indexOf('function openEditor(workout=null,requestedKind=null){');
+ const openEnd=html.indexOf('const durationLimits=',openStart);
+ const closeStart=html.indexOf('function closeEditor(){');
+ const closeEnd=html.indexOf('function renderQuickPresets(){',closeStart);
+ const cardStart=html.indexOf('function buildModeOption(key)');
+ const cardEnd=html.indexOf('function savedWorkoutCard(w)',cardStart);
+ assert.ok(openStart>=0&&openEnd>openStart&&closeStart>=0&&closeEnd>closeStart);
+ class Node {
+   constructor(){
+     this.children=[];this.handlers={};this.attributes={};this.dataset={};
+     this.value='';this.textContent='';this.className='';
+     this.hidden=false;this.disabled=false;this.checked=false;
+     this.open=false;this.isConnected=true;
+     const set=new Set();
+     this.classList={add:x=>set.add(x),remove:x=>set.delete(x),contains:x=>set.has(x)};
+   }
+   append(...x){this.children.push(...x);}
+   setAttribute(k,v){this.attributes[k]=v;if(k==='open')this.open=true;}
+   removeAttribute(k){delete this.attributes[k];if(k==='open')this.open=false;}
+   addEventListener(k,fn){this.handlers[k]=fn;}
+   closest(){return new Node();}
+   querySelector(){return new Node();}
+   reset(){}
+   focus(){this.focused=true;}
+   showModal(){this.open=true;this.openCount=(this.openCount||0)+1;}
+   close(){this.open=false;this.closeCount=(this.closeCount||0)+1;}
+ }
+ const lookup={};const $=id=>lookup[id]||(lookup[id]=new Node());
+ const doc={activeElement:new Node(),querySelectorAll:()=>[],
+   querySelector:()=>new Node(),createElement:()=>new Node()};
+ const kinds=[
+   {id:'randori',kind:'randori',name:'Randori',prep:10,work:240,rest:60,cycles:5},
+   {id:'golden',kind:'golden',name:'Golden Score',prep:10,work:0,rest:0,cycles:1},
+   {id:'tabata',kind:'tabata',name:'Tabata',prep:10,work:20,rest:10,cycles:8},
+   {id:'chrono',kind:'chrono',name:'Chronomètre',prep:0,work:0,rest:0,cycles:1},
+   {id:'random',kind:'random',name:'Bips aléatoires',prep:10,work:180,rest:0,cycles:1},
+ ];
+ let started=0;
+ const create=new Function('$','document','gate','trainingModes','standard','primaryWorkout',
+   'modeOptionMeta','pretty','session','closeWorkoutMenus','notice','syncAllDurationPickers',
+   'updateConfigDuration','applyMode','startWorkout','console',
+   'let editorReturnFocus=null,editingWorkoutId=null,autoRandoriName=false,autoTabataName=false;'+
+   html.slice(openStart,openEnd)+html.slice(closeStart,closeEnd)+
+   html.slice(cardStart,cardEnd)+'return {openEditor,closeEditor,buildModeOption};');
+ const app=create($,doc,{allow:()=>true},{isAvailable:k=>kinds.some(w=>w.kind===k),DEFAULTS:{}},
+   kinds,w=>w,(kind,w)=>({title:w.name,description:kind}),String,null,
+   ()=>{},()=>{},()=>{},()=>{},()=>{},()=>{started++;},console);
+ for(const w of kinds){
+   const card=app.buildModeOption(w.kind);
+   const buttons=card.children.flatMap(node=>node.children||[]);
+   const edit=buttons.find(node=>node.className==='mode-option-settings secondary');
+   assert.ok(edit,w.kind+' edit button missing');
+   edit.handlers.click();
+   assert.equal($('editorModal').open,true,w.kind+' showModal did not open');
+   assert.equal($('editorModal').classList.contains('active'),true);
+   assert.equal($('workoutMode').value,w.kind);
+   assert.equal(started,0);
+   app.closeEditor();
+   assert.equal($('editorModal').open,false,w.kind+' modal remained open');
+   assert.equal($('editorModal').classList.contains('active'),false);
+ }
+ assert.equal($('editorModal').openCount,kinds.length);
+ assert.equal($('editorModal').closeCount,kinds.length);
+ assert.ok(html.includes("navigator.serviceWorker.addEventListener('controllerchange'"));
+ assert.ok(html.includes('<dialog class="modal" id="editorModal"'));
+ assert.ok(css.includes('#editorModal::backdrop'));
+});
