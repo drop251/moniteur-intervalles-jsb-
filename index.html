@@ -73,7 +73,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style>
 
-<link rel="stylesheet" href="./premium_v2.css?v=33" />
+<link rel="stylesheet" href="./premium_v2.css?v=34" />
 <style id="jsb-landscape-v33">
 /* JSB v3.3 — paysage iPhone : horloge pleine largeur, commandes sous le temps.
    Colonne forcée : corrige l'ancienne grille à deux colonnes restée en cache. */
@@ -445,6 +445,20 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
       <button type="button" data-step-cycles="1" aria-label="Augmenter le nombre de répétitions">+</button>
     </div>
    </div>
+   <div class="field wide simple-field randori-bips-field" id="randoriBipsField" hidden>
+      <label class="randori-bips-switch" for="randoriRandomBips">
+        <span><strong>🔔 Bips aléatoires</strong><small>Pendant les combats uniquement</small></span>
+        <input id="randoriRandomBips" type="checkbox" aria-controls="randoriBipFrequencyField" />
+      </label>
+      <div id="randoriBipFrequencyField" class="randori-bip-frequency" hidden>
+        <label for="randoriBipFrequency">Fréquence des bips</label>
+        <select id="randoriBipFrequency">
+          <option value="low">Espacés</option>
+          <option value="medium" selected>Normaux</option>
+          <option value="high">Fréquents</option>
+        </select>
+      </div>
+    </div>
    <div class="field wide simple-field" id="randomOptions" hidden><label for="randomFrequency">Fréquence des bips</label>
     <select id="randomFrequency"><option value="low">Espacés</option><option value="medium" selected>Normaux</option><option value="high">Rapides</option></select></div>
   </div>
@@ -653,7 +667,8 @@ function primaryWorkout(base){
 function modeOptionMeta(key,w) {
  if(key==='randori')return {
    title:w.name,
-   description:w.cycles+' combats · '+pretty(w.rest)+' de repos',
+   description:w.cycles+' combats · '+pretty(w.rest)+' de repos'+
+    (w.randomBips===true?' · Bips '+({low:'espacés',medium:'normaux',high:'fréquents'}[w.randomBipFrequency]||'normaux'):''),
  };
  if(key==='golden')return {
    title:'Golden Score',description:'Temps croissant · arrêt manuel',
@@ -701,7 +716,8 @@ function savedWorkoutCard(w){
  configure.setAttribute('aria-label','Modifier les réglages de '+w.name);
  const info=document.createElement('span');info.className='mode-option-info';
  const title=document.createElement('strong');title.textContent=w.name;
- const description=document.createElement('small');description.textContent=kindDescription(w);
+ const description=document.createElement('small');description.textContent=kindDescription(w)+
+   (w.kind==='randori'&&w.randomBips===true?' · Bips aléatoires':'');
  const duration=document.createElement('span');duration.className='mode-option-duration';
  duration.textContent='✓ Enregistré · '+(Number.isFinite(secs(w))?pretty(secs(w)):'Temps libre');
  const label=document.createElement('span');label.className='mode-option-edit';label.textContent='Régler';label.setAttribute('aria-hidden','true');
@@ -862,6 +878,9 @@ function openEditor(workout=null,requestedKind=null){
  }
  $('randomFrequency').value=workout?.frequency||'medium';
  $('randomProgressive').checked=workout?.progressive!==false;
+ $('randoriRandomBips').checked=kind==='randori'&&workout?.randomBips===true;
+ $('randoriBipFrequency').value=['low','medium','high'].includes(workout?.randomBipFrequency)?
+   workout.randomBipFrequency:'medium';
  applyMode();syncAllDurationPickers();updateConfigDuration();
  $('editorModal').classList.add('active');$('app').inert=true;
  (isStandard?$('preparationMinutes'):$('workoutName')).focus();
@@ -916,6 +935,8 @@ function applyMode(){
  $('effortField').hidden=['golden','chrono'].includes(mode);
  $('cyclesField').hidden=['golden','chrono','random'].includes(mode);
  $('randomOptions').hidden=mode!=='random';
+ $('randoriBipsField').hidden=mode!=='randori';
+ $('randoriBipFrequencyField').hidden=mode!=='randori'||!$('randoriRandomBips').checked;
  $('randomProgressiveOption').hidden=mode!=='random';
  $('editorUnlimited').hidden=!['golden','chrono'].includes(mode);
  $('effortLabel').textContent=mode==='random'?'Durée de l’exercice':mode==='randori'?'Durée du combat':mode==='boxe'?'Durée du round':'Durée d’effort';
@@ -973,6 +994,10 @@ function configuredWorkout(){
    prep,work,rest:['golden','chrono','random'].includes(kind)?0:rest,
    cycles:['golden','chrono','random'].includes(kind)?1:cycles,kind,
    symbol:original?.symbol||existing?.symbol||kindSymbol[kind],
+   ...(kind==='randori'?{
+      randomBips:$('randoriRandomBips').checked,
+      randomBipFrequency:$('randoriBipFrequency').value
+   }:{}),
    ...(kind==='random'?{frequency:$('randomFrequency').value,
      progressive:$('randomProgressive').checked}:{})};
 }
@@ -1028,7 +1053,11 @@ function startWorkout(w){
  if(settings.audio&&settings.volume>0)void soundEngine.activateAndPlay(settings.sound,(w.prep>0?'prep':'effort'),settings.volume);
  const seq=phases(w);let acc=0;
  for(const p of seq){p.start=acc;acc+=p.ms;}
- const signals=w.kind==='random'?randomSignals.createSignals({workMs:w.work*1000,frequency:w.frequency||'medium',progressive:w.progressive!==false}).map(ms=>ms+w.prep*1000):[];
+ const signals=w.kind==='random'?
+   randomSignals.createSignals({workMs:w.work*1000,frequency:w.frequency||'medium',
+     progressive:w.progressive!==false}).map(ms=>ms+w.prep*1000):
+   w.kind==='randori'&&w.randomBips===true?
+     randomSignals.createSignalsForPhases(seq,{frequency:w.randomBipFrequency||'medium'}):[];
  const cueTimes=[...seq.map(p=>p.start),...signals];
  if(Number.isFinite(acc))cueTimes.push(acc);
  if(settings.countdown){for(let i=0;i<seq.length-1;i++){
@@ -1067,7 +1096,8 @@ function updateTimer(){
   for(const cue of due)beep('countdown');
  }
  session.lastCueMs=t;
- if(session.workout.kind==='random'&&!session.paused){
+ if((session.workout.kind==='random'||
+    (session.workout.kind==='randori'&&session.workout.randomBips===true))&&!session.paused){
   while(session.nextSignal<session.signals.length&&t>=session.signals[session.nextSignal]){
    const target=session.signals[session.nextSignal++];
    if(t-target<=180){beep('random');session.signalsPlayed++;}
@@ -1229,6 +1259,9 @@ $('workoutMode').addEventListener('change',()=>{
  autoRandoriName=mode==='randori';
  applyMode();
 });
+$('randoriRandomBips').addEventListener('change',()=>{
+ $('randoriBipFrequencyField').hidden=!$('randoriRandomBips').checked;
+});
 $('workoutName').addEventListener('input',()=>{
  // Manual title edits take precedence for custom Randori sessions.
  if($('workoutMode').value==='randori'&&
@@ -1271,6 +1304,14 @@ $('pauseTimeForm').addEventListener('submit',event=>{
  };
  try{
    window.JSBPauseAdjustments.applyPausedEdit(session,changes,{countdown:settings.countdown});
+   if(session.workout.kind==='randori'&&session.workout.randomBips===true){
+     // Refresh only upcoming alerts after paused time changes; no catch-up audio.
+     session.signals=randomSignals.createSignalsForPhases(session.seq,{
+       frequency:session.workout.randomBipFrequency||'medium'
+     }).filter(at=>at>session.elapsed+1500);
+     session.nextSignal=0;
+     session.cueTimes=[...new Set([...session.cueTimes,...session.signals])].sort((a,b)=>a-b);
+   }
    // No sound is triggered for changes made while paused.
    closePauseTimeDialog();
    notice('Temps modifiés · séance toujours en pause');
