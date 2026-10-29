@@ -542,7 +542,7 @@ function setHeaderClearance(){if(jsbHeader)document.documentElement.style.setPro
 setHeaderClearance();
 if(typeof ResizeObserver!=='undefined')new ResizeObserver(setHeaderClearance).observe(jsbHeader);
 window.addEventListener('orientationchange',setHeaderClearance);
-const standard=[{id:'randori',name:'Randori · 5 × 4 min',prep:10,work:240,rest:60,cycles:5,kind:'randori',symbol:'🥋'},{id:'golden',name:'Golden Score · Libre',prep:10,work:0,rest:0,cycles:1,kind:'golden',symbol:'∞'},{id:'chrono',name:'Chronomètre libre',prep:0,work:0,rest:0,cycles:1,kind:'chrono',symbol:'◷'},{id:'random',name:'Bips aléatoires · Burpees',prep:10,work:180,rest:0,cycles:1,kind:'random',symbol:'♫',frequency:'medium',progressive:true},{id:'tabata',name:'Tabata classique',prep:10,work:20,rest:10,cycles:8,kind:'tabata',symbol:'◉'},{id:'hiit',name:'HIIT 40 / 20',prep:10,work:40,rest:20,cycles:10,kind:'hiit',symbol:'↗'},{id:'boxe',name:'Boxe · 3 rounds',prep:10,work:180,rest:60,cycles:3,kind:'boxe',symbol:'✦'}];
+const standard=[{id:'randori',name:'Randori 5 × 4 min',prep:10,work:240,rest:60,cycles:5,kind:'randori',symbol:'🥋'},{id:'golden',name:'Golden Score · Libre',prep:10,work:0,rest:0,cycles:1,kind:'golden',symbol:'∞'},{id:'chrono',name:'Chronomètre libre',prep:0,work:0,rest:0,cycles:1,kind:'chrono',symbol:'◷'},{id:'random',name:'Bips aléatoires · Burpees',prep:10,work:180,rest:0,cycles:1,kind:'random',symbol:'♫',frequency:'medium',progressive:true},{id:'tabata',name:'Tabata classique',prep:10,work:20,rest:10,cycles:8,kind:'tabata',symbol:'◉'},{id:'hiit',name:'HIIT 40 / 20',prep:10,work:40,rest:20,cycles:10,kind:'hiit',symbol:'↗'},{id:'boxe',name:'Boxe · 3 rounds',prep:10,work:180,rest:60,cycles:3,kind:'boxe',symbol:'✦'}];
 const read=(key,fallback)=>{try{const parsed=JSON.parse(localStorage.getItem(key));return parsed===null?fallback:parsed}catch{return fallback}};
 let customs=read('jsb_preview_customs',[]);if(!Array.isArray(customs))customs=[];// Previous history remains untouched in localStorage, but is not displayed or extended.
 const storedSettings=read('jsb_preview_settings',{});let settings={audio:true,vibrate:true,keepAwake:false,volume:90,sound:'buzzerPro',restSound:'bellSport',randomSound:'whistlePro',audioMethod:'web',finishSound:'bellSport',countdown:true,...storedSettings};
@@ -580,6 +580,25 @@ let workoutSearch='';
 let reorderFavorites=false;
 const safeWrite=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
 const pretty=secs=>{const n=Math.max(0,Math.ceil(secs));return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')};
+// The title uses the number of randoris and the duration of ONE combat
+// (not the total duration including preparation and rest).
+function formatRandoriName(cycles,workSeconds){
+ const count=Number(cycles),total=Number(workSeconds);
+ if(!Number.isSafeInteger(count)||count<1||count>200||
+   !Number.isSafeInteger(total)||total<1||total>3600)return null;
+ const mins=Math.floor(total/60),seconds=total%60;
+ const time=mins===0?seconds+' s':
+   seconds===0?mins+' min':mins+' min '+seconds+' s';
+ return 'Randori '+count+' × '+time;
+}
+let autoRandoriName=false;
+function syncRandoriName(){
+ if(!autoRandoriName||$('workoutMode').value!=='randori')return;
+ const name=formatRandoriName($('cycles').value,$('effort').value);
+ if(!name)return;
+ $('workoutName').value=name;
+ $('editorTitle').textContent=name;
+}
 const secs=w=>trainingModes.workoutDuration(w);
 const kindSymbol={randori:'🥋',golden:'∞',chrono:'◷',random:'♫',hiit:'↗',tabata:'◉',boxe:'✦'};
 const kindDescription=w=>w.kind==='golden'?'Temps libre · Golden Score':w.kind==='chrono'?'Temps libre · Chronomètre':w.kind==='random'?'Signaux irréguliers · '+pretty(w.work):w.kind==='randori'?w.cycles+' combats · '+pretty(w.work)+' chacun':w.kind==='boxe'?w.cycles+' rounds de '+pretty(w.work):w.cycles+' cycles • '+w.work+' s / '+w.rest+' s';
@@ -611,13 +630,15 @@ function tabForTimer(kind){
 function closeWorkoutMenus(){for(const menu of document.querySelectorAll('.workout-menu'))menu.hidden=true;for(const btn of document.querySelectorAll('.workout-menu-button'))btn.setAttribute('aria-expanded','false');workoutMenuId=null}
 function primaryWorkout(base){
  const stored=modeSettings[base.id];
- if(!trainingModeIsValid(stored)||stored.kind!==base.kind)return base;
- return {...base,...stored,id:base.id,kind:base.kind};
+ const w=trainingModeIsValid(stored)&&stored.kind===base.kind
+   ? {...base,...stored,id:base.id,kind:base.kind}
+   : {...base};
+ return w.kind==='randori'?{...w,name:formatRandoriName(w.cycles,w.work)||w.name}:w;
 }
 function modeOptionMeta(key,w) {
  if(key==='randori')return {
-   title:'Randori classique',
-   description:w.cycles+' combats · '+pretty(w.work)+' / '+pretty(w.rest)+' de repos',
+   title:w.name,
+   description:w.cycles+' combats · '+pretty(w.rest)+' de repos',
  };
  if(key==='golden')return {
    title:'Golden Score',description:'Temps croissant · arrêt manuel',
@@ -801,6 +822,11 @@ function openEditor(workout=null,requestedKind=null){
  editorReturnFocus=document.activeElement;
  closeWorkoutMenus();$('editorForm').reset();editingWorkoutId=workout?workout.id:null;
  const kind=workout?.kind||requestedKind||'randori';
+ // Keep a deliberately personalized title for an existing saved session.
+ // Standard and automatically named Randori timers follow the settings.
+ const isBuiltIn=Boolean(workout&&standard.some(w=>w.id===workout.id));
+ autoRandoriName=kind==='randori'&&(!workout||isBuiltIn||
+   /^randori\s+\d+\s*[×x]\s*\d+/i.test(workout.name));
  $('workoutMode').value=kind;
  if(!workout){
   const defaults=trainingModes.DEFAULTS[kind];
@@ -937,6 +963,7 @@ function configuredWorkout(){
 }
 function updateConfigDuration(){
  updateSimpleDisplays();
+ syncRandoriName();
  const output=$('configDuration');
  if(!output)return;
  const kind=$('workoutMode').value;
@@ -1180,7 +1207,18 @@ $('settingsQuick').addEventListener('click',()=>{
     $(id+suffix).addEventListener('change',()=>updateDurationOptions(id));
   }
 }
-$('workoutMode').addEventListener('change',()=>{const mode=$('workoutMode').value;const {work,rest,cycles}=trainingModes.DEFAULTS[mode];$('effort').value=work;$('repos').value=rest;$('cycles').value=cycles;applyMode();});$('editorForm').addEventListener('submit',e=>{
+$('workoutMode').addEventListener('change',()=>{
+ const mode=$('workoutMode').value;
+ const {work,rest,cycles}=trainingModes.DEFAULTS[mode];
+ $('effort').value=work;$('repos').value=rest;$('cycles').value=cycles;
+ autoRandoriName=mode==='randori';
+ applyMode();
+});
+$('workoutName').addEventListener('input',()=>{
+ // Manual title edits take precedence for custom Randori sessions.
+ if($('workoutMode').value==='randori'&&
+    !$('workoutName').closest('.field').hidden)autoRandoriName=false;
+});$('editorForm').addEventListener('submit',e=>{
   e.preventDefault();
   const w=configuredWorkout();if(!w||!gate.allow('save-workout',600))return;
   const builtin=standard.some(x=>x.id===editingWorkoutId);
