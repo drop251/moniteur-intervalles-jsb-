@@ -197,7 +197,146 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style>
 
-<link rel="stylesheet" href="./premium_v2.css" />
+<link rel="stylesheet" href="./premium_v2.css?v=32" />
+<style id="jsb-landscape-v32">
+/* JSB v3.2 — paysage iPhone : horloge pleine largeur, commandes sous le temps.
+   Colonne forcée : corrige l'ancienne grille à deux colonnes restée en cache. */
+@media screen and (min-width:540px) and (max-height:700px) and (min-aspect-ratio:5/4) {
+  #timer.timer.active {
+    display:flex !important;
+    flex-direction:column !important;
+    grid-template-columns:none !important;
+    grid-template-rows:none !important;
+    align-items:stretch !important;
+    justify-content:initial !important;
+    gap:0 !important;
+    height:100dvh !important;
+    max-height:100dvh !important;
+    box-sizing:border-box !important;
+    overflow:hidden !important;
+    padding:
+      max(6px,env(safe-area-inset-top,0px))
+      max(20px,env(safe-area-inset-right,0px))
+      max(8px,env(safe-area-inset-bottom,0px))
+      max(20px,env(safe-area-inset-left,0px)) !important;
+  }
+  #timer .timer-head {
+    grid-column:auto !important;
+    grid-row:auto !important;
+    flex:0 0 auto !important;
+    min-height:0 !important;
+    padding:0 !important;
+  }
+  #timer .timer-main {
+    grid-column:auto !important;
+    grid-row:auto !important;
+    flex:1 1 auto !important;
+    min-width:0 !important;
+    min-height:0 !important;
+    display:flex !important;
+    flex-direction:column !important;
+    justify-content:center !important;
+    align-items:center !important;
+    overflow:hidden !important;
+    gap:clamp(1px,1vh,5px) !important;
+  }
+  #timer .timer-main .phase-chip {
+    flex:none !important;
+    padding:4px 13px !important;
+    font-size:clamp(11px,3vh,16px) !important;
+    line-height:1.05 !important;
+  }
+  #timer .timer-main .clock {
+    display:block !important;
+    flex:none !important;
+    width:100% !important;
+    max-width:100% !important;
+    margin:0 !important;
+    text-align:center !important;
+    white-space:nowrap !important;
+    font-size:clamp(84px,min(26vw,44dvh),198px) !important;
+    line-height:.98 !important;
+    letter-spacing:-.055em !important;
+    font-variant-numeric:tabular-nums !important;
+    font-feature-settings:"tnum" !important;
+  }
+  #timer .timer-main .clock[data-digits="6"],
+  #timer .timer-main .clock[data-digits="7"],
+  #timer .timer-main .clock[data-digits="8"] {
+    font-size:clamp(60px,min(17vw,34dvh),138px) !important;
+  }
+  #timer .timer-main .cycle {
+    flex:none !important;
+    font-size:clamp(12px,3.5vh,18px) !important;
+    line-height:1.15 !important;
+    text-align:center !important;
+    margin:0 !important;
+  }
+  #timer .timer-main .paused {
+    flex:none !important;
+    margin:0 !important;
+    padding:3px 10px !important;
+    font-size:11px !important;
+  }
+  #timer .timer-main .paused:not(.on) { display:none !important; }
+  #timer .timer-controls {
+    grid-column:auto !important;
+    grid-row:auto !important;
+    flex:0 0 auto !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    justify-content:flex-end !important;
+    gap:6px !important;
+    width:100% !important;
+    max-width:700px !important;
+    min-width:0 !important;
+    min-height:0 !important;
+    margin:0 auto !important;
+    padding:0 !important;
+  }
+  #timer .timer-controls .prog,
+  #timer .timer-controls .next,
+  #timer .timer-controls .caption { display:none !important; }
+  #timer .timer-controls .timer-actions {
+    order:0 !important;
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    grid-template-rows:auto !important;
+    gap:12px !important;
+    width:100% !important;
+    min-width:0 !important;
+    margin:0 !important;
+  }
+  #timer .timer-controls .timer-actions button {
+    width:100% !important;
+    min-width:0 !important;
+    min-height:clamp(50px,15dvh,70px) !important;
+    padding:8px 12px !important;
+    font-size:clamp(16px,3.6vh,22px) !important;
+    line-height:1.2 !important;
+    border-radius:15px !important;
+  }
+  #timer .timer-controls .adjust-time-trigger:not([hidden]) {
+    display:block !important;
+    order:1 !important;
+    min-height:48px !important;
+    width:100% !important;
+    margin:0 !important;
+  }
+  #timer .timer-controls .adjust-time-trigger[hidden] {display:none !important;}
+}
+@media screen and (min-width:540px) and (max-height:340px) and (min-aspect-ratio:5/4) {
+  #timer .timer-head strong {font-size:10px !important;}
+  #timer .timer-main .phase-chip {padding:3px 10px !important;}
+  #timer .timer-main .clock {font-size:clamp(70px,min(22vw,39dvh),152px) !important;}
+  #timer .timer-main .clock[data-digits="6"],
+  #timer .timer-main .clock[data-digits="7"],
+  #timer .timer-main .clock[data-digits="8"] {
+    font-size:clamp(54px,min(15vw,31dvh),115px) !important;
+  }
+}
+</style>
 </head>
 <body>
 <div class="app" id="app">
@@ -1464,7 +1603,7 @@ navigate(initialTab);
 <script>
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    navigator.serviceWorker.register('./sw.js', {updateViaCache:'none'}).then(reg=>reg.update()).catch(() => {});
   });
 }
 </script>
