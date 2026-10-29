@@ -1163,3 +1163,20 @@ html{scroll-padding-top:calc(var(--jsb-header-height) + 12px)}
     font-size:clamp(54px,min(15vw,31dvh),115px) !important;
   }
 }
+
+/* JSB v3.4 — Randori option: bips aléatoires durant les combats. */
+.randori-bips-field{border-color:#B58D55!important;background:#2B4059!important}
+.randori-bips-switch{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:58px;cursor:pointer}
+.randori-bips-switch>span{min-width:0;display:flex;flex-direction:column;gap:6px}
+.randori-bips-switch strong{font-size:17px;color:#F8F7F2}
+.randori-bips-switch small{font-size:13px;line-height:1.4;color:#D5DAE1}
+.randori-bips-switch input{appearance:none;-webkit-appearance:none;position:relative;flex:none;cursor:pointer;width:58px;height:34px;margin:0;border-radius:99px;background:#53657B;border:2px solid #9CB0C8}
+.randori-bips-switch input:checked{background:#DBAE6B;border-color:#DBAE6B}
+.randori-bips-switch input::after{content:'';position:absolute;top:3px;left:3px;width:24px;height:24px;background:#fff;border-radius:50%;transition:transform .15s ease}
+.randori-bips-switch input:checked::after{transform:translateX(24px);background:#152035}
+.randori-bips-switch input:focus-visible{outline:3px solid #F5D7A4;outline-offset:4px}
+.randori-bip-frequency{display:grid;gap:9px;padding-top:12px}
+.randori-bip-frequency[hidden]{display:none!important}
+.randori-bip-frequency label{font-size:15px;font-weight:740;color:#F8F7F2}
+.randori-bip-frequency select{width:100%;height:60px;border-radius:13px;border:1px solid #B18F58;background:#162740;font-size:19px;font-weight:760;color:#F8F7F2;padding:0 14px}
+@media(prefers-reduced-motion:reduce){.randori-bips-switch input::after{transition:none}}
