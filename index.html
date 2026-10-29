@@ -73,7 +73,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style>
 
-<link rel="stylesheet" href="./premium_v2.css?v=36" />
+<link rel="stylesheet" href="./premium_v2.css?v=37" />
 <style id="jsb-landscape-v33">
 /* JSB v3.3 — paysage iPhone : horloge pleine largeur, commandes sous le temps.
    Colonne forcée : corrige l'ancienne grille à deux colonnes restée en cache. */
@@ -1022,7 +1022,7 @@ function applyMode(){
  const mode=$('workoutMode').value;
  const hints={randori:'Combats avec récupération et bips de début/fin.',golden:'Chronomètre croissant sans limite ; arrêt manuel.',chrono:'Chronomètre libre : temps croissant et arrêt manuel.',random:'Bips irréguliers pendant un temps de travail donné. Ex. : burpee à chaque bip.',tabata:'20 s effort et 10 s repos par défaut.',hiit:'Alternance effort / repos sans repos final.',boxe:'Rounds avec récupération.'};
  $('modeHint').textContent=hints[mode]||'Mode non disponible';
- $('restField').hidden=['golden','chrono','random'].includes(mode);
+ $('reposField').hidden=['golden','chrono','random'].includes(mode);
  $('effortField').hidden=['golden','chrono'].includes(mode);
  $('cyclesField').hidden=['golden','chrono','random'].includes(mode);
  $('randomOptions').hidden=mode!=='random';
