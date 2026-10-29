@@ -219,7 +219,7 @@ test('the four real sports alert WAV files are distinct, loud, and local',()=>{
 });
 
 test('offline cache includes all new interface and timer dependencies',()=>{
- assert.ok(serviceWorker.includes('moniteur-jsb-web-v36'));
+ assert.ok(serviceWorker.includes('moniteur-jsb-web-v37'));
  for(const file of ['premium_v2.css','pause_adjustments.js',
    'jsb_audio_samples.js','sound_engine.js','audio_cues.js']){
    assert.ok(serviceWorker.includes(file),file);
@@ -470,4 +470,40 @@ test('native Safari dialog opens and closes for each timer without starting it',
  assert.ok(html.includes("navigator.serviceWorker.addEventListener('controllerchange'"));
  assert.ok(html.includes('<dialog class="modal" id="editorModal"'));
  assert.ok(css.includes('#editorModal::backdrop'));
+});
+
+test('every literal editor lookup refers to a real DOM id (regression iPhone settings)',()=>{
+ const ids=new Set([...html.matchAll(/\\bid="([^"]+)"/g)].map(m=>m[1]));
+ const lookups=[...html.matchAll(/\\$\\('([^']+)'\\)/g)].map(m=>m[1]);
+ const missing=[...new Set(lookups)].filter(id=>!ids.has(id));
+ assert.deepEqual(missing,[], 'Missing element IDs make Settings fail when tapped');
+ assert.ok(ids.has('reposField'));
+ assert.ok(!html.includes("$('restField')"));
+});
+
+test('the actual applyMode implementation runs for all five timers',()=>{
+ const begin=html.indexOf('function applyMode(){');
+ const end=html.indexOf('function closeEditor(){',begin);
+ assert.ok(begin>=0&&end>begin);
+ const source=html.slice(begin,end);
+ const ids=new Set([...html.matchAll(/\\bid="([^"]+)"/g)].map(m=>m[1]));
+ const ui=new Map();
+ const $=id=>{
+   assert.ok(ids.has(id),'Unknown element: '+id);
+   if(!ui.has(id))ui.set(id,{value:'',textContent:'',hidden:false,disabled:false,checked:false});
+   return ui.get(id);
+ };
+ let refreshes=0;
+ const apply=new Function('$','syncAllDurationPickers','updateConfigDuration','renderQuickPresets',
+   source+'return applyMode;')($,()=>{refreshes++},()=>{refreshes++},()=>{refreshes++});
+ for(const kind of ['randori','golden','tabata','chrono','random']){
+   $('workoutMode').value=kind;
+   apply();
+   assert.equal($('reposField').hidden,['golden','chrono','random'].includes(kind));
+   assert.equal($('effortField').hidden,['golden','chrono'].includes(kind));
+   assert.equal($('cyclesField').hidden,['golden','chrono','random'].includes(kind));
+   assert.equal($('chronoStartField').hidden,kind!=='chrono');
+   assert.equal($('randomOptions').hidden,kind!=='random');
+ }
+ assert.equal(refreshes,15);
 });
