@@ -219,7 +219,7 @@ test('the four real sports alert WAV files are distinct, loud, and local',()=>{
 });
 
 test('offline cache includes all new interface and timer dependencies',()=>{
- assert.ok(serviceWorker.includes('moniteur-jsb-web-v37'));
+ assert.ok(serviceWorker.includes('moniteur-jsb-web-v38'));
  for(const file of ['premium_v2.css','pause_adjustments.js',
    'jsb_audio_samples.js','sound_engine.js','audio_cues.js']){
    assert.ok(serviceWorker.includes(file),file);
@@ -351,6 +351,9 @@ test('real Settings click opens the editor for every timer mode without starting
  const cardB=html.indexOf('function savedWorkoutCard(w)',cardA);
  assert.ok(openA>=0&&openB>openA&&cardA>=0&&cardB>cardA);
  const editorCode=html.slice(openA,openB);
+ const normA=html.indexOf('function normalizedTabata(w){');
+ const normB=html.indexOf('function formatTabataName(',normA);
+ const normalizer=html.slice(normA,normB);
  const cardCode=html.slice(cardA,cardB);
  class MockNode {
    constructor(){
@@ -383,9 +386,10 @@ test('real Settings click opens the editor for every timer mode without starting
    'primaryWorkout','modeOptionMeta','pretty','session','closeWorkoutMenus',
    'notice','syncAllDurationPickers','updateConfigDuration','applyMode','startWorkout',
    'let editorReturnFocus=null,editingWorkoutId=null,autoRandoriName=false,autoTabataName=false;'+
-   editorCode+cardCode+'return {buildModeOption};');
+   normalizer+editorCode+cardCode+'return {buildModeOption};');
  const {buildModeOption}=create($,doc,{allow:()=>true},
-   {isAvailable:kind=>defaults.some(w=>w.kind===kind),DEFAULTS:{}},
+   {isAvailable:kind=>defaults.some(w=>w.kind===kind),DEFAULTS:{},
+    tabataStructure:modules().JSBTrainingModes.tabataStructure},
    defaults,w=>w,(kind,w)=>({title:w.name,description:kind}),String,
    null,()=>{},()=>{},()=>{},()=>{},()=>{},()=>{launched++});
  for(const w of defaults){
@@ -408,6 +412,8 @@ test('native Safari dialog opens and closes for each timer without starting it',
  const openEnd=html.indexOf('const durationLimits=',openStart);
  const closeStart=html.indexOf('function closeEditor(){');
  const closeEnd=html.indexOf('function renderQuickPresets(){',closeStart);
+ const normA=html.indexOf('function normalizedTabata(w){');
+ const normB=html.indexOf('function formatTabataName(',normA);
  const cardStart=html.indexOf('function buildModeOption(key)');
  const cardEnd=html.indexOf('function savedWorkoutCard(w)',cardStart);
  assert.ok(openStart>=0&&openEnd>openStart&&closeStart>=0&&closeEnd>closeStart);
@@ -446,9 +452,10 @@ test('native Safari dialog opens and closes for each timer without starting it',
    'modeOptionMeta','pretty','session','closeWorkoutMenus','notice','syncAllDurationPickers',
    'updateConfigDuration','applyMode','startWorkout','console',
    'let editorReturnFocus=null,editingWorkoutId=null,autoRandoriName=false,autoTabataName=false;'+
-   html.slice(openStart,openEnd)+html.slice(closeStart,closeEnd)+
+   html.slice(normA,normB)+html.slice(openStart,openEnd)+html.slice(closeStart,closeEnd)+
    html.slice(cardStart,cardEnd)+'return {openEditor,closeEditor,buildModeOption};');
- const app=create($,doc,{allow:()=>true},{isAvailable:k=>kinds.some(w=>w.kind===k),DEFAULTS:{}},
+ const app=create($,doc,{allow:()=>true},{isAvailable:k=>kinds.some(w=>w.kind===k),DEFAULTS:{},
+    tabataStructure:modules().JSBTrainingModes.tabataStructure},
    kinds,w=>w,(kind,w)=>({title:w.name,description:kind}),String,null,
    ()=>{},()=>{},()=>{},()=>{},()=>{},()=>{started++;},console);
  for(const w of kinds){
@@ -490,12 +497,13 @@ test('the actual applyMode implementation runs for all five timers',()=>{
  const ui=new Map();
  const $=id=>{
    assert.ok(ids.has(id),'Unknown element: '+id);
-   if(!ui.has(id))ui.set(id,{value:'',textContent:'',hidden:false,disabled:false,checked:false});
+   if(!ui.has(id))ui.set(id,{value:'',textContent:'',hidden:false,disabled:false,checked:false,
+     setAttribute(name,value){this[name]=value;}});
    return ui.get(id);
  };
  let refreshes=0;
  const apply=new Function('$','syncAllDurationPickers','updateConfigDuration','renderQuickPresets',
-   source+'return applyMode;')($,()=>{refreshes++},()=>{refreshes++},()=>{refreshes++});
+   ('const document={querySelector:()=>({classList:{toggle:()=>{}}})};'+source+'return applyMode;'))($,()=>{refreshes++},()=>{refreshes++},()=>{refreshes++});
  for(const kind of ['randori','golden','tabata','chrono','random']){
    $('workoutMode').value=kind;
    apply();
