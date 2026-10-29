@@ -1307,3 +1307,36 @@ html{scroll-padding-top:calc(var(--jsb-header-height) + 12px)}
   max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
  }
 }
+
+/* JSB v3.8 — grouped Tabata: same accessible large controls as Randori. */
+.simple-editor-fields.tabata-fields #cyclesField{order:-6}
+.simple-editor-fields.tabata-fields #tabataExercisesField{order:-5}
+.simple-editor-fields.tabata-fields #effortField{order:-4}
+.simple-editor-fields.tabata-fields #reposField{order:-3}
+.simple-editor-fields.tabata-fields #tabataCycleRestField{order:-2}
+.simple-editor-fields.tabata-fields #randomOptions{order:0}
+#tabataExercisesField .large-stepper input{
+ width:100%;min-width:0;min-height:62px;height:62px;
+ border:1.5px solid #B79462;
+ border-radius:14px;background:#1B2A41;color:#F4CF99;
+ font-size:clamp(29px,8vw,40px);font-weight:850;
+ text-align:center;font-variant-numeric:tabular-nums;
+}
+#tabataExercisesField .large-stepper input::-webkit-inner-spin-button,
+#tabataExercisesField .large-stepper input::-webkit-outer-spin-button{
+ -webkit-appearance:none;margin:0
+}
+#tabataExercisesField .large-stepper button,
+#tabataCycleRestField .large-stepper button{min-width:56px;min-height:60px}
+.tabata-plan-hint{
+ color:#E3C596;font-size:13px;line-height:1.5;
+ margin:3px 0 0;overflow-wrap:break-word
+}
+.simple-editor-fields.tabata-fields #tabataExercisesField:focus-within,
+.simple-editor-fields.tabata-fields #tabataCycleRestField:focus-within{
+ border-color:#F4CD8E
+}
+@media(max-width:370px){
+ #tabataExercisesField .large-stepper button,
+ #tabataCycleRestField .large-stepper button{min-width:52px;min-height:58px}
+}
