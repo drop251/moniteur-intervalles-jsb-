@@ -260,3 +260,32 @@ test('very short combats do not receive random signals near phase boundaries',()
  ];
  assert.equal(random.createSignalsForPhases(seq,{frequency:'high',rng:()=>0}).length,0);
 });
+
+test('Tabata and Chronomètre settings share the Randori large editor',()=>{
+ for(const id of ['editorForm','effortField','reposField','cyclesField','editorMore',
+   'chronoStartField','chronoStartHint','saveWorkout','launchConfigured'])
+   assert.ok(html.includes('id="'+id+'"'),id);
+ for(const option of ['0','10','30'])assert.ok(html.includes('data-chrono-prep="'+option+'"'));
+ assert.ok(html.includes('function formatTabataName('));
+ assert.ok(html.includes('syncTabataName();'));
+ assert.ok(html.includes('syncChronoStartOptions();'));
+ assert.ok(html.includes('focusTarget.focus({preventScroll:true})'));
+ assert.ok(css.includes('.chrono-start-choices button[aria-pressed="true"]'));
+ assert.ok(html.includes("modeSettings[w.id]={...w};safeWrite('jsb_v2_mode_settings',modeSettings)"));
+});
+
+test('Tabata totals and Chronomètre start delays match their configured modes',()=>{
+ const modes=modules().JSBTrainingModes;
+ const w={kind:'tabata',prep:10,work:30,rest:15,cycles:12};
+ const seq=modes.phasePlan(w);
+ assert.equal(seq.filter(p=>p.kind==='effort').length,12);
+ assert.equal(seq.filter(p=>p.kind==='rest').length,11);
+ assert.equal(modes.workoutDuration(w),10+12*30+11*15);
+ for(const prep of [0,10,30]){
+  const free={kind:'chrono',prep,work:0,rest:0,cycles:1};
+  const stages=modes.phasePlan(free);
+  assert.equal(stages[stages.length-1].ms,Infinity);
+  assert.equal(stages[0].kind,prep>0?'prep':'effort');
+  assert.equal(modes.workoutDuration(free),Infinity);
+ }
+});
