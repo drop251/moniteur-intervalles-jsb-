@@ -219,7 +219,7 @@ test('the four real sports alert WAV files are distinct, loud, and local',()=>{
 });
 
 test('offline cache includes all new interface and timer dependencies',()=>{
- assert.ok(serviceWorker.includes('moniteur-jsb-web-v35'));
+ assert.ok(serviceWorker.includes('moniteur-jsb-web-v36'));
  for(const file of ['premium_v2.css','pause_adjustments.js',
    'jsb_audio_samples.js','sound_engine.js','audio_cues.js']){
    assert.ok(serviceWorker.includes(file),file);
@@ -269,7 +269,7 @@ test('Tabata and Chronomètre settings share the Randori large editor',()=>{
  assert.ok(html.includes('function formatTabataName('));
  assert.ok(html.includes('syncTabataName();'));
  assert.ok(html.includes('syncChronoStartOptions();'));
- assert.ok(html.includes('focusTarget.focus({preventScroll:true})'));
+ assert.ok(html.includes("$('closeEditor').focus({preventScroll:true})"));
  assert.ok(css.includes('.chrono-start-choices button[aria-pressed="true"]'));
  assert.ok(html.includes("modeSettings[w.id]={...w};safeWrite('jsb_v2_mode_settings',modeSettings)"));
 });
