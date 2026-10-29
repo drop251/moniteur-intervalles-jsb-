@@ -1248,3 +1248,62 @@ html{scroll-padding-top:calc(var(--jsb-header-height) + 12px)}
  }
  .mode-page-body .mode-option-settings{font-size:15px}
 }
+
+/* JSB v3.6 — native iOS Safari top-layer dialog; no fixed header can occlude settings. */
+#editorModal.modal {
+  position:fixed;
+  inset:0;
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  border:0;
+  border-radius:0;
+  width:100%;
+  max-width:none;
+  height:100%;
+  max-height:none;
+  background:#030810c9;
+  color:#F8F7F2;
+  z-index:1000;
+  overflow:hidden;
+  align-items:flex-end;
+  justify-content:center;
+}
+#editorModal.modal:not([open]) { display:none !important; }
+#editorModal.modal[open] {
+  display:flex !important;
+  pointer-events:auto;
+}
+#editorModal::backdrop { background:rgba(3,8,16,.78); }
+#editorModal .simple-editor-sheet {
+  box-sizing:border-box;
+  width:100%;
+  max-width:650px;
+  max-height:calc(100dvh - env(safe-area-inset-top,0px));
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));
+}
+#editorModal .sheet>header{
+  position:sticky;
+  top:0;
+  z-index:3;
+  background:#1F2D42;
+  padding:12px 0 14px;
+}
+#editorModal #closeEditor{
+  flex:0 0 auto;
+  min-width:52px;
+  min-height:52px;
+}
+#editorModal .editor-actions {
+  position:sticky;
+  bottom:0;
+  z-index:4;
+}
+@media(orientation:landscape) and (max-height:600px) {
+ #editorModal .simple-editor-sheet {
+  max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
+ }
+}
