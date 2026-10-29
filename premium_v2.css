@@ -1198,3 +1198,53 @@ html{scroll-padding-top:calc(var(--jsb-header-height) + 12px)}
 @media(prefers-reduced-motion:reduce){
  .simple-editor-sheet .chrono-start-choices button{transition:none}
 }
+
+/* JSB v3.5 — accessible dedicated Settings and Start actions on each timer. */
+.mode-page-body .mode-option{display:flex;flex-direction:column;gap:13px}
+.mode-page-body .mode-option-content{
+ display:flex;flex:1 1 auto;align-items:stretch;min-height:0;width:100%
+}
+.mode-page-body .mode-option-actions,.saved-workouts-list .mode-option-actions{
+ display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.45fr);
+ width:100%;min-width:0;flex:0 0 auto;gap:10px
+}
+.mode-page-body .mode-option-settings,.saved-workouts-list .mode-option-settings{
+ display:flex;align-items:center;justify-content:center;
+ width:100%;min-width:0;min-height:clamp(62px,9vh,80px);
+ padding:8px 5px;border-radius:15px;
+ border:1.5px solid #DBAE6B;background:#32455F;color:#F8F7F2;
+ font-size:clamp(15px,3.8vw,19px);font-weight:850;line-height:1.2
+}
+.mode-page-body .mode-option-play{width:100%;margin:0;min-height:clamp(62px,9vh,80px)}
+.mode-page-body .mode-option-settings:focus-visible,
+.saved-workouts-list .mode-option-settings:focus-visible{
+ outline:3px solid #F2CA8B;outline-offset:3px
+}
+.mode-page-body .mode-option-settings:active,
+.saved-workouts-list .mode-option-settings:active{background:#435D7B}
+.saved-workouts-list .mode-option{flex-direction:column;align-items:stretch}
+.saved-workouts-list .mode-option-content{width:100%;min-height:56px}
+.saved-workouts-list .mode-option-settings,.saved-workouts-list .mode-option-play{
+ width:100%;min-height:56px;height:auto;font-size:15px
+}
+#editorModal.modal{position:fixed;inset:0;z-index:200;pointer-events:none}
+#editorModal.modal.active{display:flex!important;pointer-events:auto;isolation:isolate}
+#editorModal .simple-editor-sheet{
+ width:100%;max-width:650px;max-height:min(96dvh,920px);
+ overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain
+}
+@media(orientation:landscape) and (max-height:600px){
+ #editorModal .simple-editor-sheet{
+  max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))
+ }
+ .mode-page-body .mode-option-actions{gap:8px}
+ .mode-page-body .mode-option-settings,.mode-page-body .mode-option-play{
+  min-height:56px;font-size:16px
+ }
+}
+@media(max-width:370px){
+ .mode-page-body .mode-option-actions{
+  grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:8px
+ }
+ .mode-page-body .mode-option-settings{font-size:15px}
+}
