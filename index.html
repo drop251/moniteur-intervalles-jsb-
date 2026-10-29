@@ -414,6 +414,15 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
    <div class="field wide simple-name-field"><label for="workoutMode">Mode d’entraînement</label><select id="workoutMode"><option value="randori">Randori</option><option value="golden">Golden Score</option><option value="tabata">Tabata</option><option value="chrono">Chronomètre libre</option><option value="random">Bips aléatoires</option><option value="hiit">HIIT / Intervalles</option><option value="boxe">Boxe</option></select></div>
    <div class="field wide simple-name-field"><label for="workoutName">Nom de la séance</label><input id="workoutName" maxlength="50" required placeholder="Ex. Randori du mercredi" /></div>
    <p id="editorUnlimited" class="editor-unlimited" hidden><strong>∞</strong><span>Temps libre : démarrer, puis arrêter quand tu veux.</span></p>
+   <div class="field wide simple-field" id="chronoStartField" hidden>
+     <div class="duration-title" id="chronoStartLabel">Départ du chronomètre</div>
+     <div class="chrono-start-choices" role="group" aria-labelledby="chronoStartLabel">
+       <button type="button" data-chrono-prep="0" aria-pressed="true">Direct</button>
+       <button type="button" data-chrono-prep="10" aria-pressed="false">10 s</button>
+       <button type="button" data-chrono-prep="30" aria-pressed="false">30 s</button>
+     </div>
+     <small id="chronoStartHint">Démarrage immédiat</small>
+   </div>
    <div class="field wide duration-field simple-field" id="effortField">
  <div class="duration-title" id="effortLabel">Durée d’effort</div>
  <div class="large-stepper" role="group" aria-label="Durée d’effort">
@@ -571,7 +580,7 @@ function setHeaderClearance(){if(jsbHeader)document.documentElement.style.setPro
 setHeaderClearance();
 if(typeof ResizeObserver!=='undefined')new ResizeObserver(setHeaderClearance).observe(jsbHeader);
 window.addEventListener('orientationchange',setHeaderClearance);
-const standard=[{id:'randori',name:'Randori 5 × 4 min',prep:10,work:240,rest:60,cycles:5,kind:'randori',symbol:'🥋'},{id:'golden',name:'Golden Score · Libre',prep:10,work:0,rest:0,cycles:1,kind:'golden',symbol:'∞'},{id:'chrono',name:'Chronomètre libre',prep:0,work:0,rest:0,cycles:1,kind:'chrono',symbol:'◷'},{id:'random',name:'Bips aléatoires · Burpees',prep:10,work:180,rest:0,cycles:1,kind:'random',symbol:'♫',frequency:'medium',progressive:true},{id:'tabata',name:'Tabata classique',prep:10,work:20,rest:10,cycles:8,kind:'tabata',symbol:'◉'},{id:'hiit',name:'HIIT 40 / 20',prep:10,work:40,rest:20,cycles:10,kind:'hiit',symbol:'↗'},{id:'boxe',name:'Boxe · 3 rounds',prep:10,work:180,rest:60,cycles:3,kind:'boxe',symbol:'✦'}];
+const standard=[{id:'randori',name:'Randori 5 × 4 min',prep:10,work:240,rest:60,cycles:5,kind:'randori',symbol:'🥋'},{id:'golden',name:'Golden Score · Libre',prep:10,work:0,rest:0,cycles:1,kind:'golden',symbol:'∞'},{id:'chrono',name:'Chronomètre libre',prep:0,work:0,rest:0,cycles:1,kind:'chrono',symbol:'◷'},{id:'random',name:'Bips aléatoires · Burpees',prep:10,work:180,rest:0,cycles:1,kind:'random',symbol:'♫',frequency:'medium',progressive:true},{id:'tabata',name:'Tabata 8 × 20 s / 10 s',prep:10,work:20,rest:10,cycles:8,kind:'tabata',symbol:'◉'},{id:'hiit',name:'HIIT 40 / 20',prep:10,work:40,rest:20,cycles:10,kind:'hiit',symbol:'↗'},{id:'boxe',name:'Boxe · 3 rounds',prep:10,work:180,rest:60,cycles:3,kind:'boxe',symbol:'✦'}];
 const read=(key,fallback)=>{try{const parsed=JSON.parse(localStorage.getItem(key));return parsed===null?fallback:parsed}catch{return fallback}};
 let customs=read('jsb_preview_customs',[]);if(!Array.isArray(customs))customs=[];// Previous history remains untouched in localStorage, but is not displayed or extended.
 const storedSettings=read('jsb_preview_settings',{});let settings={audio:true,vibrate:true,keepAwake:false,volume:90,sound:'buzzerPro',restSound:'bellSport',randomSound:'whistlePro',audioMethod:'web',finishSound:'bellSport',countdown:true,...storedSettings};
@@ -621,6 +630,31 @@ function formatRandoriName(cycles,workSeconds){
  return 'Randori '+count+' × '+time;
 }
 let autoRandoriName=false;
+let autoTabataName=false;
+function formatTabataName(cycles,workSeconds,restSeconds){
+ const count=Number(cycles),work=Number(workSeconds),rest=Number(restSeconds);
+ if(!Number.isSafeInteger(count)||count<1||count>200||
+    !Number.isSafeInteger(work)||work<1||work>3600||
+    !Number.isSafeInteger(rest)||rest<0||rest>3600)return null;
+ return 'Tabata '+count+' × '+durationPresets.formatDuration(work)+
+    ' / '+durationPresets.formatDuration(rest);
+}
+function syncTabataName(){
+ if(!autoTabataName||$('workoutMode').value!=='tabata')return;
+ const name=formatTabataName($('cycles').value,$('effort').value,$('repos').value);
+ if(!name)return;
+ $('workoutName').value=name;
+ $('editorTitle').textContent=name;
+}
+function syncChronoStartOptions(){
+ const prep=Number($('preparation').value);
+ for(const button of document.querySelectorAll('[data-chrono-prep]')){
+   button.setAttribute('aria-pressed',String(Number(button.dataset.chronoPrep)===prep));
+ }
+ $('chronoStartHint').textContent=prep===0?'Démarrage immédiat':
+   'Départ après '+durationPresets.formatDuration(prep);
+}
+
 function syncRandoriName(){
  if(!autoRandoriName||$('workoutMode').value!=='randori')return;
  const name=formatRandoriName($('cycles').value,$('effort').value);
@@ -662,7 +696,9 @@ function primaryWorkout(base){
  const w=trainingModeIsValid(stored)&&stored.kind===base.kind
    ? {...base,...stored,id:base.id,kind:base.kind}
    : {...base};
- return w.kind==='randori'?{...w,name:formatRandoriName(w.cycles,w.work)||w.name}:w;
+ if(w.kind==='randori')return {...w,name:formatRandoriName(w.cycles,w.work)||w.name};
+ if(w.kind==='tabata')return {...w,name:formatTabataName(w.cycles,w.work,w.rest)||w.name};
+ return w;
 }
 function modeOptionMeta(key,w) {
  if(key==='randori')return {
@@ -674,14 +710,18 @@ function modeOptionMeta(key,w) {
    title:'Golden Score',description:'Temps croissant · arrêt manuel',
  };
  if(key==='tabata')return {
-   title:'Tabata',
-   description:w.cycles+' cycles · '+w.work+' s effort / '+w.rest+' s repos',
+   title:w.name,
+   description:w.cycles+' cycles · '+durationPresets.formatDuration(w.work)+
+     ' effort / '+durationPresets.formatDuration(w.rest)+' repos',
  };
  if(key==='chrono')return {
-   title:'Chronomètre libre',description:'Temps croissant · démarrage immédiat',
+   title:'Chronomètre libre',
+   description:w.prep>0?'Départ dans '+durationPresets.formatDuration(w.prep)+' · arrêt manuel':
+     'Départ immédiat · arrêt manuel',
  };
  return {
-   title:'Bips aléatoires',description:'Réactivité · signaux imprévisibles',
+   title:'Bips aléatoires',
+   description:'Réactivité · '+({low:'bips espacés',medium:'bips normaux',high:'bips fréquents'}[w.frequency]||'bips normaux'),
  };
 }
 function buildModeOption(key) {
@@ -858,6 +898,8 @@ function openEditor(workout=null,requestedKind=null){
  const isBuiltIn=Boolean(workout&&standard.some(w=>w.id===workout.id));
  autoRandoriName=kind==='randori'&&(!workout||isBuiltIn||
    /^randori\s+\d+\s*[×x]\s*\d+/i.test(workout.name));
+ autoTabataName=kind==='tabata'&&(!workout||isBuiltIn||
+   /^tabata\s+\d+\s*[×x]\s*\d+/i.test(workout.name));
  $('workoutMode').value=kind;
  if(!workout){
   const defaults=trainingModes.DEFAULTS[kind];
@@ -883,7 +925,13 @@ function openEditor(workout=null,requestedKind=null){
    workout.randomBipFrequency:'medium';
  applyMode();syncAllDurationPickers();updateConfigDuration();
  $('editorModal').classList.add('active');$('app').inert=true;
- (isStandard?$('preparationMinutes'):$('workoutName')).focus();
+ // Never focus a select hidden inside the closed precision/details accordion.
+ const firstControl=kind==='chrono'
+   ?document.querySelector('#chronoStartField [aria-pressed="true"]')
+   :document.querySelector('#effortField [data-step="1"]');
+ const focusTarget=!isStandard&&!requestedKind?$('workoutName'):
+   firstControl||$('editorMore').querySelector('summary')||$('launchConfigured');
+ focusTarget.focus({preventScroll:true});
 }
 const durationLimits={preparation:600,effort:3600,repos:3600};
 function updateSimpleDisplays(){
@@ -910,6 +958,13 @@ $('editorForm').addEventListener('click',event=>{
  $(id).value=String(value);syncDurationPickers(id);updateConfigDuration();
 });
 $('cycles').addEventListener('input',updateConfigDuration);
+$('editorForm').addEventListener('click',event=>{
+ const btn=event.target.closest('[data-chrono-prep]');
+ if(!btn)return;
+ $('preparation').value=btn.dataset.chronoPrep;
+ syncDurationPickers('preparation');
+ updateConfigDuration();
+});
 function syncDurationPickers(id){
  const max=durationLimits[id],parts=durationPresets.splitDuration(Number($(id).value),max);
  const minutes=$(id+'Minutes'),seconds=$(id+'Seconds');
@@ -938,6 +993,7 @@ function applyMode(){
  $('randoriBipsField').hidden=mode!=='randori';
  $('randoriBipFrequencyField').hidden=mode!=='randori'||!$('randoriRandomBips').checked;
  $('randomProgressiveOption').hidden=mode!=='random';
+ $('chronoStartField').hidden=mode!=='chrono';
  $('editorUnlimited').hidden=!['golden','chrono'].includes(mode);
  $('effortLabel').textContent=mode==='random'?'Durée de l’exercice':mode==='randori'?'Durée du combat':mode==='boxe'?'Durée du round':'Durée d’effort';
  $('cyclesLabel').textContent=mode==='randori'?'Nombre de combats':mode==='boxe'?'Rounds':'Nombre de cycles';
@@ -1004,6 +1060,8 @@ function configuredWorkout(){
 function updateConfigDuration(){
  updateSimpleDisplays();
  syncRandoriName();
+ syncTabataName();
+ syncChronoStartOptions();
  const output=$('configDuration');
  if(!output)return;
  const kind=$('workoutMode').value;
@@ -1254,18 +1312,22 @@ $('settingsQuick').addEventListener('click',()=>{
 }
 $('workoutMode').addEventListener('change',()=>{
  const mode=$('workoutMode').value;
- const {work,rest,cycles}=trainingModes.DEFAULTS[mode];
+ const {work,rest,cycles,prep}=trainingModes.DEFAULTS[mode];
+ $('preparation').value=prep;
  $('effort').value=work;$('repos').value=rest;$('cycles').value=cycles;
  autoRandoriName=mode==='randori';
+ autoTabataName=mode==='tabata';
  applyMode();
 });
 $('randoriRandomBips').addEventListener('change',()=>{
  $('randoriBipFrequencyField').hidden=!$('randoriRandomBips').checked;
 });
 $('workoutName').addEventListener('input',()=>{
- // Manual title edits take precedence for custom Randori sessions.
- if($('workoutMode').value==='randori'&&
-    !$('workoutName').closest('.field').hidden)autoRandoriName=false;
+ // Do not override names chosen by the user for custom sessions.
+ if(!$('workoutName').closest('.field').hidden){
+   if($('workoutMode').value==='randori')autoRandoriName=false;
+   if($('workoutMode').value==='tabata')autoTabataName=false;
+ }
 });$('editorForm').addEventListener('submit',e=>{
   e.preventDefault();
   const w=configuredWorkout();if(!w||!gate.allow('save-workout',600))return;
