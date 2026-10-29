@@ -525,7 +525,7 @@ test('Tabata grouped editor fields exist and save all independent values',()=>{
  assert.ok(html.includes("for(const id of ['preparation','effort','repos','cycleRest'])"));
  assert.ok(html.includes("cycles*exercises>200"));
  assert.ok(html.includes("if(w.kind==='tabata')w=normalizedTabata(w)"));
- assert.ok(html.includes("session.workout.cycles*session.workout.exercises"));
+ assert.ok(html.includes("entry.workout.cycles*entry.workout.exercises"));
  assert.ok(html.includes("p.restType==='cycle'"));
  assert.ok(css.includes('.simple-editor-fields.tabata-fields #cyclesField'));
 });
