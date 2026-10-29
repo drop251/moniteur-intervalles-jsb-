@@ -515,3 +515,36 @@ test('the actual applyMode implementation runs for all five timers',()=>{
  }
  assert.equal(refreshes,15);
 });
+
+test('Tabata grouped editor fields exist and save all independent values',()=>{
+ for(const id of ['tabataExercises','tabataExercisesField','cycleRest','tabataCycleRestField',
+   'cycleRestMinutes','cycleRestSeconds','cycleRestDisplay','tabataPlanHint']){
+   assert.ok(html.includes('id="'+id+'"'),id);
+ }
+ assert.ok(html.includes("...(kind==='tabata'?{exercises,cycleRest}:{})"));
+ assert.ok(html.includes("for(const id of ['preparation','effort','repos','cycleRest'])"));
+ assert.ok(html.includes("cycles*exercises>200"));
+ assert.ok(html.includes("if(w.kind==='tabata')w=normalizedTabata(w)"));
+ assert.ok(html.includes("session.workout.cycles*session.workout.exercises"));
+ assert.ok(html.includes("p.restType==='cycle'"));
+ assert.ok(css.includes('.simple-editor-fields.tabata-fields #cyclesField'));
+});
+
+test('grouped Tabata is 15 efforts, 12 short rests, 2 long rests and no final rest',()=>{
+ const m=modules().JSBTrainingModes;
+ const p=modules().JSBPauseAdjustments;
+ const w={kind:'tabata',prep:10,work:30,rest:10,cycles:3,exercises:5,cycleRest:60};
+ assert.equal(m.workoutDuration(w),700);
+ const phases=m.phasePlan(w);
+ assert.equal(phases.filter(x=>x.kind==='effort').length,15);
+ assert.equal(phases.filter(x=>x.restType==='exercise').length,12);
+ assert.equal(phases.filter(x=>x.restType==='cycle').length,2);
+ assert.equal(phases.at(-1).kind,'effort');
+ assert.equal(phases.at(-1).cycle,3);
+ assert.equal(phases.at(-1).exercise,5);
+ const s=sessionFor(w,20000);
+ p.applyPausedEdit(s,{displaySeconds:15,effortSeconds:40,restSeconds:20},{countdown:true});
+ assert.ok(s.seq.filter(x=>x.restType==='exercise').every(x=>x.ms===20000));
+ assert.ok(s.seq.filter(x=>x.restType==='cycle').every(x=>x.ms===60000));
+ assert.equal(s.workout.cycleRest,60);
+});
