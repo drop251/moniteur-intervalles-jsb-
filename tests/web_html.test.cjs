@@ -219,11 +219,44 @@ test('the four real sports alert WAV files are distinct, loud, and local',()=>{
 });
 
 test('offline cache includes all new interface and timer dependencies',()=>{
- assert.ok(serviceWorker.includes('moniteur-jsb-web-v27'));
+ assert.ok(serviceWorker.includes('moniteur-jsb-web-v34'));
  for(const file of ['premium_v2.css','pause_adjustments.js',
    'jsb_audio_samples.js','sound_engine.js','audio_cues.js']){
    assert.ok(serviceWorker.includes(file),file);
  }
  assert.equal(manifest.theme_color,'#1F293B');
  assert.equal(manifest.background_color,'#1F293B');
+});
+
+test('Randori random beep settings are accessible, saved and remain optional',()=>{
+ for(const id of ['randoriBipsField','randoriRandomBips','randoriBipFrequency',
+   'randoriBipFrequencyField'])assert.ok(html.includes('id="'+id+'"'),id);
+ assert.ok(html.includes("randomBips:$('randoriRandomBips').checked"));
+ assert.ok(html.includes("randomBipFrequency:$('randoriBipFrequency').value"));
+ assert.ok(html.includes("session.workout.kind==='randori'&&session.workout.randomBips===true"));
+ assert.ok(html.includes("beep('random')"));
+ assert.ok(html.includes("session.signals=randomSignals.createSignalsForPhases(session.seq"));
+});
+
+test('Randori random cues happen during combats only, never in rest or preparation',()=>{
+ const {JSBTrainingModes:mode,JSBRandomSignals:random}=modules();
+ const seq=mode.phasePlan({kind:'randori',name:'Randori',prep:10,work:240,rest:60,cycles:3});
+ let start=0;for(const p of seq){p.start=start;start+=p.ms;}
+ const cues=random.createSignalsForPhases(seq,{frequency:'high',rng:()=>0});
+ assert.ok(cues.length>0);
+ assert.ok(cues.every(at=>seq.some(p=>p.kind==='effort'&&at>p.start&&at<p.start+p.ms)));
+ assert.ok(cues.some(at=>at>=seq[3].start));
+ assert.deepEqual(cues,[...cues].sort((a,b)=>a-b));
+ assert.equal(random.createSignalsForPhases(seq.filter(p=>p.kind!=='effort'),{rng:()=>0}).length,0);
+});
+
+test('very short combats do not receive random signals near phase boundaries',()=>{
+ const random=modules().JSBRandomSignals;
+ const seq=[
+  {kind:'prep',start:0,ms:10000},
+  {kind:'effort',start:10000,ms:6000},
+  {kind:'rest',start:16000,ms:3000},
+  {kind:'effort',start:19000,ms:6000}
+ ];
+ assert.equal(random.createSignalsForPhases(seq,{frequency:'high',rng:()=>0}).length,0);
 });
