@@ -942,12 +942,18 @@ function openEditor(workout=null,requestedKind=null){
    workout.randomBipFrequency:'medium';
  applyMode();syncAllDurationPickers();updateConfigDuration();
  modal.classList.add('active');
+ let nativeOpened=false;
  if(typeof modal.showModal==='function'){
-   // iOS Safari: native top layer prevents headers, nav and app content
-   // from covering or intercepting the editor.
-   modal.showModal();
- }else{
-   // Fallback for browsers without HTMLDialogElement.showModal().
+   try{
+     // Prefer the native Safari top layer over application z-index.
+     modal.showModal();
+     nativeOpened=true;
+   }catch(nativeError){
+     console.warn('JSB: dialogue natif indisponible, repli visuel actif',nativeError);
+   }
+ }
+ if(!nativeOpened){
+   // Keep settings accessible even if iOS refuses the native top layer.
    modal.setAttribute('open','');
    $('app').inert=true;
  }
