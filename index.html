@@ -73,7 +73,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style>
 
-<link rel="stylesheet" href="./premium_v2.css?v=35" />
+<link rel="stylesheet" href="./premium_v2.css?v=36" />
 <style id="jsb-landscape-v33">
 /* JSB v3.3 — paysage iPhone : horloge pleine largeur, commandes sous le temps.
    Colonne forcée : corrige l'ancienne grille à deux colonnes restée en cache. */
@@ -406,7 +406,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
   <button type="button" data-nav="luc-leger"><span class="ni" aria-hidden="true">↗</span><span class="nl">Luc Léger</span></button>
 </nav>
 </div>
-<div class="modal" id="editorModal" role="dialog" aria-modal="true" aria-labelledby="editorTitle">
+<dialog class="modal" id="editorModal" aria-modal="true" aria-labelledby="editorTitle">
  <div class="sheet simple-editor-sheet"><header><h2 id="editorTitle">Régler mon minuteur</h2><button class="icon-btn" id="closeEditor" type="button" aria-label="Fermer les réglages">×</button></header>
  <form id="editorForm">
   <div class="editor-duration"><small>Durée totale</small><span class="value" id="configDuration" aria-live="polite">—</span></div>
@@ -493,7 +493,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
   <button class="secondary" type="button" id="cancelEditor" hidden>Annuler</button>
   <div class="editor-actions"><button type="submit" class="secondary" id="saveWorkout">Enregistrer</button><button type="button" class="primary" id="launchConfigured">▶ Démarrer</button></div>
  </form></div>
-</div>
+</dialog>
 <section class="timer" id="timer" data-phase="prep" aria-label="Séance en cours"><div class="timer-head"><div><strong>MONITEUR JSB</strong><div style="margin-top:5px;font-size:12px;color:#b4c8d1" id="timerTitle"></div></div><small id="totalRemaining">Temps total restant</small></div><div class="timer-main"><span class="phase-chip" id="phaseLabel">PRÉPARATION</span><span class="sr-only" id="phaseAnnouncement" aria-live="polite" role="status"></span><div class="clock" id="clockText" aria-label="Temps restant" aria-live="off">00:10</div><div class="cycle" id="cycleLabel">Cycle 1 / 8</div><div class="paused" id="pausedFlag">EN PAUSE</div><div id="amrapCounter" class="amrap-counter" hidden><span>Tours validés</span><div><button type="button" id="amrapMinus" aria-label="Retirer un tour">−</button><strong id="amrapCount" aria-live="polite">0</strong><button type="button" id="amrapPlus" aria-label="Ajouter un tour">+</button></div></div></div><div class="timer-controls"><div class="prog" role="progressbar" aria-label="Progression de la phase" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress"><span id="progressBar"></span></div><div class="next"><span id="upNext">Ensuite : EFFORT</span><span id="percentLabel">0 %</span></div><button type="button" class="secondary adjust-time-trigger" id="adjustTimeBtn" hidden aria-haspopup="dialog" aria-controls="pauseTimeDialog">✎ Modifier les temps</button><div class="timer-actions"><button class="primary" id="pauseBtn" type="button">❚❚ &nbsp; Pause</button><button class="secondary danger" id="stopBtn" type="button">■ &nbsp; Arrêter</button></div><div class="caption">Signaux du navigateur · pour la réduction automatique de Spotify, utilise l’app mobile.</div></div></section>
 <div class="dialog-layer" id="stopConfirm" role="dialog" aria-modal="true" aria-labelledby="stopConfirmTitle" aria-hidden="true"><div class="dialog-box">
   <h2 id="stopConfirmTitle">Terminer la séance ?</h2>
@@ -900,11 +900,14 @@ function deleteWorkout(w){
  customs=manager.removeCustom(customs,w.id);favorites=library.normalizeFavorites(favorites,[...standard,...customs].map(x=>x.id));safeWrite('jsb_preview_favorites',favorites);safeWrite('jsb_preview_customs',customs);renderWorkouts();notice('Minuteur supprimé');
 }
 function openEditor(workout=null,requestedKind=null){
- $('editorMore').open=false;
- for(const el of document.querySelectorAll('.duration-precision'))el.open=false;
- if(!gate.allow('editor-open',350)||session||$('editorModal').classList.contains('active'))return;
+ const modal=$('editorModal');
+ if(session){notice('Arrête le minuteur pour ouvrir ses réglages');return;}
+ if(modal.open||modal.classList.contains('active'))return;
  if(workout&&!trainingModes.isAvailable(workout.kind)){notice('Mode indisponible');return;}
  editorReturnFocus=document.activeElement;
+ $('editorMore').open=false;
+ for(const el of document.querySelectorAll('.duration-precision'))el.open=false;
+ try {
  closeWorkoutMenus();$('editorForm').reset();editingWorkoutId=workout?workout.id:null;
  const kind=workout?.kind||requestedKind||'randori';
  // Keep a deliberately personalized title for an existing saved session.
@@ -938,18 +941,26 @@ function openEditor(workout=null,requestedKind=null){
  $('randoriBipFrequency').value=['low','medium','high'].includes(workout?.randomBipFrequency)?
    workout.randomBipFrequency:'medium';
  applyMode();syncAllDurationPickers();updateConfigDuration();
- $('editorModal').classList.add('active');$('app').inert=true;
- // Never focus a select hidden inside the closed precision/details accordion.
- const firstControl=kind==='chrono'
-   ?document.querySelector('#chronoStartField [aria-pressed="true"]')
-   :kind==='golden'
-     ?$('editorMore').querySelector('summary')
-     :document.querySelector('#effortField [data-step="1"]');
- const focusTarget=!isStandard&&!requestedKind?$('workoutName'):
-   firstControl||$('editorMore').querySelector('summary')||$('launchConfigured');
- if(focusTarget&&typeof focusTarget.focus==='function'){
-   try{focusTarget.focus({preventScroll:true})}
-   catch{focusTarget.focus()}
+ modal.classList.add('active');
+ if(typeof modal.showModal==='function'){
+   // iOS Safari: native top layer prevents headers, nav and app content
+   // from covering or intercepting the editor.
+   modal.showModal();
+ }else{
+   // Fallback for browsers without HTMLDialogElement.showModal().
+   modal.setAttribute('open','');
+   $('app').inert=true;
+ }
+ // Do not auto-open the iOS keyboard or scroll below the dialog header.
+ $('closeEditor').focus({preventScroll:true});
+ } catch(error) {
+   console.error('JSB: impossible d’ouvrir les réglages',error);
+   modal.classList.remove('active');
+   if(modal.open&&typeof modal.close==='function')modal.close();
+   else modal.removeAttribute('open');
+   $('app').inert=false;
+   editorReturnFocus=null;
+   notice('Ouverture des réglages impossible. Actualise l’application.');
  }
 }
 const durationLimits={preparation:600,effort:3600,repos:3600};
@@ -1021,7 +1032,22 @@ function applyMode(){
  if(mode==='random'){$('repos').value='0';$('cycles').value='1'}
  syncAllDurationPickers();updateConfigDuration();renderQuickPresets();
 }
-function closeEditor(){$('editorModal').classList.remove('active');editingWorkoutId=null;$('workoutMode').disabled=false;$('workoutMode').closest('.field').hidden=false;$('workoutName').closest('.field').hidden=false;$('app').inert=false;if(editorReturnFocus?.isConnected)editorReturnFocus.focus({preventScroll:true});editorReturnFocus=null}
+function closeEditor(){
+ const modal=$('editorModal');
+ if(modal.open&&typeof modal.close==='function')modal.close();
+ else modal.removeAttribute('open');
+ modal.classList.remove('active');
+ editingWorkoutId=null;
+ $('workoutMode').disabled=false;
+ $('workoutMode').closest('.field').hidden=false;
+ $('workoutName').closest('.field').hidden=false;
+ $('app').inert=false;
+ if(editorReturnFocus?.isConnected){
+   try{editorReturnFocus.focus({preventScroll:true})}
+   catch{editorReturnFocus.focus()}
+ }
+ editorReturnFocus=null;
+}
 function renderQuickPresets(){
  const group=$('presetChips');if(!group)return;
  group.replaceChildren();
@@ -1324,7 +1350,10 @@ for(const n of document.querySelectorAll('[data-nav]'))n.addEventListener('click
 for(const button of document.querySelectorAll('[data-new-kind]'))button.addEventListener('click',()=>openEditor(null,button.dataset.newKind));
 $('settingsQuick').addEventListener('click',()=>{
   navigate($('view-settings').classList.contains('active')?lastTrainingView:'settings');
-});$('newWorkout').addEventListener('click',()=>openEditor());$('closeEditor').addEventListener('click',closeEditor);$('cancelEditor').addEventListener('click',closeEditor);$('editorModal').addEventListener('click',e=>{if(e.target===$('editorModal'))closeEditor()});for(const id of ['preparation','effort','repos']){
+});$('newWorkout').addEventListener('click',()=>openEditor());$('closeEditor').addEventListener('click',closeEditor);$('cancelEditor').addEventListener('click',closeEditor);
+$('editorModal').addEventListener('cancel',e=>{e.preventDefault();closeEditor()});
+$('editorModal').addEventListener('click',e=>{if(e.target===$('editorModal'))closeEditor()});
+for(const id of ['preparation','effort','repos']){
   for(const suffix of ['Minutes','Seconds']){
     $(id+suffix).addEventListener('change',()=>updateDurationOptions(id));
   }
@@ -1599,9 +1628,22 @@ navigate(initialTab);
 })();
 </script>
 <script>
+// On iOS, Home Screen apps can remain suspended on an older cached page.
+// Refresh once after an updated worker takes control, but NEVER during a timer
+// or while settings are being edited.
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js', {updateViaCache:'none'}).then(reg=>reg.update()).catch(() => {});
+  let jsbRefreshPending=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(jsbRefreshPending ||
+      document.querySelector('#timer.active') ||
+      document.querySelector('#editorModal.active')) return;
+    jsbRefreshPending=true;
+    location.reload();
+  });
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js', {updateViaCache:'none'})
+      .then(reg=>reg.update())
+      .catch(error=>console.warn('JSB: mise à jour hors ligne indisponible',error));
   });
 }
 </script>
