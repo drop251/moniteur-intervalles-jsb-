@@ -1,6 +1,6 @@
-// Moniteur JSB v2.9 — quatre espaces, dernier minuteur et temps modifiables en pause.
+// Moniteur JSB v3.0 — quatre espaces, dernier minuteur et temps modifiables en pause.
 // Une nouvelle version de cache évite de conserver l'ancienne interface.
-const CACHE = 'moniteur-jsb-web-v29';
+const CACHE = 'moniteur-jsb-web-v30';
 const ASSETS = [
   './','./index.html','./premium_v2.css',
   './manifest.webmanifest','./icon.svg',
