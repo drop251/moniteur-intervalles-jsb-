@@ -289,3 +289,43 @@ test('Tabata totals and Chronomètre start delays match their configured modes',
   assert.equal(modes.workoutDuration(free),Infinity);
  }
 });
+
+test('Tabata title follows work, rest and cycles with editable custom naming',()=>{
+ const a=html.indexOf('function formatTabataName(');
+ const b=html.indexOf('function syncTabataName(){',a);
+ assert.ok(a>=0&&b>a);
+ const formatter=new Function('durationPresets',html.slice(a,b)+'return formatTabataName;');
+ const fmt=formatter(modules().JSBDurationPresets);
+ assert.equal(fmt(8,20,10),'Tabata 8 × 20 s / 10 s');
+ assert.equal(fmt(12,30,15),'Tabata 12 × 30 s / 15 s');
+ assert.equal(fmt(3,90,30),'Tabata 3 × 1 min 30 s / 30 s');
+ assert.equal(fmt(0,20,10),null);
+ assert.ok(html.includes('autoTabataName=false'));
+});
+
+test('Chronomètre quick-start choices synchronize selected value and custom delay',()=>{
+ const a=html.indexOf('function syncChronoStartOptions(){');
+ const b=html.indexOf('function syncRandoriName(){',a);
+ assert.ok(a>=0&&b>a);
+ const buttons=[0,10,30].map(n=>({
+   dataset:{chronoPrep:String(n)},pressed:false,
+   setAttribute(key,value){if(key==='aria-pressed')this.pressed=value==='true';}
+ }));
+ const controls={
+   preparation:{value:'0'},
+   chronoStartHint:{textContent:''},
+ };
+ const fn=new Function('$','document','durationPresets',html.slice(a,b)+'return syncChronoStartOptions;')(
+   id=>controls[id],
+   {querySelectorAll:()=>buttons},
+   modules().JSBDurationPresets
+ );
+ for(const seconds of [0,10,30,20]){
+   controls.preparation.value=String(seconds);
+   fn();
+   const selected=buttons.filter(b=>b.pressed).map(b=>Number(b.dataset.chronoPrep));
+   assert.deepEqual(selected,[0,10,30].includes(seconds)?[seconds]:[]);
+   assert.match(controls.chronoStartHint.textContent,
+     seconds===0?/immédiat/i:/départ après/i);
+ }
+});
