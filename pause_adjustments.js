@@ -71,7 +71,8 @@
       rest=config.restSeconds;
       for(let i=index+1;i<seq.length;i++){
         if(seq[i].kind==='effort')seq[i].ms=work*1000;
-        if(seq[i].kind==='rest')seq[i].ms=rest*1000;
+        // Tabata's long rest between cycles is independent of the short rest.
+        if(seq[i].kind==='rest'&&seq[i].restType!=='cycle')seq[i].ms=rest*1000;
       }
     }
 
