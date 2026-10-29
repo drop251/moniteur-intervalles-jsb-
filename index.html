@@ -73,7 +73,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style>
 
-<link rel="stylesheet" href="./premium_v2.css?v=34" />
+<link rel="stylesheet" href="./premium_v2.css?v=35" />
 <style id="jsb-landscape-v33">
 /* JSB v3.3 — paysage iPhone : horloge pleine largeur, commandes sous le temps.
    Colonne forcée : corrige l'ancienne grille à deux colonnes restée en cache. */
@@ -732,6 +732,8 @@ function buildModeOption(key) {
  const configure=document.createElement('button');
  configure.type='button';configure.className='mode-option-configure';
  configure.setAttribute('aria-label','Configurer '+info.title);
+ configure.setAttribute('aria-haspopup','dialog');
+ configure.setAttribute('aria-controls','editorModal');
  const labels=document.createElement('span');labels.className='mode-option-info';
  const heading=document.createElement('strong');heading.textContent=info.title;
  const description=document.createElement('small');description.textContent=info.description;
@@ -739,34 +741,46 @@ function buildModeOption(key) {
  duration.textContent=['golden','chrono'].includes(key)?'∞ Temps libre':pretty(w.work);
  duration.setAttribute('aria-label',['golden','chrono'].includes(key)?'Chronomètre sans limite':'Durée de travail '+pretty(w.work));
  labels.append(heading,description,duration);
- const arrow=document.createElement('span');arrow.className='mode-option-edit';
- arrow.textContent='Régler';arrow.setAttribute('aria-hidden','true');
- configure.append(labels,arrow);
- configure.addEventListener('click',()=>openEditor(w));
+ configure.classList.add('mode-option-content');
+ configure.append(labels);
+ configure.addEventListener('click',()=>openEditor(primaryWorkout(base)));
+ const controls=document.createElement('div');controls.className='mode-option-actions';
+ const edit=document.createElement('button');edit.type='button';
+ edit.className='mode-option-settings secondary';edit.textContent='⚙ Régler';
+ edit.setAttribute('aria-label','Ouvrir les réglages de '+info.title);
+ edit.setAttribute('aria-haspopup','dialog');edit.setAttribute('aria-controls','editorModal');
+ edit.addEventListener('click',()=>openEditor(primaryWorkout(base)));
  const play=document.createElement('button');
  play.type='button';play.className='mode-option-play';
  play.textContent='▶ Démarrer';play.setAttribute('aria-label','Démarrer '+info.title);
- play.addEventListener('click',()=>startWorkout(w));
- row.append(configure,play);
+ play.addEventListener('click',()=>startWorkout(primaryWorkout(base)));
+ controls.append(edit,play);row.append(configure,controls);
  return row;
 }
 function savedWorkoutCard(w){
  const row=document.createElement('div');row.className='mode-option saved-mode-option';
  const configure=document.createElement('button');configure.type='button';configure.className='mode-option-configure';
  configure.setAttribute('aria-label','Modifier les réglages de '+w.name);
+ configure.setAttribute('aria-haspopup','dialog');
+ configure.setAttribute('aria-controls','editorModal');
  const info=document.createElement('span');info.className='mode-option-info';
  const title=document.createElement('strong');title.textContent=w.name;
  const description=document.createElement('small');description.textContent=kindDescription(w)+
    (w.kind==='randori'&&w.randomBips===true?' · Bips aléatoires':'');
  const duration=document.createElement('span');duration.className='mode-option-duration';
  duration.textContent='✓ Enregistré · '+(Number.isFinite(secs(w))?pretty(secs(w)):'Temps libre');
- const label=document.createElement('span');label.className='mode-option-edit';label.textContent='Régler';label.setAttribute('aria-hidden','true');
- info.append(title,description,duration);configure.append(info,label);
+ info.append(title,description,duration);configure.append(info);
  configure.addEventListener('click',()=>openEditor({...w}));
- const play=document.createElement('button');play.type='button';play.className='mode-option-play';play.textContent='▶';
+ const controls=document.createElement('div');controls.className='mode-option-actions';
+ const edit=document.createElement('button');edit.type='button';
+ edit.className='mode-option-settings secondary';edit.textContent='⚙ Régler';
+ edit.setAttribute('aria-label','Ouvrir les réglages de '+w.name);
+ edit.setAttribute('aria-haspopup','dialog');edit.setAttribute('aria-controls','editorModal');
+ edit.addEventListener('click',()=>openEditor({...w}));
+ const play=document.createElement('button');play.type='button';play.className='mode-option-play';play.textContent='▶ Démarrer';
  play.setAttribute('aria-label','Démarrer '+w.name);
  play.addEventListener('click',()=>startWorkout({...w}));
- row.append(configure,play);return row;
+ controls.append(edit,play);row.append(configure,controls);return row;
 }
 function renderSavedWorkouts(){
  const groups=[['Randori',['randori','golden']],['Tabata',['tabata']],['Chrono',['chrono','random']]];
@@ -928,10 +942,15 @@ function openEditor(workout=null,requestedKind=null){
  // Never focus a select hidden inside the closed precision/details accordion.
  const firstControl=kind==='chrono'
    ?document.querySelector('#chronoStartField [aria-pressed="true"]')
-   :document.querySelector('#effortField [data-step="1"]');
+   :kind==='golden'
+     ?$('editorMore').querySelector('summary')
+     :document.querySelector('#effortField [data-step="1"]');
  const focusTarget=!isStandard&&!requestedKind?$('workoutName'):
    firstControl||$('editorMore').querySelector('summary')||$('launchConfigured');
- focusTarget.focus({preventScroll:true});
+ if(focusTarget&&typeof focusTarget.focus==='function'){
+   try{focusTarget.focus({preventScroll:true})}
+   catch{focusTarget.focus()}
+ }
 }
 const durationLimits={preparation:600,effort:3600,repos:3600};
 function updateSimpleDisplays(){
