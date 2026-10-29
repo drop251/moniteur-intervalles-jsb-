@@ -219,7 +219,7 @@ test('the four real sports alert WAV files are distinct, loud, and local',()=>{
 });
 
 test('offline cache includes all new interface and timer dependencies',()=>{
- assert.ok(serviceWorker.includes('moniteur-jsb-web-v34'));
+ assert.ok(serviceWorker.includes('moniteur-jsb-web-v35'));
  for(const file of ['premium_v2.css','pause_adjustments.js',
    'jsb_audio_samples.js','sound_engine.js','audio_cues.js']){
    assert.ok(serviceWorker.includes(file),file);
@@ -328,4 +328,18 @@ test('Chronomètre quick-start choices synchronize selected value and custom del
    assert.match(controls.chronoStartHint.textContent,
      seconds===0?/immédiat/i:/départ après/i);
  }
+});
+
+test('All timer cards expose a separate accessible Settings button',()=>{
+ const built=html.slice(html.indexOf('function buildModeOption(key)'),html.indexOf('function savedWorkoutCard(w)'));
+ const saved=html.slice(html.indexOf('function savedWorkoutCard(w)'),html.indexOf('function renderSavedWorkouts()'));
+ for(const part of [built,saved]){
+  assert.ok(part.includes("edit.textContent='⚙ Régler'"));
+  assert.ok(part.includes("edit.setAttribute('aria-haspopup','dialog')"));
+  assert.ok(part.includes("edit.setAttribute('aria-controls','editorModal')"));
+  assert.ok(part.includes("edit.addEventListener('click',()=>openEditor("));
+  assert.ok(part.includes('controls.append(edit,play)'));
+ }
+ assert.ok(css.includes('#editorModal.modal.active'));
+ assert.ok(css.includes('z-index:200'));
 });
