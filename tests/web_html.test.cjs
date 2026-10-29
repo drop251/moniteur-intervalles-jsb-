@@ -343,3 +343,62 @@ test('All timer cards expose a separate accessible Settings button',()=>{
  assert.ok(css.includes('#editorModal.modal.active'));
  assert.ok(css.includes('z-index:200'));
 });
+
+test('real Settings click opens the editor for every timer mode without starting',()=>{
+ const openA=html.indexOf('function openEditor(workout=null,requestedKind=null){');
+ const openB=html.indexOf('const durationLimits=',openA);
+ const cardA=html.indexOf('function buildModeOption(key)');
+ const cardB=html.indexOf('function savedWorkoutCard(w)',cardA);
+ assert.ok(openA>=0&&openB>openA&&cardA>=0&&cardB>cardA);
+ const editorCode=html.slice(openA,openB);
+ const cardCode=html.slice(cardA,cardB);
+ class MockNode {
+   constructor(){
+     this.children=[];this.handlers={};this.attributes={};this.dataset={};
+     this.value='';this.textContent='';this.className='';
+     this.hidden=false;this.disabled=false;this.checked=false;
+     const names=new Set();
+     this.classList={add:v=>names.add(v),remove:v=>names.delete(v),contains:v=>names.has(v)};
+   }
+   append(...items){this.children.push(...items);}
+   addEventListener(event,fn){this.handlers[event]=fn;}
+   setAttribute(name,value){this.attributes[name]=value;}
+   closest(){return new MockNode();}
+   querySelector(){return new MockNode();}
+   reset(){}
+   focus(){this.focused=true;}
+ }
+ const els={};const $=id=>els[id]||(els[id]=new MockNode());
+ const doc={activeElement:new MockNode(),querySelectorAll:()=>[],
+   querySelector:()=>new MockNode(),createElement:()=>new MockNode()};
+ const defaults=[
+  {id:'randori',kind:'randori',name:'Randori',prep:10,work:240,rest:60,cycles:5},
+  {id:'golden',kind:'golden',name:'Golden Score',prep:10,work:0,rest:0,cycles:1},
+  {id:'tabata',kind:'tabata',name:'Tabata',prep:10,work:20,rest:10,cycles:8},
+  {id:'chrono',kind:'chrono',name:'Chronomètre',prep:0,work:0,rest:0,cycles:1},
+  {id:'random',kind:'random',name:'Bips aléatoires',prep:10,work:180,rest:0,cycles:1}
+ ];
+ let launched=0;
+ const create=new Function('$','document','gate','trainingModes','standard',
+   'primaryWorkout','modeOptionMeta','pretty','session','closeWorkoutMenus',
+   'notice','syncAllDurationPickers','updateConfigDuration','applyMode','startWorkout',
+   'let editorReturnFocus=null,editingWorkoutId=null,autoRandoriName=false,autoTabataName=false;'+
+   editorCode+cardCode+'return {buildModeOption};');
+ const {buildModeOption}=create($,doc,{allow:()=>true},
+   {isAvailable:kind=>defaults.some(w=>w.kind===kind),DEFAULTS:{}},
+   defaults,w=>w,(kind,w)=>({title:w.name,description:kind}),String,
+   null,()=>{},()=>{},()=>{},()=>{},()=>{},()=>{launched++});
+ for(const w of defaults){
+   const card=buildModeOption(w.id);
+   const buttons=card.children.flatMap(node=>node.children||[]);
+   const edit=buttons.find(node=>node.className==='mode-option-settings secondary');
+   assert.ok(edit,w.id+' is missing Settings');
+   assert.equal(edit.attributes['aria-controls'],'editorModal');
+   edit.handlers.click();
+   assert.ok($('editorModal').classList.contains('active'),w.id+' modal not opened');
+   assert.equal($('workoutMode').value,w.kind);
+   assert.equal(launched,0,'Settings should never launch a timer');
+   $('editorModal').classList.remove('active');
+   $('app').inert=false;
+ }
+});
