@@ -1,8 +1,8 @@
-// Moniteur JSB v3.5 — quatre espaces, dernier minuteur et temps modifiables en pause.
+// Moniteur JSB v3.6 — quatre espaces, dernier minuteur et temps modifiables en pause.
 // Une nouvelle version de cache évite de conserver l'ancienne interface.
-const CACHE = 'moniteur-jsb-web-v35';
+const CACHE = 'moniteur-jsb-web-v36';
 const ASSETS = [
-  './','./index.html','./premium_v2.css?v=35',
+  './','./index.html','./premium_v2.css?v=36',
   './manifest.webmanifest','./icon.svg',
   './interaction_gate.js','./workout_manager.js','./workout_library.js',
   './duration_presets.js','./training_modes.js','./random_signals.js',
