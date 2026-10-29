@@ -1140,9 +1140,9 @@ function renderQuickPresets(){
   chrono:[['Direct',{prep:0}],['Prépa 10 s',{prep:10}],['Prépa 30 s',{prep:30}]],
   random:[['Espacés',{frequency:'low'}],['Modérés',{frequency:'medium'}],
           ['Fréquents',{frequency:'high'}]],
-  tabata:[['20 / 10',{work:20,rest:10,cycles:8}],
-          ['30 / 15',{work:30,rest:15,cycles:8}],
-          ['40 / 20',{work:40,rest:20,cycles:8}]],
+  tabata:[['1 × 8 · 20/10',{work:20,rest:10,cycles:1,exercises:8,cycleRest:60}],
+          ['3 × 5 · 30/10',{work:30,rest:10,cycles:3,exercises:5,cycleRest:60}],
+          ['4 × 4 · 40/20',{work:40,rest:20,cycles:4,exercises:4,cycleRest:90}]],
  };
  for(const [label,values] of presets[kind]||[]){
    const b=document.createElement('button');b.type='button';b.className='preset-chip';b.textContent=label;
@@ -1151,6 +1151,8 @@ function renderQuickPresets(){
      if(values.work!==undefined)$('effort').value=String(values.work);
      if(values.rest!==undefined)$('repos').value=String(values.rest);
      if(values.cycles!==undefined)$('cycles').value=String(values.cycles);
+     if(values.exercises!==undefined)$('tabataExercises').value=String(values.exercises);
+     if(values.cycleRest!==undefined)$('cycleRest').value=String(values.cycleRest);
      if(values.frequency!==undefined)$('randomFrequency').value=values.frequency;
      syncAllDurationPickers();updateConfigDuration();
      for(const chip of group.children)chip.setAttribute('aria-pressed',String(chip===b));
@@ -1162,12 +1164,18 @@ function configuredWorkout(){
  const kind=$('workoutMode').value;
  const name=$('workoutName').value.trim(),prep=Number($('preparation').value);
  const work=Number($('effort').value),rest=Number($('repos').value),cycles=Number($('cycles').value);
+ const exercises=Number($('tabataExercises').value),cycleRest=Number($('cycleRest').value);
  const minWork=['golden','chrono'].includes(kind)?0:1;
  if(!name||name.length>50||!trainingModes.isAvailable(kind)||
    ![prep,work,rest,cycles].every(Number.isSafeInteger)||
    prep<0||prep>600||work<minWork||work>3600||
-   rest<0||rest>3600||cycles<1||cycles>200){
+   rest<0||rest>3600||cycles<1||cycles>(kind==='tabata'?50:200)){
    notice('Vérifie les paramètres de la séance');return null;
+ }
+ if(kind==='tabata'&&(!Number.isSafeInteger(exercises)||exercises<1||exercises>50||
+    !Number.isSafeInteger(cycleRest)||cycleRest<0||cycleRest>3600||
+    cycles*exercises>200)){
+   notice('Tabata : vérifie les cycles et les exercices (200 efforts maximum).');return null;
  }
  const existing=customs.find(w=>w.id===editingWorkoutId);
  const original=standard.find(w=>w.id===editingWorkoutId);
@@ -1175,6 +1183,7 @@ function configuredWorkout(){
    prep,work,rest:['golden','chrono','random'].includes(kind)?0:rest,
    cycles:['golden','chrono','random'].includes(kind)?1:cycles,kind,
    symbol:original?.symbol||existing?.symbol||kindSymbol[kind],
+   ...(kind==='tabata'?{exercises,cycleRest}:{}),
    ...(kind==='randori'?{
       randomBips:$('randoriRandomBips').checked,
       randomBipFrequency:$('randoriBipFrequency').value
@@ -1192,8 +1201,20 @@ function updateConfigDuration(){
  const kind=$('workoutMode').value;
  const prep=Number($('preparation').value),work=Number($('effort').value),
    rest=Number($('repos').value),cycles=Number($('cycles').value);
+ const exercises=Number($('tabataExercises').value),cycleRest=Number($('cycleRest').value);
  if(![prep,work,rest,cycles].every(Number.isFinite)){output.textContent='—';return;}
- const total=trainingModes.workoutDuration({kind,prep,work,rest,cycles});
+ if(kind==='tabata'){
+   const count=cycles*exercises;
+   const valid=Number.isSafeInteger(cycles)&&cycles>=1&&cycles<=50&&
+     Number.isSafeInteger(exercises)&&exercises>=1&&exercises<=50&&count<=200&&
+     Number.isSafeInteger(cycleRest)&&cycleRest>=0&&cycleRest<=3600;
+   $('tabataPlanHint').textContent=valid?
+     count+' efforts · '+cycles+' cycle'+(cycles>1?'s':'')+
+       ' × '+exercises+' exercices · '+Math.max(0,cycles-1)+' repos entre cycles':
+     'Vérifie les quantités : 200 efforts maximum.';
+   if(!valid){output.textContent='—';return;}
+ }
+ const total=trainingModes.workoutDuration({kind,prep,work,rest,cycles,exercises,cycleRest});
  output.textContent=Number.isFinite(total)?pretty(total):'Sans limite';
 }
 function phases(w){return trainingModes.phasePlan(w)}
