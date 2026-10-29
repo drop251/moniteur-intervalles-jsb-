@@ -473,8 +473,8 @@ test('native Safari dialog opens and closes for each timer without starting it',
 });
 
 test('every literal editor lookup refers to a real DOM id (regression iPhone settings)',()=>{
- const ids=new Set([...html.matchAll(/\\bid="([^"]+)"/g)].map(m=>m[1]));
- const lookups=[...html.matchAll(/\\$\\('([^']+)'\\)/g)].map(m=>m[1]);
+ const ids=new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]));
+ const lookups=[...html.matchAll(/\$\('([^']+)'\)/g)].map(m=>m[1]);
  const missing=[...new Set(lookups)].filter(id=>!ids.has(id));
  assert.deepEqual(missing,[], 'Missing element IDs make Settings fail when tapped');
  assert.ok(ids.has('reposField'));
@@ -486,7 +486,7 @@ test('the actual applyMode implementation runs for all five timers',()=>{
  const end=html.indexOf('function closeEditor(){',begin);
  assert.ok(begin>=0&&end>begin);
  const source=html.slice(begin,end);
- const ids=new Set([...html.matchAll(/\\bid="([^"]+)"/g)].map(m=>m[1]));
+ const ids=new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]));
  const ui=new Map();
  const $=id=>{
    assert.ok(ids.has(id),'Unknown element: '+id);
