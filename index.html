@@ -679,7 +679,7 @@ function formatTabataName(cycles,workSeconds,restSeconds,exercises){
  }
  const perCycle=Number(exercises);
  if(!Number.isSafeInteger(perCycle)||perCycle<1||perCycle>50)return null;
- return 'Tabata '+count+' cycles × '+perCycle+' ex. · '+
+ return 'Tabata '+count+(count>1?' cycles':' cycle')+' × '+perCycle+' ex. · '+
    durationPresets.formatDuration(work)+' / '+durationPresets.formatDuration(rest);
 }
 function syncTabataName(){
