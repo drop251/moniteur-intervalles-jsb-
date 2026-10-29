@@ -436,8 +436,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
  </div></details><input type="hidden" id="effort" value="30" />
 </div>
    <div class="field wide duration-field simple-field" id="reposField">
- <div class="duration-title">Temps de repos</div>
- <div class="large-stepper" role="group" aria-label="Temps de repos">
+ <div class="duration-title" id="reposLabel">Temps de repos</div>
+ <div class="large-stepper" role="group" aria-labelledby="reposLabel">
   <button type="button" data-step-field="repos" data-step="-1" aria-label="Diminuer Temps de repos">−</button>
   <output id="reposDisplay" class="large-stepper-value" aria-live="off">00:15</output>
   <button type="button" data-step-field="repos" data-step="1" aria-label="Augmenter Temps de repos">+</button>
@@ -447,12 +447,37 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
    <div><label for="reposSeconds">Secondes</label><select id="reposSeconds" aria-label="Temps de repos : secondes"></select></div>
  </div></details><input type="hidden" id="repos" value="15" />
 </div>
+
+   <div class="field wide duration-field simple-field" id="tabataCycleRestField" hidden>
+    <div class="duration-title" id="cycleRestLabel">Repos entre cycles</div>
+    <div class="large-stepper" role="group" aria-labelledby="cycleRestLabel">
+      <button type="button" data-step-field="cycleRest" data-step="-1" aria-label="Diminuer le repos entre cycles">−</button>
+      <output id="cycleRestDisplay" class="large-stepper-value" aria-live="off">01:00</output>
+      <button type="button" data-step-field="cycleRest" data-step="1" aria-label="Augmenter le repos entre cycles">+</button>
+    </div>
+    <details class="duration-precision"><summary>Ajuster à la seconde</summary>
+      <div class="duration-pickers">
+        <div><label for="cycleRestMinutes">Minutes</label><select id="cycleRestMinutes" aria-label="Repos entre cycles : minutes"></select></div>
+        <div><label for="cycleRestSeconds">Secondes</label><select id="cycleRestSeconds" aria-label="Repos entre cycles : secondes"></select></div>
+      </div>
+    </details>
+    <input type="hidden" id="cycleRest" value="60" />
+   </div>
    <div class="field wide simple-field" id="cyclesField"><div class="duration-title" id="cyclesLabel">Répétitions</div>
     <div class="large-stepper cycle-stepper" role="group" aria-label="Nombre de répétitions">
       <button type="button" data-step-cycles="-1" aria-label="Diminuer le nombre de répétitions">−</button>
       <input id="cycles" type="number" inputmode="numeric" min="1" max="200" value="8" required aria-label="Nombre de répétitions" />
       <button type="button" data-step-cycles="1" aria-label="Augmenter le nombre de répétitions">+</button>
     </div>
+   </div>
+   <div class="field wide simple-field" id="tabataExercisesField" hidden>
+     <label class="duration-title" for="tabataExercises">Exercices par cycle</label>
+     <div class="large-stepper cycle-stepper" role="group" aria-label="Nombre d'exercices dans chaque cycle">
+       <button type="button" data-step-exercises="-1" aria-label="Diminuer le nombre d'exercices">−</button>
+       <input id="tabataExercises" type="number" inputmode="numeric" min="1" max="50" value="8" required aria-label="Nombre d'exercices par cycle" />
+       <button type="button" data-step-exercises="1" aria-label="Augmenter le nombre d'exercices">+</button>
+     </div>
+     <p id="tabataPlanHint" class="tabata-plan-hint" aria-live="polite">1 cycle × 8 exercices</p>
    </div>
    <div class="field wide simple-field randori-bips-field" id="randoriBipsField" hidden>
       <label class="randori-bips-switch" for="randoriRandomBips">
@@ -580,7 +605,7 @@ function setHeaderClearance(){if(jsbHeader)document.documentElement.style.setPro
 setHeaderClearance();
 if(typeof ResizeObserver!=='undefined')new ResizeObserver(setHeaderClearance).observe(jsbHeader);
 window.addEventListener('orientationchange',setHeaderClearance);
-const standard=[{id:'randori',name:'Randori 5 × 4 min',prep:10,work:240,rest:60,cycles:5,kind:'randori',symbol:'🥋'},{id:'golden',name:'Golden Score · Libre',prep:10,work:0,rest:0,cycles:1,kind:'golden',symbol:'∞'},{id:'chrono',name:'Chronomètre libre',prep:0,work:0,rest:0,cycles:1,kind:'chrono',symbol:'◷'},{id:'random',name:'Bips aléatoires · Burpees',prep:10,work:180,rest:0,cycles:1,kind:'random',symbol:'♫',frequency:'medium',progressive:true},{id:'tabata',name:'Tabata 8 × 20 s / 10 s',prep:10,work:20,rest:10,cycles:8,kind:'tabata',symbol:'◉'},{id:'hiit',name:'HIIT 40 / 20',prep:10,work:40,rest:20,cycles:10,kind:'hiit',symbol:'↗'},{id:'boxe',name:'Boxe · 3 rounds',prep:10,work:180,rest:60,cycles:3,kind:'boxe',symbol:'✦'}];
+const standard=[{id:'randori',name:'Randori 5 × 4 min',prep:10,work:240,rest:60,cycles:5,kind:'randori',symbol:'🥋'},{id:'golden',name:'Golden Score · Libre',prep:10,work:0,rest:0,cycles:1,kind:'golden',symbol:'∞'},{id:'chrono',name:'Chronomètre libre',prep:0,work:0,rest:0,cycles:1,kind:'chrono',symbol:'◷'},{id:'random',name:'Bips aléatoires · Burpees',prep:10,work:180,rest:0,cycles:1,kind:'random',symbol:'♫',frequency:'medium',progressive:true},{id:'tabata',name:'Tabata 1 cycle × 8 ex. · 20 s / 10 s',prep:10,work:20,rest:10,cycles:1,exercises:8,cycleRest:60,kind:'tabata',symbol:'◉'},{id:'hiit',name:'HIIT 40 / 20',prep:10,work:40,rest:20,cycles:10,kind:'hiit',symbol:'↗'},{id:'boxe',name:'Boxe · 3 rounds',prep:10,work:180,rest:60,cycles:3,kind:'boxe',symbol:'✦'}];
 const read=(key,fallback)=>{try{const parsed=JSON.parse(localStorage.getItem(key));return parsed===null?fallback:parsed}catch{return fallback}};
 let customs=read('jsb_preview_customs',[]);if(!Array.isArray(customs))customs=[];// Previous history remains untouched in localStorage, but is not displayed or extended.
 const storedSettings=read('jsb_preview_settings',{});let settings={audio:true,vibrate:true,keepAwake:false,volume:90,sound:'buzzerPro',restSound:'bellSport',randomSound:'whistlePro',audioMethod:'web',finishSound:'bellSport',countdown:true,...storedSettings};
@@ -594,7 +619,14 @@ let modeSettings=read('jsb_v2_mode_settings',{});
 if(!modeSettings||typeof modeSettings!=='object'||Array.isArray(modeSettings))modeSettings={};
 if(!recentWorkout||!trainingModeIsValid(recentWorkout))recentWorkout=null;
 let replayWorkout=null,confirmWasPaused=false,editorOrigin=null;
-function trainingModeIsValid(w){return w&&typeof w==='object'&&['randori','golden','chrono','random','tabata','hiit','boxe'].includes(w.kind)&&typeof w.name==='string'&&Number.isSafeInteger(w.prep)&&Number.isSafeInteger(w.work)&&Number.isSafeInteger(w.rest)&&Number.isSafeInteger(w.cycles)&&w.prep>=0&&w.work>=0&&w.rest>=0&&w.cycles>=1;}
+function trainingModeIsValid(w){
+ if(!w||typeof w!=='object'||!['randori','golden','chrono','random','tabata','hiit','boxe'].includes(w.kind)||
+    typeof w.name!=='string'||![w.prep,w.work,w.rest,w.cycles].every(Number.isSafeInteger)||
+    w.prep<0||w.work<0||w.rest<0||w.cycles<1)return false;
+ if(w.kind!=='tabata'||w.exercises===undefined)return true;
+ return Number.isSafeInteger(w.exercises)&&w.exercises>=1&&
+   Number.isSafeInteger(w.cycleRest)&&w.cycleRest>=0&&w.cycleRest<=3600;
+}
 
 const soundEngine=window.JSBSoundEngine.createEngine();
 const nativeAudio=window.JSBNativeAudio||null;
@@ -631,17 +663,28 @@ function formatRandoriName(cycles,workSeconds){
 }
 let autoRandoriName=false;
 let autoTabataName=false;
-function formatTabataName(cycles,workSeconds,restSeconds){
+function normalizedTabata(w){
+ if(w.kind!=='tabata')return w;
+ const {cycles,exercises,cycleRest}=trainingModes.tabataStructure(w);
+ return {...w,cycles,exercises,cycleRest};
+}
+function formatTabataName(cycles,workSeconds,restSeconds,exercises){
  const count=Number(cycles),work=Number(workSeconds),rest=Number(restSeconds);
  if(!Number.isSafeInteger(count)||count<1||count>200||
     !Number.isSafeInteger(work)||work<1||work>3600||
     !Number.isSafeInteger(rest)||rest<0||rest>3600)return null;
- return 'Tabata '+count+' × '+durationPresets.formatDuration(work)+
-    ' / '+durationPresets.formatDuration(rest);
+ if(exercises===undefined){
+   return 'Tabata '+count+' × '+durationPresets.formatDuration(work)+
+     ' / '+durationPresets.formatDuration(rest);
+ }
+ const perCycle=Number(exercises);
+ if(!Number.isSafeInteger(perCycle)||perCycle<1||perCycle>50)return null;
+ return 'Tabata '+count+' cycles × '+perCycle+' ex. · '+
+   durationPresets.formatDuration(work)+' / '+durationPresets.formatDuration(rest);
 }
 function syncTabataName(){
  if(!autoTabataName||$('workoutMode').value!=='tabata')return;
- const name=formatTabataName($('cycles').value,$('effort').value,$('repos').value);
+ const name=formatTabataName($('cycles').value,$('effort').value,$('repos').value,$('tabataExercises').value);
  if(!name)return;
  $('workoutName').value=name;
  $('editorTitle').textContent=name;
@@ -664,7 +707,15 @@ function syncRandoriName(){
 }
 const secs=w=>trainingModes.workoutDuration(w);
 const kindSymbol={randori:'🥋',golden:'∞',chrono:'◷',random:'♫',hiit:'↗',tabata:'◉',boxe:'✦'};
-const kindDescription=w=>w.kind==='golden'?'Temps libre · Golden Score':w.kind==='chrono'?'Temps libre · Chronomètre':w.kind==='random'?'Signaux irréguliers · '+pretty(w.work):w.kind==='randori'?w.cycles+' combats · '+pretty(w.work)+' chacun':w.kind==='boxe'?w.cycles+' rounds de '+pretty(w.work):w.cycles+' cycles • '+w.work+' s / '+w.rest+' s';
+const kindDescription=w=>w.kind==='golden'?'Temps libre · Golden Score':
+ w.kind==='chrono'?'Temps libre · Chronomètre':
+ w.kind==='random'?'Signaux irréguliers · '+pretty(w.work):
+ w.kind==='randori'?w.cycles+' combats · '+pretty(w.work)+' chacun':
+ w.kind==='tabata'?trainingModes.tabataStructure(w).cycles+' cycles × '+
+   trainingModes.tabataStructure(w).exercises+' exercices · '+
+   durationPresets.formatDuration(w.work)+' / '+durationPresets.formatDuration(w.rest):
+ w.kind==='boxe'?w.cycles+' rounds de '+pretty(w.work):
+ w.cycles+' cycles • '+w.work+' s / '+w.rest+' s';
 function notice(s){$('toast').textContent=s;$('toast').classList.add('active');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('active'),3500)}
 let lastTrainingView='randori';
 function navigate(view){
@@ -697,7 +748,10 @@ function primaryWorkout(base){
    ? {...base,...stored,id:base.id,kind:base.kind}
    : {...base};
  if(w.kind==='randori')return {...w,name:formatRandoriName(w.cycles,w.work)||w.name};
- if(w.kind==='tabata')return {...w,name:formatTabataName(w.cycles,w.work,w.rest)||w.name};
+ if(w.kind==='tabata'){
+   const v=normalizedTabata(w);
+   return {...v,name:formatTabataName(v.cycles,v.work,v.rest,v.exercises)||v.name};
+ }
  return w;
 }
 function modeOptionMeta(key,w) {
@@ -711,8 +765,10 @@ function modeOptionMeta(key,w) {
  };
  if(key==='tabata')return {
    title:w.name,
-   description:w.cycles+' cycles · '+durationPresets.formatDuration(w.work)+
-     ' effort / '+durationPresets.formatDuration(w.rest)+' repos',
+   description:w.cycles+' cycles × '+w.exercises+' exercices · '+
+     durationPresets.formatDuration(w.work)+' effort / '+
+     durationPresets.formatDuration(w.rest)+' repos entre exercices · '+
+     durationPresets.formatDuration(w.cycleRest)+' entre cycles',
  };
  if(key==='chrono')return {
    title:'Chronomètre libre',
