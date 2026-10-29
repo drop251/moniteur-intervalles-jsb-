@@ -744,9 +744,13 @@ function tabForTimer(kind){
 function closeWorkoutMenus(){for(const menu of document.querySelectorAll('.workout-menu'))menu.hidden=true;for(const btn of document.querySelectorAll('.workout-menu-button'))btn.setAttribute('aria-expanded','false');workoutMenuId=null}
 function primaryWorkout(base){
  const stored=modeSettings[base.id];
- const w=trainingModeIsValid(stored)&&stored.kind===base.kind
-   ? {...base,...stored,id:base.id,kind:base.kind}
-   : {...base};
+ // Normalize an OLD saved Tabata BEFORE merging it with the new defaults.
+ // Otherwise the new "exercises:8" default and old "cycles:8" would create
+ // 8 × 8 intervals instead of the original eight efforts.
+ const previous=trainingModeIsValid(stored)&&stored.kind===base.kind
+   ? (stored.kind==='tabata'?normalizedTabata(stored):stored)
+   : null;
+ const w=previous?{...base,...previous,id:base.id,kind:base.kind}:{...base};
  if(w.kind==='randori')return {...w,name:formatRandoriName(w.cycles,w.work)||w.name};
  if(w.kind==='tabata'){
    const v=normalizedTabata(w);
