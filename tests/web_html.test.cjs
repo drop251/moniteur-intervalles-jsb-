@@ -10,6 +10,7 @@ const root=path.resolve(__dirname,'..');
 const get=name=>fs.readFileSync(path.join(root,name),'utf8');
 const html=get('index.html');
 const css=get('premium_v2.css');
+const refinement=get('jsb_refinement.css');
 const serviceWorker=get('sw.js');
 const manifest=JSON.parse(get('manifest.webmanifest'));
 
@@ -219,7 +220,7 @@ test('the four real sports alert WAV files are distinct, loud, and local',()=>{
 });
 
 test('offline cache includes all new interface and timer dependencies',()=>{
- assert.ok(serviceWorker.includes('moniteur-jsb-web-v38'));
+ assert.ok(serviceWorker.includes('moniteur-jsb-web-v39'));
  for(const file of ['premium_v2.css','pause_adjustments.js',
    'jsb_audio_samples.js','sound_engine.js','audio_cues.js']){
    assert.ok(serviceWorker.includes(file),file);
@@ -547,4 +548,21 @@ test('grouped Tabata is 15 efforts, 12 short rests, 2 long rests and no final re
  assert.ok(s.seq.filter(x=>x.restType==='exercise').every(x=>x.ms===20000));
  assert.ok(s.seq.filter(x=>x.restType==='cycle').every(x=>x.ms===60000));
  assert.equal(s.workout.cycleRest,60);
+});
+
+test('JSB official navy and gold contrast differentiates activity, recovery and preparation',()=>{
+ assert.ok(html.includes('jsb_refinement.css?v=39'));
+ assert.ok(serviceWorker.includes('jsb_refinement.css?v=39'));
+ assert.match(refinement,/--jsb-navy:#1F2839/);
+ assert.match(refinement,/--jsb-gold:#D9B175/);
+ assert.match(refinement,/#timer\.timer\[data-phase="rest"\]/);
+ assert.match(refinement,/--phase-background:linear-gradient/);
+ assert.match(refinement,/--phase-ink:#1F2839/);
+ assert.match(refinement,/--phase-ink:#D9B175/);
+ assert.ok(refinement.includes('.nav [data-nav="luc-leger"]{display:none!important}'));
+ assert.ok(html.includes("const phaseText=p.kind==='rest'"));
+ assert.ok(html.includes("'ACTIVITÉ · '+p.label"));
+ assert.ok(html.includes("'REPOS · '+p.label"));
+ assert.ok(html.includes("$('phaseAnnouncement').textContent=phaseText+"));
+ assert.ok(html.includes("$('phaseLabel').textContent=phaseText;"));
 });
