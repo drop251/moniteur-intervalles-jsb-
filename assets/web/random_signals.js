@@ -30,7 +30,20 @@
     }
     return result;
   }
-  const api={createSignals,PROFILES,MIN_GAP_MS};
+  function createSignalsForPhases(seq,{frequency='medium',rng=Math.random}={}){
+    // Each scheduled cue falls in an effort phase, never in prep or rest.
+    if(!Array.isArray(seq))return [];
+    const times=[];
+    for(const phase of seq){
+      if(!phase||phase.kind!=='effort'||!Number.isFinite(phase.start)||
+        !Number.isFinite(phase.ms)||phase.ms<=0)continue;
+      for(const ms of createSignals({workMs:phase.ms,frequency,progressive:false,rng})){
+        times.push(phase.start+ms);
+      }
+    }
+    return times.sort((a,b)=>a-b);
+  }
+  const api={createSignals,createSignalsForPhases,PROFILES,MIN_GAP_MS};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
   root.JSBRandomSignals=api;
 })(typeof window!=='undefined'?window:globalThis);
