@@ -14,6 +14,8 @@ void main() {
     expect(html, contains('adjustTimeBtn'));
     expect(html, contains("make('section','jsb-home-hero')"));
     expect(html, contains("jsb_interface_v4.css"));
+    expect(html, contains('jsb_phase_immersive_v41.css'));
+    expect(html, contains("const chromeColor=p.kind==='rest'?'#D9B175':'#1F2839'"));
   });
 
   test('native audio bridge remains active without a service worker', () {
@@ -38,5 +40,11 @@ void main() {
     expect(home, contains('grid-template-columns:repeat(3,minmax(0,1fr))'));
     expect(html, contains("'ACTIVITÉ · '+p.label"));
     expect(html, contains("'REPOS · '+p.label"));
+    final immersive = File('assets/web/jsb_phase_immersive_v41.css').readAsStringSync();
+    expect(immersive, contains('#timer.timer[data-phase="rest"]'));
+    expect(immersive, contains('--jsb-immersive-bg:#D9B175'));
+    expect(immersive, contains('background:transparent!important'));
+    expect(immersive, contains('background:var(--jsb-immersive-action)!important'));
+    expect(immersive, contains('@media (prefers-reduced-motion:reduce)'));
   });
 }
