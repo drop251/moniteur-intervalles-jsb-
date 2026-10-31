@@ -334,16 +334,17 @@ test('Chronomètre quick-start choices synchronize selected value and custom del
  }
 });
 
-test('All timer cards expose a separate accessible Settings button',()=>{
+test('primary and secondary timer UIs provide accessible configuration without starting',()=>{
  const built=html.slice(html.indexOf('function buildModeOption(key)'),html.indexOf('function savedWorkoutCard(w)'));
  const saved=html.slice(html.indexOf('function savedWorkoutCard(w)'),html.indexOf('function renderSavedWorkouts()'));
- for(const part of [built,saved]){
-  assert.ok(part.includes("edit.textContent='⚙ Régler'"));
-  assert.ok(part.includes("edit.setAttribute('aria-haspopup','dialog')"));
-  assert.ok(part.includes("edit.setAttribute('aria-controls','editorModal')"));
-  assert.ok(part.includes("edit.addEventListener('click',()=>openEditor("));
-  assert.ok(part.includes('controls.append(edit,play)'));
- }
+ assert.ok(built.includes("edit.setAttribute('aria-haspopup','dialog')"));
+ assert.ok(built.includes("edit.setAttribute('aria-controls','editorModal')"));
+ assert.ok(built.includes("edit.addEventListener('click',open)"));
+ assert.ok(built.includes("play.addEventListener('click',launch)"));
+ assert.ok(built.includes("make('button','jsb-home-config')"));
+ assert.ok(built.includes("make('button','jsb-secondary-edit'"));
+ assert.ok(saved.includes("edit.setAttribute('aria-haspopup','dialog')"));
+ assert.ok(saved.includes("edit.setAttribute('aria-controls','editorModal')"));
  assert.ok(css.includes('#editorModal.modal.active'));
  assert.ok(css.includes('z-index:200'));
 });
@@ -398,8 +399,9 @@ test('real Settings click opens the editor for every timer mode without starting
    null,()=>{},()=>{},()=>{},()=>{},()=>{},()=>{launched++});
  for(const w of defaults){
    const card=buildModeOption(w.id);
-   const buttons=card.children.flatMap(node=>node.children||[]);
-   const edit=buttons.find(node=>node.className==='mode-option-settings secondary');
+   const walk=node=>[node,...(node.children||[]).flatMap(walk)];
+   const buttons=walk(card);
+   const edit=buttons.find(node=>['jsb-home-config','jsb-secondary-edit'].includes(node.className));
    assert.ok(edit,w.id+' is missing Settings');
    assert.equal(edit.attributes['aria-controls'],'editorModal');
    edit.handlers.click();
@@ -554,8 +556,8 @@ test('grouped Tabata is 15 efforts, 12 short rests, 2 long rests and no final re
 });
 
 test('JSB official navy and gold contrast differentiates activity, recovery and preparation',()=>{
- assert.ok(html.includes('jsb_refinement.css?v=39'));
- assert.ok(serviceWorker.includes('jsb_refinement.css?v=39'));
+ assert.ok(html.includes('jsb_refinement.css?v=40'));
+ assert.ok(serviceWorker.includes('jsb_refinement.css?v=40'));
  assert.match(refinement,/--jsb-navy:#1F2839/);
  assert.match(refinement,/--jsb-gold:#D9B175/);
  assert.match(refinement,/#timer\.timer\[data-phase="rest"\]/);
