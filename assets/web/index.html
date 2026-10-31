@@ -67,206 +67,226 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
   font-feature-settings:"tnum";
   line-height:1.08;
 }
-@media (orientation:landscape) and (max-height:600px) and (min-width:560px){
-  .timer.active{
-    display:grid;
-    grid-template-columns:minmax(0,1fr) minmax(185px,30%);
-    grid-template-rows:auto minmax(0,1fr);
-    gap:3px clamp(12px,2.5vw,28px);
-    box-sizing:border-box;
-    padding:
-      max(7px,env(safe-area-inset-top,0px))
-      max(16px,env(safe-area-inset-right,0px))
-      max(7px,env(safe-area-inset-bottom,0px))
-      max(16px,env(safe-area-inset-left,0px));
-    overflow:hidden;
-  }
-  .timer-head{
-    grid-column:1/-1;
-    grid-row:1;
-    min-width:0;
-    align-items:center;
-    gap:10px;
-  }
-  .timer-head strong{font-size:12px}
-  .timer-head small{font-size:11px}
-  #timerTitle{
-    max-width:50vw;
-    overflow:hidden;
-    white-space:nowrap;
-    text-overflow:ellipsis;
-  }
-  .timer-main{
-    grid-column:1;
-    grid-row:2;
-    min-width:0;
-    min-height:0;
-    justify-content:center;
-    align-items:center;
-    overflow:hidden;
-    gap:0;
-  }
-  .timer .phase-chip{
-    flex:none;
-    font-size:clamp(11px,2.8vh,15px);
-    letter-spacing:.1em;
-    padding:5px 13px;
-  }
-  .timer .clock{
-    font-size:clamp(62px,min(17vw,31vh),152px);
-    letter-spacing:-.055em;
-    line-height:1.02;
-    margin:clamp(3px,1.4vh,12px) 0;
-    flex:none;
-  }
-  .timer .clock[data-digits="6"],
-  .timer .clock[data-digits="7"],
-  .timer .clock[data-digits="8"]{
-    font-size:clamp(50px,min(13vw,26vh),122px);
-  }
-  .timer .cycle{
-    font-size:clamp(13px,3vh,19px);
-    text-align:center;
-  }
-  .timer .paused{
-    flex:none;
-    margin-top:5px;
-    font-size:10px;
-    padding:4px 10px;
-  }
-  .timer .amrap-counter{
-    margin-top:5px;
-    font-size:12px;
-  }
-  .timer .amrap-counter>div{margin-top:4px;gap:12px}
-  .timer .amrap-counter strong{font-size:24px}
-  .timer .amrap-counter button{min-width:48px;min-height:48px;width:48px;height:48px}
-  .timer-controls{
-    grid-column:2;
-    grid-row:2;
-    min-width:0;
-    min-height:0;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    gap:clamp(4px,1.5vh,10px);
-  }
-  .timer-controls .prog{
-    flex:none;
-    height:8px;
-    margin:0;
-  }
-  .timer-controls .next{
-    flex:none;
-    display:flex;
-    flex-direction:column;
-    gap:4px;
-    margin:0;
-    font-size:12px;
-    line-height:1.2;
-    color:#faf9f5;
-  }
-  .timer-controls .timer-actions{
-    flex:none;
-    display:grid;
-    grid-template-columns:minmax(0,1fr);
-    gap:8px;
-  }
-  .timer-controls .timer-actions button{
-    flex:none;
-    min-height:48px;
-    font-size:15px;
-    padding:6px 10px;
-  }
-  .timer-controls .caption{display:none}
-}
-/* Sur les très petits écrans paysage, tout tient sans réduire les cibles
-   tactiles en dessous de 48px. */
-@media (orientation:landscape) and (max-height:340px) and (min-width:560px){
-  .timer.active{gap:0 12px}
-  .timer-head small{font-size:10px}
-  .timer .clock{font-size:clamp(58px,min(15vw,28vh),120px);margin:2px 0}
-  .timer .phase-chip{padding:4px 10px}
-  .timer-controls{gap:4px}
-  .timer-controls .next{font-size:11px;gap:2px}
-  .timer-controls .timer-actions{gap:5px}
-}
-
+/* Paysage : règles uniques et prioritaires dans jsb-landscape-v33. */
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style>
 
 <link rel="stylesheet" href="./premium_v2.css" />
+<style id="jsb-landscape-v33">
+/* JSB v3.3 — paysage iPhone : horloge pleine largeur, commandes sous le temps.
+   Colonne forcée : corrige l'ancienne grille à deux colonnes restée en cache. */
+@media screen and (orientation:landscape) and (min-width:500px) {
+  #timer.timer.active {
+    display:flex !important;
+    flex-direction:column !important;
+    grid-template-columns:none !important;
+    grid-template-rows:none !important;
+    align-items:stretch !important;
+    justify-content:initial !important;
+    gap:0 !important;
+    height:100dvh !important;
+    max-height:100dvh !important;
+    box-sizing:border-box !important;
+    overflow:hidden !important;
+    padding:
+      max(6px,env(safe-area-inset-top,0px))
+      max(20px,env(safe-area-inset-right,0px))
+      max(8px,env(safe-area-inset-bottom,0px))
+      max(20px,env(safe-area-inset-left,0px)) !important;
+  }
+  #timer .timer-head {
+    grid-column:auto !important;
+    grid-row:auto !important;
+    flex:0 0 auto !important;
+    min-height:0 !important;
+    padding:0 !important;
+  }
+  #timer .timer-main {
+    grid-column:auto !important;
+    grid-row:auto !important;
+    flex:1 1 auto !important;
+    min-width:0 !important;
+    min-height:0 !important;
+    display:flex !important;
+    flex-direction:column !important;
+    justify-content:center !important;
+    align-items:center !important;
+    overflow:hidden !important;
+    gap:clamp(1px,1vh,5px) !important;
+  }
+  #timer .timer-main .phase-chip {
+    flex:none !important;
+    padding:4px 13px !important;
+    font-size:clamp(11px,3vh,16px) !important;
+    line-height:1.05 !important;
+  }
+  #timer .timer-main .clock {
+    display:block !important;
+    flex:none !important;
+    width:100% !important;
+    max-width:100% !important;
+    margin:0 !important;
+    text-align:center !important;
+    white-space:nowrap !important;
+    font-size:clamp(88px,min(27vw,47dvh),235px) !important;
+    line-height:.98 !important;
+    letter-spacing:-.055em !important;
+    font-variant-numeric:tabular-nums !important;
+    font-feature-settings:"tnum" !important;
+  }
+  #timer .timer-main .clock[data-digits="6"],
+  #timer .timer-main .clock[data-digits="7"],
+  #timer .timer-main .clock[data-digits="8"] {
+    font-size:clamp(60px,min(17vw,34dvh),138px) !important;
+  }
+  #timer .timer-main .cycle {
+    flex:none !important;
+    font-size:clamp(12px,3.5vh,18px) !important;
+    line-height:1.15 !important;
+    text-align:center !important;
+    margin:0 !important;
+  }
+  #timer .timer-main .paused {
+    flex:none !important;
+    margin:0 !important;
+    padding:3px 10px !important;
+    font-size:11px !important;
+  }
+  #timer .timer-main .paused:not(.on) { display:none !important; }
+  #timer .timer-controls {
+    grid-column:auto !important;
+    grid-row:auto !important;
+    flex:0 0 auto !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    justify-content:flex-end !important;
+    gap:6px !important;
+    width:100% !important;
+    max-width:700px !important;
+    min-width:0 !important;
+    min-height:0 !important;
+    margin:0 auto !important;
+    padding:0 !important;
+  }
+  #timer .timer-controls .prog,
+  #timer .timer-controls .next,
+  #timer .timer-controls .caption { display:none !important; }
+  #timer .timer-controls .timer-actions {
+    order:0 !important;
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    grid-template-rows:auto !important;
+    gap:12px !important;
+    width:100% !important;
+    min-width:0 !important;
+    margin:0 !important;
+  }
+  #timer .timer-controls .timer-actions button {
+    width:100% !important;
+    min-width:0 !important;
+    min-height:clamp(50px,15dvh,70px) !important;
+    padding:8px 12px !important;
+    font-size:clamp(16px,3.6vh,22px) !important;
+    line-height:1.2 !important;
+    border-radius:15px !important;
+  }
+  #timer .timer-controls .adjust-time-trigger:not([hidden]) {
+    display:block !important;
+    order:1 !important;
+    min-height:48px !important;
+    width:100% !important;
+    margin:0 !important;
+  }
+  #timer .timer-controls .adjust-time-trigger[hidden] {display:none !important;}
+}
+@media screen and (orientation:landscape) and (min-width:500px) and (max-height:340px) {
+  #timer .timer-head strong {font-size:10px !important;}
+  #timer .timer-main .phase-chip {padding:3px 10px !important;}
+  #timer .timer-main .clock {font-size:clamp(70px,min(22vw,39dvh),152px) !important;}
+  #timer .timer-main .clock[data-digits="6"],
+  #timer .timer-main .clock[data-digits="7"],
+  #timer .timer-main .clock[data-digits="8"] {
+    font-size:clamp(54px,min(15vw,31dvh),115px) !important;
+  }
+}
+</style>
+<link rel="stylesheet" href="./jsb_refinement.css" />
 </head>
 <body>
 <div class="app" id="app">
 <header><div class="brand"><div class="mark" aria-hidden="true"><img alt="" src="data:image/webp;base64,UklGRqoGAABXRUJQVlA4IJ4GAABQGgCdASpAAEAAPmUkkEUkIiGY/VW0QAZEsgBOmWpg9SlfZ7Onos8v/oD89b6Jv7fvnfoAdJ5/eP+zYL/13wL8VXqCP7Yc++v6fhr2p/8pvaIA/qp/wON7uSeLf8q9gD8qehh/wf4v0H/S/sD/y/+r/8f1lPZl+yXsV/sA10hDlTXQ1M/S31vcyfwvokvuhiw4atTLtoN/GfU62ohsw39bdB7zODjAPlPdrfMhMlhuSEJzHIv4Sq0CxYzI1Y/RFcmf35Rbzho37NuIVI/WqhBVlmaGCf7++n4m97gA/v/5Fke03ks4kvfWYl/+36nXP5ZlOpERT1kT80jGOSX8AcXcif/35F4jMRFtcH8w4rx1XCzG3b8pDUbj5IUie7GauQ+0OElL7++Zgn1Gnl7Dzet5fPSv/1VYmTfpz+/1KqBKwiyXr1Zyu9F+JS+HY1/5FAbcpL2Mm3bqXFBLxZSoh/NFaKjXMQFwE4E4HedUNhYN3Ov/575AUOIo/V+zIX4uKrrDJMG2qne2KacgjTu3z/c/hgSyM4TVpQbQgpT2i8sCLtNNAx24vaC7jLlFMb+WpmfQdfzt+O3x9CuKweZBGJK4In4NbQPu/qUhSLEO0sbVpnR/UZ5JnFLQtVslFqSw9vaN/2WtFA7mGVLHT4Euh9rEw7z3bkzcK7vxkDo2Hr/Fa7IcnqyzFuEB1ScUpIJnrjbpBNWgftERcHwUSrZDH8eWuqS76fi+mSQXgyXo0VEWPdVe1VFoSguWv+Z6Cijf2+It8gVzPOf+MkgzrDUnYWGx6Zysb0CX8XGUsDfWLnbHB4k7H3VQAbi/JO9uGyCBun3/kjv3O8UrLuLT5Y+WFPBVlY0VLHoLe1QSOz6dodXqC/me80XppRl0VxKg3a4tu4WSgIHjVTnt3JlVOjB70Zy7TvFhEapx/GqwV92SayQndCFeRw3DmEYK6tV2b3xClezRt4g1lNWh7Wjv+pI94I2EnPdOZlpOETtr5jD8TtTUGPYya3wDmS3jmYFNaMxUjUvbyQB9SiAS2Q/uhJt/JD4TX+LYBRp7qL6EDOZ6xElCvaHC/AYSxQgx9hbG/5L8LLJuABEqSqe0DWdaApo6GfR2MF6Fxb88ORGC0xU6oOD7CbOhOvkTREKUOEVOVcUW+JR1qMeDUtBosCv3eynuZ9jOrZl+/QPLVhqO+T5Ge1w84UcrQrbUtFSAPrWSy/XH4yVjKxHwR5Li6/LSY8+dpHP/EUnkMvCj8j/H47onjO1bI/DQj45v2CUGn27bmwSMQV3DKQ26jAjm/XRNuvnjOlsUqSZ3suayq9zGaKkNwkFINvcOC/vQo8t1xNJzvkC89Hmna3kidImwgnlFQggMMBFrsPHnYnAsamkpkkKTX8eXurrM9mtu+qZGDiZM+6yPsuus7l2RREkP5d9djeodyz+E8pmO69HopOhYo9gKHdbZXY23RTv/LRzik4noqYAbNwxPpQBL94VwZ0z1HNWu6rM6WvqCqFu/I47Ene2vUXIZhUEa8imWeaacw02Ge5cV6/F4TR26jR5DMAze57eYVUbU18vhX1ReqkXerEagPjNymcQ6SaeOm3QG/2J5tjxxaL7ehgr75KfGxaZKqWqec5DErhHFlE8pixY2cG/izKVcWmiGF7QkYhKdO6n7b2sRjW6XudQvLo+dsX8FSIuSf1dg6tBDWmYl/Ak/eHNES9SzZEO+XgQLawm91SAmK4/NB3sjwPe5kqgyS/AldwF1eifVPa2cLtT8ZdFOo9hdtbPImT84nbogS39BK6n8M2I2IiFrtMvxMX4hLEt+CKx0qgv33V/sZUZM2TGQh0Hc79Cq/nNqmFbkcosiFGNJSKwbPvpNYunFIura2zKGvOCyMl2Vnx/JF/GqIz2Kr7wdGUHiufXdIKU2xIXKrOuIMFTFYryfynAyG+TeCHQrl2IVL+QwOCsQp80KJ3oeQ4SAj+VFm6rRDyiN5lLHFl9g+W62xyGUJhl5SUmdgh8ON+yLMWZB8tX7BgKgCZ27OrLkzzYP4OMtI0O1qgJMPw7m412Ck0NFkhtA46+v85FjWCvchFfU9RB7d/HBMPQpPRifhtaal4n3xBilEtiknd5J9XYfzIsgpXphepYtlbVGpmursSn/+I3kBsOahe1qFsHBxGGY4Q9aUO1f2ZMfbbSP30D/jZ629D0FqZRwXznbrSxCZxx9mZ9N21sqI9/y44A5YrsYNwTMFjARn+Z4SwcdLa/anWNI5RFmNLQ6JMbFOFgAAA==" style="display:block;width:100%;height:100%;object-fit:cover;border-radius:50%" /></div><div><div class="brand-title">MONITEUR <span style="color:var(--cyan)">JSB</span></div><div class="subbrand">JUDO SANS BARRIÈRE · PROGRESSER À SA MANIÈRE</div></div></div><button class="icon-btn" aria-label="Ouvrir les réglages" id="settingsQuick">⚙</button></header>
 <main>
-<section id="view-sessions" class="view active" aria-label="Minuteurs">
-  <div class="home-heading"><div class="eyebrow">JUDO · TAÏSO · PRÉPARATION PHYSIQUE</div>
-    <h1>Prêt à t’entraîner ?</h1>
-    <p class="lead">Ouvre une rubrique, choisis ton minuteur et démarre.</p></div>
-  <div class="section-head home-section-head"><h2>Mes minuteurs</h2><small>3 rubriques</small></div>
-  <div class="mode-accordion-group" id="coreModes" aria-label="Choisir un minuteur">
-    <details class="mode-accordion" data-group="randori" open>
-      <summary class="mode-accordion-head">
-        <span class="mode-group-icon" aria-hidden="true">🥋</span>
-        <span class="mode-group-title"><strong>Randori</strong><small>Combats et Golden Score</small></span>
-        <span class="mode-chevron" aria-hidden="true">⌄</span>
-      </summary>
-      <div class="mode-accordion-body" id="modeOptionsRandori"></div>
-    </details>
-    <details class="mode-accordion" data-group="tabata">
-      <summary class="mode-accordion-head">
-        <span class="mode-group-icon" aria-hidden="true">◉</span>
-        <span class="mode-group-title"><strong>Tabata</strong><small>Effort et récupération</small></span>
-        <span class="mode-chevron" aria-hidden="true">⌄</span>
-      </summary>
-      <div class="mode-accordion-body" id="modeOptionsTabata"></div>
-    </details>
-    <details class="mode-accordion" data-group="chrono">
-      <summary class="mode-accordion-head">
-        <span class="mode-group-icon" aria-hidden="true">◷</span>
-        <span class="mode-group-title"><strong>Chronomètre</strong><small>Temps libre et bips aléatoires</small></span>
-        <span class="mode-chevron" aria-hidden="true">⌄</span>
-      </summary>
-      <div class="mode-accordion-body" id="modeOptionsChrono"></div>
-    </details>
-    <details class="mode-accordion experimental-mode" id="lucLegerCategory" data-group="luc" hidden>
-      <summary class="mode-accordion-head">
-        <span class="mode-group-icon" aria-hidden="true">↗</span>
-        <span class="mode-group-title"><strong>Test Luc Léger</strong><small>Module expérimental · non validé</small></span>
-        <span class="mode-chevron" aria-hidden="true">⌄</span>
-      </summary>
-      <div class="mode-accordion-body">
-        <p class="luc-warning">Le protocole, les paliers et les bips doivent être validés avant toute utilisation sportive. Ce test ne peut pas encore être lancé.</p>
-        <button class="secondary luc-disabled" type="button" disabled>En cours de validation</button>
-      </div>
-    </details>
+<section id="view-randori" class="view active mode-screen" aria-label="Randori">
+  <div class="mode-page-intro">
+    <div class="mode-page-glyph" aria-hidden="true">🥋</div>
+    <div><div class="eyebrow">MINUTEUR COMBAT</div><h1>Randori</h1>
+    <p>Combats chronométrés et Golden Score.</p></div>
   </div>
-  
+  <section class="recent-timer" id="lastUsedRandori" aria-label="Dernier minuteur utilisé" hidden></section>
+  <div class="mode-page-body" id="modeOptionsRandori" aria-label="Minuteurs Randori et Golden Score"></div><details class="saved-workouts" id="preparedRandori" aria-label="Mes séances enregistrées">
+ <summary>Mes séances enregistrées <span class="saved-workouts-count" id="savedCountRandori">0</span></summary><div class="saved-workouts-heading"><div class="saved-workouts-actions"><button type="button" data-new-kind="randori" aria-label="Créer un minuteur Randori à enregistrer">+ Randori</button><button type="button" data-new-kind="golden" aria-label="Créer un minuteur Golden Score à enregistrer">+ Golden Score</button></div></div>
+ <div class="saved-workouts-list" id="savedRandori" aria-label="Minuteurs personnels enregistrés"></div>
+ <p class="saved-workouts-empty" id="savedEmptyRandori">Prépare tes séances en avance et démarre-les en un appui.</p>
+</details>
+  <p class="mode-page-tip">Ajuste tes réglages une fois, puis démarre en un appui.</p>
 </section>
-<section id="view-tests" class="view" aria-label="Tests physiques"><div class="top-intro"><div class="eyebrow">ÉVALUE TA PROGRESSION</div><h1>Tests physiques</h1><p class="lead">Chronométrage progressif et résultats enregistrés.</p></div><div class="panel"><span class="flag">Validation en cours</span><h2 style="margin:19px 0 9px">Test Luc Léger</h2><p class="muted" style="line-height:1.55">Le module est prévu pour un test navette de 20 mètres. La table officielle des paliers et des bips doit encore être validée avant utilisation réelle.</p><button class="secondary" style="margin-top:20px;width:100%" disabled>Disponible dans une prochaine version</button></div></section>
-<section id="view-history" class="view" aria-label="Historique"><div class="top-intro"><div class="eyebrow">SUIVI PERSONNEL</div><h1>Historique</h1><p class="lead">Tes dernières séances, enregistrées uniquement sur cet appareil.</p></div><div class="panel" id="historyList"></div>
-<details class="library-panel" id="libraryDetails">
-    <summary>Mes séances personnalisées <span class="custom-count" id="customCount">0 séance</span></summary>
-    <div class="library-content">
-      <div class="section-head"><h2>Bibliothèque</h2><button id="newWorkout" type="button">+ Créer</button></div>
-      <div class="library-search"><label for="workoutSearch">Rechercher une séance</label>
-        <input id="workoutSearch" type="search" placeholder="Nom de la séance…" autocomplete="off" aria-controls="presetList" /></div>
-      <div class="library-tools">
-        <div class="library-filter"><label for="workoutFilter">Mode</label><select id="workoutFilter">
-          <option value="all">Tous les modes</option><option value="randori">Randori</option>
-          <option value="golden">Golden Score</option><option value="random">Bip aléatoire</option>
-          <option value="tabata">Tabata</option><option value="hiit">HIIT (archives)</option>
-          <option value="boxe">Boxe (archives)</option></select></div>
-        <label class="favorites-toggle" for="favoritesOnly"><input type="checkbox" id="favoritesOnly" /> ★ Favoris</label></div>
-      <div class="library-order-toolbar"><p class="library-count" id="workoutCount" role="status"></p>
-        <button type="button" class="library-reorder-button" id="reorderFavorites" aria-pressed="false">↕ Classer</button></div>
-      <p class="library-reorder-hint" id="reorderHint" hidden>Utilise les flèches ↑ et ↓ pour réorganiser les favoris.</p>
-      <div class="cards" id="presetList"></div>
-      <p class="footnote">Tes anciennes séances restent disponibles et enregistrées sur cet appareil.</p>
+<section id="view-tabata" class="view mode-screen" aria-label="Tabata">
+  <div class="mode-page-intro">
+    <div class="mode-page-glyph" aria-hidden="true">◉</div>
+    <div><div class="eyebrow">INTERVALLES</div><h1>Tabata</h1>
+    <p>Effort, récupération et cycles.</p></div>
+  </div>
+  <section class="recent-timer" id="lastUsedTabata" aria-label="Dernier minuteur utilisé" hidden></section>
+  <div class="mode-page-body" id="modeOptionsTabata" aria-label="Minuteur Tabata"></div><details class="saved-workouts" id="preparedTabata" aria-label="Mes séances enregistrées">
+ <summary>Mes séances enregistrées <span class="saved-workouts-count" id="savedCountTabata">0</span></summary><div class="saved-workouts-heading"><div class="saved-workouts-actions"><button type="button" data-new-kind="tabata" aria-label="Créer un minuteur Tabata à enregistrer">+ Tabata</button></div></div>
+ <div class="saved-workouts-list" id="savedTabata" aria-label="Minuteurs personnels enregistrés"></div>
+ <p class="saved-workouts-empty" id="savedEmptyTabata">Enregistre plusieurs programmes avec tes durées et répétitions.</p>
+</details>
+  <p class="mode-page-tip">Les temps d'effort et de repos peuvent aussi être corrigés <strong>pendant la pause</strong>.</p>
+</section>
+<section id="view-chrono" class="view mode-screen" aria-label="Chronomètre">
+  <div class="mode-page-intro">
+    <div class="mode-page-glyph" aria-hidden="true">◷</div>
+    <div><div class="eyebrow">TEMPS & RÉACTIVITÉ</div><h1>Chronomètre</h1>
+    <p>Temps libre ou bips imprévisibles.</p></div>
+  </div>
+  <section class="recent-timer" id="lastUsedChrono" aria-label="Dernier minuteur utilisé" hidden></section>
+  <div class="mode-page-body" id="modeOptionsChrono" aria-label="Chronomètre libre et bips aléatoires"></div><details class="saved-workouts" id="preparedChrono" aria-label="Mes séances enregistrées">
+ <summary>Mes séances enregistrées <span class="saved-workouts-count" id="savedCountChrono">0</span></summary><div class="saved-workouts-heading"><div class="saved-workouts-actions"><button type="button" data-new-kind="chrono" aria-label="Créer un minuteur Chrono à enregistrer">+ Chrono</button><button type="button" data-new-kind="random" aria-label="Créer un minuteur Bips aléatoires à enregistrer">+ Bips aléatoires</button></div></div>
+ <div class="saved-workouts-list" id="savedChrono" aria-label="Minuteurs personnels enregistrés"></div>
+ <p class="saved-workouts-empty" id="savedEmptyChrono">Crée des minuteurs pour tes exercices et retrouve-les ici.</p>
+</details>
+  <p class="mode-page-tip">Le <strong>Golden Score</strong> se trouve dans l'onglet Randori.</p>
+</section>
+<section id="view-luc-leger" class="view" aria-label="Espace Test Luc Léger">
+  <div class="top-intro luc-hero">
+    <div class="eyebrow">ÉVALUATION PHYSIQUE · ESPACE DÉDIÉ</div>
+    <h1>Test Luc Léger</h1>
+    <p class="lead">Un espace indépendant des minuteurs d’entraînement pour le test navette de 20 mètres.</p>
+  </div>
+  <div class="luc-feature-card">
+    <div class="luc-feature-icon" aria-hidden="true">↗</div>
+    <div class="luc-feature-text">
+      <span class="luc-status">En préparation</span>
+      <h2>Test de course navette</h2>
+      <p>Parcours de 20 mètres, paliers progressifs et bips de cadence synchronisés.</p>
     </div>
-  </details><button class="secondary" id="clearHistory" style="width:100%">Effacer l'historique</button></section>
+  </div>
+  <div class="luc-info-list" aria-label="Éléments du futur test">
+    <div class="luc-info-item"><span class="luc-info-mark" aria-hidden="true">01</span>
+      <div><strong>Distance</strong><small>Deux repères espacés de 20 mètres</small></div></div>
+    <div class="luc-info-item"><span class="luc-info-mark" aria-hidden="true">02</span>
+      <div><strong>Cadence progressive</strong><small>Les changements de palier seront annoncés par des signaux dédiés</small></div></div>
+    <div class="luc-info-item"><span class="luc-info-mark" aria-hidden="true">03</span>
+      <div><strong>Résultat du test</strong><small>Palier atteint et durée, sans les confondre avec les séances de judo</small></div></div>
+  </div>
+  <div class="luc-safety-note" role="status">
+    <strong>Protocole en cours de validation</strong>
+    <p>Les durées officielles des paliers et les bips n’ont pas encore été vérifiés. Le lancement reste désactivé pour éviter un résultat sportif incorrect.</p>
+  </div>
+  <button class="secondary luc-disabled luc-main-action" type="button" disabled aria-disabled="true">Lancement disponible après validation</button>
+</section>
 <section id="view-settings" class="view" aria-label="Réglages">
   <div class="top-intro settings-intro">
     <div class="eyebrow">UN RÉGLAGE SIMPLE, UNE SÉANCE PRÊTE</div>
@@ -347,35 +367,213 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
       </label>
     </section>
     <details class="settings-detail settings-more" id="settingsMore">
-      <summary>Aide et options avancées <span class="settings-detail-caption">Musique · Luc Léger</span></summary>
+      <summary>Aide et options avancées <span class="settings-detail-caption">Musique et assistance</span></summary>
       <div class="settings-more-body">
         <h3>Musique Spotify / Apple Music</h3>
-        <p>Sur iPhone, les signaux sont joués par le moteur natif. L’application demande à iOS une réduction de Spotify ou Apple Music 3 secondes avant et 3 secondes après les alertes prévisibles. iOS détermine la baisse effective du volume.</p>
-        <h3>Fonctions expérimentales</h3>
-        <label class="settings-switch" for="showLucLeger">
-          <span><strong>Afficher le test Luc Léger</strong><small>Non validé · impossible à lancer pour le moment</small></span>
-          <input class="toggle" id="showLucLeger" type="checkbox" />
-        </label>
-        <p class="settings-note">Les réglages et l'historique sont enregistrés sur cet appareil. Aucun compte n'est requis.</p>
+        <p>Sur la version HTML, les signaux passent par le navigateur : il ne peut pas réduire automatiquement Spotify ou Apple Music. L’application mobile native JSB prend en charge cette demande d’atténuation.</p>
+        <p class="settings-note">Les réglages et les séances personnalisées sont conservés sur cet appareil. Aucun compte n'est requis.</p>
       </div>
     </details>
   </div>
+  <details class="library-panel settings-library" id="libraryDetails">
+    <summary>Mes séances personnalisées <span class="custom-count" id="customCount">0 séance</span></summary>
+    <div class="library-content">
+      <div class="section-head"><h2>Bibliothèque</h2><button id="newWorkout" type="button">+ Créer</button></div>
+      <div class="library-search"><label for="workoutSearch">Rechercher une séance</label>
+        <input id="workoutSearch" type="search" placeholder="Nom de la séance…" autocomplete="off" aria-controls="presetList" /></div>
+      <div class="library-tools">
+        <div class="library-filter"><label for="workoutFilter">Mode</label><select id="workoutFilter">
+          <option value="all">Tous les modes</option><option value="randori">Randori</option>
+          <option value="golden">Golden Score</option><option value="chrono">Chronomètre</option>
+          <option value="random">Bip aléatoire</option><option value="tabata">Tabata</option>
+          <option value="hiit">HIIT (archives)</option><option value="boxe">Boxe (archives)</option></select></div>
+        <label class="favorites-toggle" for="favoritesOnly"><input type="checkbox" id="favoritesOnly" /> ★ Favoris</label>
+      </div>
+      <div class="library-order-toolbar"><p class="library-count" id="workoutCount" role="status"></p>
+        <button type="button" class="library-reorder-button" id="reorderFavorites" aria-pressed="false">↕ Classer</button></div>
+      <p class="library-reorder-hint" id="reorderHint" hidden>Utilise les flèches ↑ et ↓ pour réorganiser les favoris.</p>
+      <div class="cards" id="presetList"></div>
+      <p class="footnote">Les anciennes séances personnalisées sont conservées sur ton appareil, sans rubrique Historique.</p>
+    </div>
+  </details>
 </section>
 </main>
 <nav class="nav" aria-label="Navigation principale">
-  <button type="button" data-nav="sessions" aria-current="page"><span class="ni" aria-hidden="true">◷</span><span class="nl">Minuteurs</span></button>
-  <button type="button" data-nav="history"><span class="ni" aria-hidden="true">▤</span><span class="nl">Historique</span></button>
-  <button type="button" data-nav="settings"><span class="ni" aria-hidden="true">⚙</span><span class="nl">Réglages</span></button>
+  <button type="button" data-nav="randori" aria-current="page"><span class="ni" aria-hidden="true">🥋</span><span class="nl">Randori</span></button>
+  <button type="button" data-nav="tabata"><span class="ni" aria-hidden="true">◉</span><span class="nl">Tabata</span></button>
+  <button type="button" data-nav="chrono"><span class="ni" aria-hidden="true">◷</span><span class="nl">Chrono</span></button>
+  <button type="button" data-nav="luc-leger"><span class="ni" aria-hidden="true">↗</span><span class="nl">Luc Léger</span></button>
 </nav>
 </div>
-<div class="modal" id="editorModal" role="dialog" aria-modal="true" aria-labelledby="editorTitle"><div class="sheet"><header><h2 id="editorTitle">Configurer un minuteur</h2><button class="icon-btn" id="closeEditor" aria-label="Fermer l'éditeur">×</button></header><p class="editor-lead">Configure ton entraînement puis démarre immédiatement, ou enregistre tes paramètres pour plus tard.</p><form id="editorForm"><div class="editor-duration"><small>Durée totale estimée</small><span class="value" id="configDuration" aria-live="polite">—</span></div><div class="editor-presets"><span class="editor-preset-label">RÉGLAGES RAPIDES</span><div class="preset-chips" id="presetChips" role="group" aria-label="Réglages rapides du minuteur"></div></div><div class="fields"><div class="field wide"><label for="workoutMode">Mode d’entraînement</label><select id="workoutMode"><option value="randori">Randori</option><option value="golden">Golden Score</option><option value="tabata">Tabata</option><option value="chrono">Chronomètre libre</option><option value="random">Bips aléatoires</option><option value="hiit">HIIT / Intervalles</option><option value="boxe">Boxe</option></select></div><div class="field wide"><label for="workoutName">Nom de la séance</label><input id="workoutName" maxlength="50" required placeholder="Ex. HIIT Judo" /></div><div class="field wide duration-field" id="preparationField"><div class="duration-title">Préparation</div><div class="duration-pickers"><div><label for="preparationMinutes">Minutes</label><select id="preparationMinutes" aria-label="Préparation : minutes"></select></div><div><label for="preparationSeconds">Secondes</label><select id="preparationSeconds" aria-label="Préparation : secondes"></select></div></div><input type="hidden" id="preparation" value="10" /><small class="duration-help">Choisis séparément les minutes et les secondes.</small></div><div class="field wide duration-field" id="effortField"><div class="duration-title" id="effortLabel">Effort</div><div class="duration-pickers"><div><label for="effortMinutes">Minutes</label><select id="effortMinutes" aria-label="Effort : minutes"></select></div><div><label for="effortSeconds">Secondes</label><select id="effortSeconds" aria-label="Effort : secondes"></select></div></div><input type="hidden" id="effort" value="30" /><small class="duration-help">Choisis séparément les minutes et les secondes.</small></div><div class="field wide duration-field" id="restField"><div class="duration-title">Repos</div><div class="duration-pickers"><div><label for="reposMinutes">Minutes</label><select id="reposMinutes" aria-label="Repos : minutes"></select></div><div><label for="reposSeconds">Secondes</label><select id="reposSeconds" aria-label="Repos : secondes"></select></div></div><input type="hidden" id="repos" value="15" /><small class="duration-help">Choisis séparément les minutes et les secondes.</small></div><div class="field wide" id="randomOptions" hidden><label for="randomFrequency">Fréquence des bips</label><select id="randomFrequency"><option value="low">Espacés</option><option value="medium" selected>Modérés</option><option value="high">Fréquents</option></select><label class="random-progressive"><input type="checkbox" id="randomProgressive" checked /> Rapprocher progressivement les bips</label><small>Exemple : faire un burpee à chaque bip.</small></div><div class="field" id="cyclesField"><label for="cycles" id="cyclesLabel">Cycles</label><input id="cycles" type="number" inputmode="numeric" min="1" max="200" value="8" required /></div></div><p class="caption" id="modeHint" aria-live="polite">Alternance d’effort et de récupération.</p><button class="secondary" type="button" id="cancelEditor" style="min-height:48px;margin-top:12px">Annuler</button><div class="editor-actions"><button type="submit" class="secondary" id="saveWorkout">Enregistrer</button><button type="button" class="primary" id="launchConfigured">▶ Démarrer</button></div></form></div></div>
-<section class="timer" id="timer" data-phase="prep" aria-label="Séance en cours"><div class="timer-head"><div><strong>MONITEUR JSB</strong><div style="margin-top:5px;font-size:12px;color:#b4c8d1" id="timerTitle"></div></div><small id="totalRemaining">Temps total restant</small></div><div class="timer-main"><span class="phase-chip" id="phaseLabel">PRÉPARATION</span><span class="sr-only" id="phaseAnnouncement" aria-live="polite" role="status"></span><div class="clock" id="clockText" aria-label="Temps restant" aria-live="off">00:10</div><div class="cycle" id="cycleLabel">Cycle 1 / 8</div><div class="paused" id="pausedFlag">EN PAUSE</div><div id="amrapCounter" class="amrap-counter" hidden><span>Tours validés</span><div><button type="button" id="amrapMinus" aria-label="Retirer un tour">−</button><strong id="amrapCount" aria-live="polite">0</strong><button type="button" id="amrapPlus" aria-label="Ajouter un tour">+</button></div></div></div><div class="timer-controls"><div class="prog" role="progressbar" aria-label="Progression de la phase" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress"><span id="progressBar"></span></div><div class="next"><span id="upNext">Ensuite : EFFORT</span><span id="percentLabel">0 %</span></div><div class="timer-actions"><button class="primary" id="pauseBtn" type="button">❚❚ &nbsp; Pause</button><button class="secondary danger" id="stopBtn" type="button">■ &nbsp; Arrêter</button></div><div class="caption">Signaux natifs · réduction musicale demandée avant et après les alertes.</div></div></section>
+<dialog class="modal" id="editorModal" aria-modal="true" aria-labelledby="editorTitle">
+ <div class="sheet simple-editor-sheet"><header><h2 id="editorTitle">Régler mon minuteur</h2><button class="icon-btn" id="closeEditor" type="button" aria-label="Fermer les réglages">×</button></header>
+ <form id="editorForm">
+  <div class="editor-duration"><small>Durée totale</small><span class="value" id="configDuration" aria-live="polite">—</span></div>
+  <div class="fields simple-editor-fields">
+   <div class="field wide simple-name-field"><label for="workoutMode">Mode d’entraînement</label><select id="workoutMode"><option value="randori">Randori</option><option value="golden">Golden Score</option><option value="tabata">Tabata</option><option value="chrono">Chronomètre libre</option><option value="random">Bips aléatoires</option><option value="hiit">HIIT / Intervalles</option><option value="boxe">Boxe</option></select></div>
+   <div class="field wide simple-name-field"><label for="workoutName">Nom de la séance</label><input id="workoutName" maxlength="50" required placeholder="Ex. Randori du mercredi" /></div>
+   <p id="editorUnlimited" class="editor-unlimited" hidden><strong>∞</strong><span>Temps libre : démarrer, puis arrêter quand tu veux.</span></p>
+   <div class="field wide simple-field" id="chronoStartField" hidden>
+     <div class="duration-title" id="chronoStartLabel">Départ du chronomètre</div>
+     <div class="chrono-start-choices" role="group" aria-labelledby="chronoStartLabel">
+       <button type="button" data-chrono-prep="0" aria-pressed="true">Direct</button>
+       <button type="button" data-chrono-prep="10" aria-pressed="false">10 s</button>
+       <button type="button" data-chrono-prep="30" aria-pressed="false">30 s</button>
+     </div>
+     <small id="chronoStartHint">Démarrage immédiat</small>
+   </div>
+   <div class="field wide duration-field simple-field" id="effortField">
+ <div class="duration-title" id="effortLabel">Durée d’effort</div>
+ <div class="large-stepper" role="group" aria-label="Durée d’effort">
+  <button type="button" data-step-field="effort" data-step="-1" aria-label="Diminuer Durée d’effort">−</button>
+  <output id="effortDisplay" class="large-stepper-value" aria-live="off">00:30</output>
+  <button type="button" data-step-field="effort" data-step="1" aria-label="Augmenter Durée d’effort">+</button>
+ </div>
+ <details class="duration-precision"><summary>Ajuster à la seconde</summary><div class="duration-pickers">
+   <div><label for="effortMinutes">Minutes</label><select id="effortMinutes" aria-label="Durée d’effort : minutes"></select></div>
+   <div><label for="effortSeconds">Secondes</label><select id="effortSeconds" aria-label="Durée d’effort : secondes"></select></div>
+ </div></details><input type="hidden" id="effort" value="30" />
+</div>
+   <div class="field wide duration-field simple-field" id="reposField">
+ <div class="duration-title" id="reposLabel">Temps de repos</div>
+ <div class="large-stepper" role="group" aria-labelledby="reposLabel">
+  <button type="button" data-step-field="repos" data-step="-1" aria-label="Diminuer Temps de repos">−</button>
+  <output id="reposDisplay" class="large-stepper-value" aria-live="off">00:15</output>
+  <button type="button" data-step-field="repos" data-step="1" aria-label="Augmenter Temps de repos">+</button>
+ </div>
+ <details class="duration-precision"><summary>Ajuster à la seconde</summary><div class="duration-pickers">
+   <div><label for="reposMinutes">Minutes</label><select id="reposMinutes" aria-label="Temps de repos : minutes"></select></div>
+   <div><label for="reposSeconds">Secondes</label><select id="reposSeconds" aria-label="Temps de repos : secondes"></select></div>
+ </div></details><input type="hidden" id="repos" value="15" />
+</div>
+
+   <div class="field wide duration-field simple-field" id="tabataCycleRestField" hidden>
+    <div class="duration-title" id="cycleRestLabel">Repos entre cycles</div>
+    <div class="large-stepper" role="group" aria-labelledby="cycleRestLabel">
+      <button type="button" data-step-field="cycleRest" data-step="-1" aria-label="Diminuer le repos entre cycles">−</button>
+      <output id="cycleRestDisplay" class="large-stepper-value" aria-live="off">01:00</output>
+      <button type="button" data-step-field="cycleRest" data-step="1" aria-label="Augmenter le repos entre cycles">+</button>
+    </div>
+    <details class="duration-precision"><summary>Ajuster à la seconde</summary>
+      <div class="duration-pickers">
+        <div><label for="cycleRestMinutes">Minutes</label><select id="cycleRestMinutes" aria-label="Repos entre cycles : minutes"></select></div>
+        <div><label for="cycleRestSeconds">Secondes</label><select id="cycleRestSeconds" aria-label="Repos entre cycles : secondes"></select></div>
+      </div>
+    </details>
+    <input type="hidden" id="cycleRest" value="60" />
+   </div>
+   <div class="field wide simple-field" id="cyclesField"><div class="duration-title" id="cyclesLabel">Répétitions</div>
+    <div class="large-stepper cycle-stepper" role="group" aria-label="Nombre de répétitions">
+      <button type="button" data-step-cycles="-1" aria-label="Diminuer le nombre de répétitions">−</button>
+      <input id="cycles" type="number" inputmode="numeric" min="1" max="200" value="8" required aria-label="Nombre de répétitions" />
+      <button type="button" data-step-cycles="1" aria-label="Augmenter le nombre de répétitions">+</button>
+    </div>
+   </div>
+   <div class="field wide simple-field" id="tabataExercisesField" hidden>
+     <label class="duration-title" for="tabataExercises">Exercices par cycle</label>
+     <div class="large-stepper cycle-stepper" role="group" aria-label="Nombre d'exercices dans chaque cycle">
+       <button type="button" data-step-exercises="-1" aria-label="Diminuer le nombre d'exercices">−</button>
+       <input id="tabataExercises" type="number" inputmode="numeric" min="1" max="50" value="8" required aria-label="Nombre d'exercices par cycle" />
+       <button type="button" data-step-exercises="1" aria-label="Augmenter le nombre d'exercices">+</button>
+     </div>
+     <p id="tabataPlanHint" class="tabata-plan-hint" aria-live="polite">1 cycle × 8 exercices</p>
+   </div>
+   <div class="field wide simple-field randori-bips-field" id="randoriBipsField" hidden>
+      <label class="randori-bips-switch" for="randoriRandomBips">
+        <span><strong>🔔 Bips aléatoires</strong><small>Pendant les combats uniquement</small></span>
+        <input id="randoriRandomBips" type="checkbox" aria-controls="randoriBipFrequencyField" />
+      </label>
+      <div id="randoriBipFrequencyField" class="randori-bip-frequency" hidden>
+        <label for="randoriBipFrequency">Fréquence des bips</label>
+        <select id="randoriBipFrequency">
+          <option value="low">Espacés</option>
+          <option value="medium" selected>Normaux</option>
+          <option value="high">Fréquents</option>
+        </select>
+      </div>
+    </div>
+   <div class="field wide simple-field" id="randomOptions" hidden><label for="randomFrequency">Fréquence des bips</label>
+    <select id="randomFrequency"><option value="low">Espacés</option><option value="medium" selected>Normaux</option><option value="high">Rapides</option></select></div>
+  </div>
+  <details id="editorMore" class="editor-more"><summary>Options supplémentaires</summary>
+   <div class="editor-more-inner">
+    <div class="field wide duration-field simple-field" id="preparationField">
+ <div class="duration-title">Préparation avant le départ</div>
+ <div class="large-stepper" role="group" aria-label="Préparation avant le départ">
+  <button type="button" data-step-field="preparation" data-step="-1" aria-label="Diminuer Préparation avant le départ">−</button>
+  <output id="preparationDisplay" class="large-stepper-value" aria-live="off">00:10</output>
+  <button type="button" data-step-field="preparation" data-step="1" aria-label="Augmenter Préparation avant le départ">+</button>
+ </div>
+ <details class="duration-precision"><summary>Ajuster à la seconde</summary><div class="duration-pickers">
+   <div><label for="preparationMinutes">Minutes</label><select id="preparationMinutes" aria-label="Préparation avant le départ : minutes"></select></div>
+   <div><label for="preparationSeconds">Secondes</label><select id="preparationSeconds" aria-label="Préparation avant le départ : secondes"></select></div>
+ </div></details><input type="hidden" id="preparation" value="10" />
+</div>
+    <label class="random-progressive" id="randomProgressiveOption" hidden><input type="checkbox" id="randomProgressive" checked /> Accélérer progressivement les bips</label>
+    <div class="editor-presets"><span class="editor-preset-label">MODÈLES PRÉDÉFINIS</span><div class="preset-chips" id="presetChips" role="group" aria-label="Modèles rapides de séance"></div></div>
+    <p class="caption" id="modeHint" aria-live="polite"></p>
+   </div>
+  </details>
+  <button class="secondary" type="button" id="cancelEditor" hidden>Annuler</button>
+  <div class="editor-actions"><button type="submit" class="secondary" id="saveWorkout">Enregistrer</button><button type="button" class="primary" id="launchConfigured">▶ Démarrer</button></div>
+ </form></div>
+</dialog>
+<section class="timer" id="timer" data-phase="prep" aria-label="Séance en cours"><div class="timer-head"><div><strong>MONITEUR JSB</strong><div style="margin-top:5px;font-size:12px;color:#b4c8d1" id="timerTitle"></div></div><small id="totalRemaining">Temps total restant</small></div><div class="timer-main"><span class="phase-chip" id="phaseLabel">PRÉPARATION</span><span class="sr-only" id="phaseAnnouncement" aria-live="polite" role="status"></span><div class="clock" id="clockText" aria-label="Temps restant" aria-live="off">00:10</div><div class="cycle" id="cycleLabel">Cycle 1 / 8</div><div class="paused" id="pausedFlag">EN PAUSE</div><div id="amrapCounter" class="amrap-counter" hidden><span>Tours validés</span><div><button type="button" id="amrapMinus" aria-label="Retirer un tour">−</button><strong id="amrapCount" aria-live="polite">0</strong><button type="button" id="amrapPlus" aria-label="Ajouter un tour">+</button></div></div></div><div class="timer-controls"><div class="prog" role="progressbar" aria-label="Progression de la phase" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress"><span id="progressBar"></span></div><div class="next"><span id="upNext">Ensuite : EFFORT</span><span id="percentLabel">0 %</span></div><button type="button" class="secondary adjust-time-trigger" id="adjustTimeBtn" hidden aria-haspopup="dialog" aria-controls="pauseTimeDialog">✎ Modifier les temps</button><div class="timer-actions"><button class="primary" id="pauseBtn" type="button">❚❚ &nbsp; Pause</button><button class="secondary danger" id="stopBtn" type="button">■ &nbsp; Arrêter</button></div><div class="caption">Signaux du navigateur · pour la réduction automatique de Spotify, utilise l’app mobile.</div></div></section>
 <div class="dialog-layer" id="stopConfirm" role="dialog" aria-modal="true" aria-labelledby="stopConfirmTitle" aria-hidden="true"><div class="dialog-box">
   <h2 id="stopConfirmTitle">Terminer la séance ?</h2>
   <p id="stopConfirmText">Ta séance sera enregistrée comme interrompue.</p>
   <div class="dialog-actions"><button type="button" class="primary" id="continueWorkout">Reprendre la séance</button>
     <button type="button" class="secondary" id="confirmStop">Terminer maintenant</button></div>
 </div></div>
+<section class="dialog-layer" id="pauseTimeDialog" role="dialog" aria-modal="true" aria-labelledby="pauseTimeTitle" aria-describedby="pauseTimeHelp" aria-hidden="true">
+ <div class="dialog-box adjust-time-box">
+   <h2 id="pauseTimeTitle">Modifier les temps</h2>
+   <p id="pauseTimeHelp">La séance reste en pause. Les modifications prennent effet à la reprise.</p>
+   <form id="pauseTimeForm">
+     <div class="adjust-time-current">
+       <label id="adjustDisplayLabel" for="adjustCurrentMin">Temps restant sur la phase actuelle</label>
+       <div class="adjust-mmss" role="group" aria-labelledby="adjustDisplayLabel">
+         <div class="adjust-number"><input type="number" inputmode="numeric" id="adjustCurrentMin" min="0" max="360" step="1" required aria-label="Minutes à afficher"><small>min</small></div>
+         <span class="adjust-colon" aria-hidden="true">:</span>
+         <div class="adjust-number"><input type="number" inputmode="numeric" id="adjustCurrentSec" min="0" max="59" step="1" required aria-label="Secondes à afficher"><small>sec</small></div>
+       </div>
+       <div class="adjust-quick" role="group" aria-label="Ajustement rapide">
+         <button type="button" data-time-delta="-30">−30 s</button>
+         <button type="button" data-time-delta="-10">−10 s</button>
+         <button type="button" data-time-delta="10">+10 s</button>
+         <button type="button" data-time-delta="30">+30 s</button>
+       </div>
+     </div>
+     <div id="adjustFutureFields" class="adjust-future">
+       <h3>Durée des phases suivantes</h3>
+       <p>Le temps actuel reste celui choisi ci-dessus ; ces durées concernent uniquement les prochaines phases.</p>
+       <div class="adjust-future-grid">
+         <div class="adjust-future-item">
+           <label for="adjustEffortMin">Combat / Effort</label>
+           <div class="adjust-mmss small" role="group" aria-label="Durée des prochains efforts">
+             <div class="adjust-number"><input type="number" inputmode="numeric" id="adjustEffortMin" min="0" max="60" step="1" required aria-label="Minutes d'effort"><small>min</small></div>
+             <span class="adjust-colon" aria-hidden="true">:</span>
+             <div class="adjust-number"><input type="number" inputmode="numeric" id="adjustEffortSec" min="0" max="59" step="1" required aria-label="Secondes d'effort"><small>sec</small></div>
+           </div>
+         </div>
+         <div class="adjust-future-item">
+           <label for="adjustRestMin">Récupération</label>
+           <div class="adjust-mmss small" role="group" aria-label="Durée des prochaines récupérations">
+             <div class="adjust-number"><input type="number" inputmode="numeric" id="adjustRestMin" min="0" max="60" step="1" required aria-label="Minutes de récupération"><small>min</small></div>
+             <span class="adjust-colon" aria-hidden="true">:</span>
+             <div class="adjust-number"><input type="number" inputmode="numeric" id="adjustRestSec" min="0" max="59" step="1" required aria-label="Secondes de récupération"><small>sec</small></div>
+           </div>
+         </div>
+       </div>
+     </div>
+     <p class="adjust-feedback" id="pauseTimeFeedback" role="alert" aria-live="polite" hidden></p>
+     <div class="dialog-actions">
+       <button type="submit" class="primary" id="savePauseTime">Enregistrer les temps</button>
+       <button type="button" class="secondary" id="cancelPauseTime">Annuler</button>
+     </div>
+   </form>
+ </div>
+</section>
 <section class="summary-screen" id="sessionSummary" role="dialog" aria-modal="true" aria-labelledby="summaryTitle" aria-hidden="true">
   <div class="summary-card"><div class="summary-check" aria-hidden="true">✓</div>
     <h2 id="summaryTitle">Séance terminée !</h2><p id="summaryWorkout">Randori</p>
@@ -396,12 +594,20 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
 <script src="./sound_engine.js"></script>
 <script src="./audio_cues.js"></script>
 <script src="./jsb_native_bridge.js"></script>
+<script src="./pause_adjustments.js"></script>
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
-const standard=[{id:'randori',name:'Randori · 5 × 4 min',prep:10,work:240,rest:60,cycles:5,kind:'randori',symbol:'🥋'},{id:'golden',name:'Golden Score · Libre',prep:10,work:0,rest:0,cycles:1,kind:'golden',symbol:'∞'},{id:'chrono',name:'Chronomètre libre',prep:0,work:0,rest:0,cycles:1,kind:'chrono',symbol:'◷'},{id:'random',name:'Bips aléatoires · Burpees',prep:10,work:180,rest:0,cycles:1,kind:'random',symbol:'♫',frequency:'medium',progressive:true},{id:'tabata',name:'Tabata classique',prep:10,work:20,rest:10,cycles:8,kind:'tabata',symbol:'◉'},{id:'hiit',name:'HIIT 40 / 20',prep:10,work:40,rest:20,cycles:10,kind:'hiit',symbol:'↗'},{id:'boxe',name:'Boxe · 3 rounds',prep:10,work:180,rest:60,cycles:3,kind:'boxe',symbol:'✦'}];
+// Keep the fixed JSB brand/header area fully clear of scrolling content,
+// including iPhone safe areas, font scaling and orientation changes.
+const jsbHeader=document.querySelector('.app > header');
+function setHeaderClearance(){if(jsbHeader)document.documentElement.style.setProperty('--jsb-header-height',Math.ceil(jsbHeader.getBoundingClientRect().height)+'px')}
+setHeaderClearance();
+if(typeof ResizeObserver!=='undefined')new ResizeObserver(setHeaderClearance).observe(jsbHeader);
+window.addEventListener('orientationchange',setHeaderClearance);
+const standard=[{id:'randori',name:'Randori 5 × 4 min',prep:10,work:240,rest:60,cycles:5,kind:'randori',symbol:'🥋'},{id:'golden',name:'Golden Score · Libre',prep:10,work:0,rest:0,cycles:1,kind:'golden',symbol:'∞'},{id:'chrono',name:'Chronomètre libre',prep:0,work:0,rest:0,cycles:1,kind:'chrono',symbol:'◷'},{id:'random',name:'Bips aléatoires · Burpees',prep:10,work:180,rest:0,cycles:1,kind:'random',symbol:'♫',frequency:'medium',progressive:true},{id:'tabata',name:'Tabata 1 cycle × 8 ex. · 20 s / 10 s',prep:10,work:20,rest:10,cycles:1,exercises:8,cycleRest:60,kind:'tabata',symbol:'◉'},{id:'hiit',name:'HIIT 40 / 20',prep:10,work:40,rest:20,cycles:10,kind:'hiit',symbol:'↗'},{id:'boxe',name:'Boxe · 3 rounds',prep:10,work:180,rest:60,cycles:3,kind:'boxe',symbol:'✦'}];
 const read=(key,fallback)=>{try{const parsed=JSON.parse(localStorage.getItem(key));return parsed===null?fallback:parsed}catch{return fallback}};
-let customs=read('jsb_preview_customs',[]);if(!Array.isArray(customs))customs=[];let history=read('jsb_preview_history',[]);if(!Array.isArray(history))history=[];
+let customs=read('jsb_preview_customs',[]);if(!Array.isArray(customs))customs=[];// Previous history remains untouched in localStorage, but is not displayed or extended.
 const storedSettings=read('jsb_preview_settings',{});let settings={audio:true,vibrate:true,keepAwake:false,volume:90,sound:'buzzerPro',restSound:'bellSport',randomSound:'whistlePro',audioMethod:'web',finishSound:'bellSport',countdown:true,...storedSettings};
 settings.volume=Number.isFinite(Number(settings.volume))?Math.min(100,Math.max(0,Number(settings.volume))):90;
 // Migration : l'ancien mode média était parfois sélectionné pour corriger le silence ;
@@ -413,7 +619,14 @@ let modeSettings=read('jsb_v2_mode_settings',{});
 if(!modeSettings||typeof modeSettings!=='object'||Array.isArray(modeSettings))modeSettings={};
 if(!recentWorkout||!trainingModeIsValid(recentWorkout))recentWorkout=null;
 let replayWorkout=null,confirmWasPaused=false,editorOrigin=null;
-function trainingModeIsValid(w){return w&&typeof w==='object'&&['randori','golden','chrono','random','tabata','hiit','boxe'].includes(w.kind)&&typeof w.name==='string'&&Number.isSafeInteger(w.prep)&&Number.isSafeInteger(w.work)&&Number.isSafeInteger(w.rest)&&Number.isSafeInteger(w.cycles)&&w.prep>=0&&w.work>=0&&w.rest>=0&&w.cycles>=1;}
+function trainingModeIsValid(w){
+ if(!w||typeof w!=='object'||!['randori','golden','chrono','random','tabata','hiit','boxe'].includes(w.kind)||
+    typeof w.name!=='string'||![w.prep,w.work,w.rest,w.cycles].every(Number.isSafeInteger)||
+    w.prep<0||w.work<0||w.rest<0||w.cycles<1)return false;
+ if(w.kind!=='tabata'||w.exercises===undefined)return true;
+ return Number.isSafeInteger(w.exercises)&&w.exercises>=1&&
+   Number.isSafeInteger(w.cycleRest)&&w.cycleRest>=0&&w.cycleRest<=3600;
+}
 
 const soundEngine=window.JSBSoundEngine.createEngine();
 const nativeAudio=window.JSBNativeAudio||null;
@@ -423,6 +636,7 @@ soundEngine.onStatus(state=>{const el=$('audioStatus');if(!el)return;el.dataset.
 const gate=window.JSBInteractionGate.createInteractionGate();
 let modalBusy=false;
 let editingWorkoutId=null;
+let editorReturnFocus=null;
 let workoutMenuId=null;
 const durationPresets=window.JSBDurationPresets;
 const trainingModes=window.JSBTrainingModes;
@@ -436,34 +650,138 @@ let workoutSearch='';
 let reorderFavorites=false;
 const safeWrite=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
 const pretty=secs=>{const n=Math.max(0,Math.ceil(secs));return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')};
+// The title uses the number of randoris and the duration of ONE combat
+// (not the total duration including preparation and rest).
+function formatRandoriName(cycles,workSeconds){
+ const count=Number(cycles),total=Number(workSeconds);
+ if(!Number.isSafeInteger(count)||count<1||count>200||
+   !Number.isSafeInteger(total)||total<1||total>3600)return null;
+ const mins=Math.floor(total/60),seconds=total%60;
+ const time=mins===0?seconds+' s':
+   seconds===0?mins+' min':mins+' min '+seconds+' s';
+ return 'Randori '+count+' × '+time;
+}
+let autoRandoriName=false;
+let autoTabataName=false;
+function normalizedTabata(w){
+ if(w.kind!=='tabata')return w;
+ const {cycles,exercises,cycleRest}=trainingModes.tabataStructure(w);
+ return {...w,cycles,exercises,cycleRest};
+}
+function formatTabataName(cycles,workSeconds,restSeconds,exercises){
+ const count=Number(cycles),work=Number(workSeconds),rest=Number(restSeconds);
+ if(!Number.isSafeInteger(count)||count<1||count>200||
+    !Number.isSafeInteger(work)||work<1||work>3600||
+    !Number.isSafeInteger(rest)||rest<0||rest>3600)return null;
+ if(exercises===undefined){
+   return 'Tabata '+count+' × '+durationPresets.formatDuration(work)+
+     ' / '+durationPresets.formatDuration(rest);
+ }
+ const perCycle=Number(exercises);
+ if(!Number.isSafeInteger(perCycle)||perCycle<1||perCycle>50)return null;
+ return 'Tabata '+count+(count>1?' cycles':' cycle')+' × '+perCycle+' ex. · '+
+   durationPresets.formatDuration(work)+' / '+durationPresets.formatDuration(rest);
+}
+function syncTabataName(){
+ if(!autoTabataName||$('workoutMode').value!=='tabata')return;
+ const name=formatTabataName($('cycles').value,$('effort').value,$('repos').value,$('tabataExercises').value);
+ if(!name)return;
+ $('workoutName').value=name;
+ $('editorTitle').textContent=name;
+}
+function syncChronoStartOptions(){
+ const prep=Number($('preparation').value);
+ for(const button of document.querySelectorAll('[data-chrono-prep]')){
+   button.setAttribute('aria-pressed',String(Number(button.dataset.chronoPrep)===prep));
+ }
+ $('chronoStartHint').textContent=prep===0?'Démarrage immédiat':
+   'Départ après '+durationPresets.formatDuration(prep);
+}
+
+function syncRandoriName(){
+ if(!autoRandoriName||$('workoutMode').value!=='randori')return;
+ const name=formatRandoriName($('cycles').value,$('effort').value);
+ if(!name)return;
+ $('workoutName').value=name;
+ $('editorTitle').textContent=name;
+}
 const secs=w=>trainingModes.workoutDuration(w);
 const kindSymbol={randori:'🥋',golden:'∞',chrono:'◷',random:'♫',hiit:'↗',tabata:'◉',boxe:'✦'};
-const kindDescription=w=>w.kind==='golden'?'Temps libre · Golden Score':w.kind==='chrono'?'Temps libre · Chronomètre':w.kind==='random'?'Signaux irréguliers · '+pretty(w.work):w.kind==='randori'?w.cycles+' combats · '+pretty(w.work)+' chacun':w.kind==='boxe'?w.cycles+' rounds de '+pretty(w.work):w.cycles+' cycles • '+w.work+' s / '+w.rest+' s';
+const kindDescription=w=>w.kind==='golden'?'Temps libre · Golden Score':
+ w.kind==='chrono'?'Temps libre · Chronomètre':
+ w.kind==='random'?'Signaux irréguliers · '+pretty(w.work):
+ w.kind==='randori'?w.cycles+' combats · '+pretty(w.work)+' chacun':
+ w.kind==='tabata'?trainingModes.tabataStructure(w).cycles+' cycles × '+
+   trainingModes.tabataStructure(w).exercises+' exercices · '+
+   durationPresets.formatDuration(w.work)+' / '+durationPresets.formatDuration(w.rest):
+ w.kind==='boxe'?w.cycles+' rounds de '+pretty(w.work):
+ w.cycles+' cycles • '+w.work+' s / '+w.rest+' s';
 function notice(s){$('toast').textContent=s;$('toast').classList.add('active');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('active'),3500)}
-function navigate(view){['sessions','history','settings'].forEach(v=>{ $('view-'+v).classList.toggle('active',v===view);const n=document.querySelector('[data-nav="'+v+'"]');if(v===view)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current');});if(view==='history')renderHistory();window.scrollTo({top:0,behavior:'instant'});}
+let lastTrainingView='randori';
+function navigate(view){
+ const tabs=['randori','tabata','chrono','luc-leger','settings'];
+ if(!tabs.includes(view))return;
+ if(view!=='settings')lastTrainingView=view;
+ for(const v of tabs){
+   $('view-'+v).classList.toggle('active',v===view);
+   const button=document.querySelector('[data-nav="'+v+'"]');
+   if(button){
+     if(v===view)button.setAttribute('aria-current','page');
+     else button.removeAttribute('aria-current');
+   }
+ }
+ const isSettings=view==='settings';
+ $('settingsQuick').setAttribute('aria-label',
+   isSettings?'Revenir à '+(lastTrainingView==='luc-leger'?'Luc Léger':lastTrainingView==='chrono'?'Chronomètre':lastTrainingView==='tabata'?'Tabata':'Randori'):'Ouvrir les réglages');
+ $('settingsQuick').setAttribute('aria-pressed',String(isSettings));
+ window.scrollTo({top:0,behavior:'instant'});
+}
+function tabForTimer(kind){
+ if(kind==='randori'||kind==='golden')return 'randori';
+ if(kind==='tabata'||kind==='hiit')return 'tabata';
+ return 'chrono';
+}
 function closeWorkoutMenus(){for(const menu of document.querySelectorAll('.workout-menu'))menu.hidden=true;for(const btn of document.querySelectorAll('.workout-menu-button'))btn.setAttribute('aria-expanded','false');workoutMenuId=null}
 function primaryWorkout(base){
  const stored=modeSettings[base.id];
- if(!trainingModeIsValid(stored)||stored.kind!==base.kind)return base;
- return {...base,...stored,id:base.id,kind:base.kind};
+ // Normalize an OLD saved Tabata BEFORE merging it with the new defaults.
+ // Otherwise the new "exercises:8" default and old "cycles:8" would create
+ // 8 × 8 intervals instead of the original eight efforts.
+ const previous=trainingModeIsValid(stored)&&stored.kind===base.kind
+   ? (stored.kind==='tabata'?normalizedTabata(stored):stored)
+   : null;
+ const w=previous?{...base,...previous,id:base.id,kind:base.kind}:{...base};
+ if(w.kind==='randori')return {...w,name:formatRandoriName(w.cycles,w.work)||w.name};
+ if(w.kind==='tabata'){
+   const v=normalizedTabata(w);
+   return {...v,name:formatTabataName(v.cycles,v.work,v.rest,v.exercises)||v.name};
+ }
+ return w;
 }
 function modeOptionMeta(key,w) {
  if(key==='randori')return {
-   title:'Randori classique',
-   description:w.cycles+' combats · '+pretty(w.work)+' / '+pretty(w.rest)+' de repos',
+   title:w.name,
+   description:w.cycles+' combats · '+pretty(w.rest)+' de repos'+
+    (w.randomBips===true?' · Bips '+({low:'espacés',medium:'normaux',high:'fréquents'}[w.randomBipFrequency]||'normaux'):''),
  };
  if(key==='golden')return {
    title:'Golden Score',description:'Temps croissant · arrêt manuel',
  };
  if(key==='tabata')return {
-   title:'Tabata',
-   description:w.cycles+' cycles · '+w.work+' s effort / '+w.rest+' s repos',
+   title:w.name,
+   description:w.cycles+' cycles × '+w.exercises+' exercices · '+
+     durationPresets.formatDuration(w.work)+' effort / '+
+     durationPresets.formatDuration(w.rest)+' repos · '+
+     durationPresets.formatDuration(w.cycleRest)+' entre cycles',
  };
  if(key==='chrono')return {
-   title:'Chronomètre libre',description:'Temps croissant · démarrage immédiat',
+   title:'Chronomètre libre',
+   description:w.prep>0?'Départ dans '+durationPresets.formatDuration(w.prep)+' · arrêt manuel':
+     'Départ immédiat · arrêt manuel',
  };
  return {
-   title:'Bips aléatoires',description:'Réactivité · signaux imprévisibles',
+   title:'Bips aléatoires',
+   description:'Réactivité · '+({low:'bips espacés',medium:'bips normaux',high:'bips fréquents'}[w.frequency]||'bips normaux'),
  };
 }
 function buildModeOption(key) {
@@ -474,24 +792,97 @@ function buildModeOption(key) {
  const configure=document.createElement('button');
  configure.type='button';configure.className='mode-option-configure';
  configure.setAttribute('aria-label','Configurer '+info.title);
+ configure.setAttribute('aria-haspopup','dialog');
+ configure.setAttribute('aria-controls','editorModal');
  const labels=document.createElement('span');labels.className='mode-option-info';
  const heading=document.createElement('strong');heading.textContent=info.title;
  const description=document.createElement('small');description.textContent=info.description;
  const duration=document.createElement('span');duration.className='mode-option-duration';
- duration.textContent=Number.isFinite(secs(w))?pretty(secs(w))+' au total':'Temps libre';
+ duration.textContent=['golden','chrono'].includes(key)?'∞ Temps libre':pretty(w.work);
+ duration.setAttribute('aria-label',['golden','chrono'].includes(key)?'Chronomètre sans limite':'Durée de travail '+pretty(w.work));
  labels.append(heading,description,duration);
- const arrow=document.createElement('span');arrow.className='mode-option-edit';
- arrow.textContent='Régler';arrow.setAttribute('aria-hidden','true');
- configure.append(labels,arrow);
- configure.addEventListener('click',()=>openEditor(w));
+ configure.classList.add('mode-option-content');
+ configure.append(labels);
+ configure.addEventListener('click',()=>openEditor(primaryWorkout(base)));
+ const controls=document.createElement('div');controls.className='mode-option-actions';
+ const edit=document.createElement('button');edit.type='button';
+ edit.className='mode-option-settings secondary';edit.textContent='⚙ Régler';
+ edit.setAttribute('aria-label','Ouvrir les réglages de '+info.title);
+ edit.setAttribute('aria-haspopup','dialog');edit.setAttribute('aria-controls','editorModal');
+ edit.addEventListener('click',()=>openEditor(primaryWorkout(base)));
  const play=document.createElement('button');
  play.type='button';play.className='mode-option-play';
- play.textContent='▶';play.setAttribute('aria-label','Démarrer '+info.title);
- play.addEventListener('click',()=>startWorkout(w));
- row.append(configure,play);
+ play.textContent='▶ Démarrer';play.setAttribute('aria-label','Démarrer '+info.title);
+ play.addEventListener('click',()=>startWorkout(primaryWorkout(base)));
+ controls.append(edit,play);row.append(configure,controls);
  return row;
 }
+function savedWorkoutCard(w){
+ const row=document.createElement('div');row.className='mode-option saved-mode-option';
+ const configure=document.createElement('button');configure.type='button';configure.className='mode-option-configure';
+ configure.setAttribute('aria-label','Modifier les réglages de '+w.name);
+ configure.setAttribute('aria-haspopup','dialog');
+ configure.setAttribute('aria-controls','editorModal');
+ const info=document.createElement('span');info.className='mode-option-info';
+ const title=document.createElement('strong');title.textContent=w.name;
+ const description=document.createElement('small');description.textContent=kindDescription(w)+
+   (w.kind==='randori'&&w.randomBips===true?' · Bips aléatoires':'');
+ const duration=document.createElement('span');duration.className='mode-option-duration';
+ duration.textContent='✓ Enregistré · '+(Number.isFinite(secs(w))?pretty(secs(w)):'Temps libre');
+ info.append(title,description,duration);configure.append(info);
+ configure.addEventListener('click',()=>openEditor({...w}));
+ const controls=document.createElement('div');controls.className='mode-option-actions';
+ const edit=document.createElement('button');edit.type='button';
+ edit.className='mode-option-settings secondary';edit.textContent='⚙ Régler';
+ edit.setAttribute('aria-label','Ouvrir les réglages de '+w.name);
+ edit.setAttribute('aria-haspopup','dialog');edit.setAttribute('aria-controls','editorModal');
+ edit.addEventListener('click',()=>openEditor({...w}));
+ const play=document.createElement('button');play.type='button';play.className='mode-option-play';play.textContent='▶ Démarrer';
+ play.setAttribute('aria-label','Démarrer '+w.name);
+ play.addEventListener('click',()=>startWorkout({...w}));
+ controls.append(edit,play);row.append(configure,controls);return row;
+}
+function renderSavedWorkouts(){
+ const groups=[['Randori',['randori','golden']],['Tabata',['tabata']],['Chrono',['chrono','random']]];
+ for(const [tab,kinds] of groups){
+  const list=$('saved'+tab);list.replaceChildren();
+  const prepared=customs.filter(w=>trainingModeIsValid(w)&&kinds.includes(w.kind));
+  for(const w of prepared)list.append(savedWorkoutCard(w));
+  $('savedEmpty'+tab).hidden=prepared.length!==0;
+  $('savedCount'+tab).textContent=String(prepared.length);
+ }
+}
+function renderLastUsed(){
+ const containers={
+   randori:$('lastUsedRandori'),tabata:$('lastUsedTabata'),chrono:$('lastUsedChrono')
+ };
+ for(const card of Object.values(containers)){
+   card.replaceChildren();card.hidden=true;
+ }
+ if(!recentWorkout||!trainingModeIsValid(recentWorkout))return;
+ const tab=tabForTimer(recentWorkout.kind),card=containers[tab];
+ if(!card)return;
+ const heading=document.createElement('span');
+ heading.className='recent-eyebrow';heading.textContent='DERNIER MINUTEUR UTILISÉ';
+ const title=document.createElement('strong');
+ title.textContent=recentWorkout.name;
+ const total=secs(recentWorkout);
+ const duration=document.createElement('small');
+ duration.textContent=Number.isFinite(total)?pretty(total)+' · derniers paramètres':'Temps libre · derniers paramètres';
+ const info=document.createElement('div');info.className='recent-info';
+ info.append(heading,title,duration);
+ const actions=document.createElement('div');actions.className='recent-actions';
+ const configure=document.createElement('button');configure.type='button';configure.className='secondary';
+ configure.textContent='Régler';configure.setAttribute('aria-label','Régler '+recentWorkout.name);
+ configure.addEventListener('click',()=>openEditor({...recentWorkout}));
+ const launch=document.createElement('button');launch.type='button';launch.className='primary';
+ launch.textContent='▶ Démarrer';launch.setAttribute('aria-label','Relancer '+recentWorkout.name);
+ launch.addEventListener('click',()=>startWorkout({...recentWorkout}));
+ actions.append(configure,launch);card.append(info,actions);card.hidden=false;
+}
 function renderWorkouts(){
+ renderSavedWorkouts();
+ renderLastUsed();
  for(const [containerId,keys] of [
    ['modeOptionsRandori',['randori','golden']],
    ['modeOptionsTabata',['tabata']],
@@ -568,52 +959,120 @@ function deleteWorkout(w){
  if(!confirm('Supprimer définitivement « '+w.name+' » ?'))return;
  customs=manager.removeCustom(customs,w.id);favorites=library.normalizeFavorites(favorites,[...standard,...customs].map(x=>x.id));safeWrite('jsb_preview_favorites',favorites);safeWrite('jsb_preview_customs',customs);renderWorkouts();notice('Minuteur supprimé');
 }
-function renderHistory(){
- const el=$('historyList');el.replaceChildren();
- if(!history.length){
-   const empty=document.createElement('div');empty.className='empty';
-   empty.textContent='Aucune séance pour le moment. Ton activité apparaîtra ici.';
-   el.append(empty);return;
- }
- for(const h of history){
-   const row=document.createElement('div');row.className='hist-row';
-   const left=document.createElement('div');
-   const title=document.createElement('b');title.textContent=h.name||'Séance';
-   const stamp=document.createElement('small');
-   stamp.textContent=(h.date||'')+' · '+pretty(h.elapsed||0)+
-      (Number.isInteger(h.signals)?' · '+h.signals+' bips':Number.isInteger(h.rounds)?' · '+h.rounds+' tours':'');
-   left.append(title,stamp);
-   const status=document.createElement('span');status.className='status'+(h.completed?'':' interrupted');
-   status.textContent=h.completed?'Terminée':'Interrompue';
-   const trailing=document.createElement('div');trailing.className='history-actions';
-   if(trainingModeIsValid(h.workout)){
-     const replay=document.createElement('button');replay.type='button';replay.className='history-replay';
-     replay.textContent='▶';replay.setAttribute('aria-label','Rejouer '+h.workout.name);
-     replay.addEventListener('click',()=>startWorkout(h.workout));trailing.append(replay);
-   }
-   trailing.append(status);row.append(left,trailing);el.append(row);
- }
-}
-function openEditor(workout=null){
- if(!gate.allow('editor-open',350)||session||$('editorModal').classList.contains('active'))return;
+function openEditor(workout=null,requestedKind=null){
+ const modal=$('editorModal');
+ if(session){notice('Arrête le minuteur pour ouvrir ses réglages');return;}
+ if(modal.open||modal.classList.contains('active'))return;
+ if(workout&&!trainingModes.isAvailable(workout.kind)){notice('Mode indisponible');return;}
+ editorReturnFocus=document.activeElement;
+ $('editorMore').open=false;
+ for(const el of document.querySelectorAll('.duration-precision'))el.open=false;
+ try {
+ if(workout?.kind==='tabata')workout=normalizedTabata(workout);
  closeWorkoutMenus();$('editorForm').reset();editingWorkoutId=workout?workout.id:null;
- if(!workout){const defaults=trainingModes.DEFAULTS[$('workoutMode').value];$('preparation').value=String(defaults.prep);$('effort').value=String(defaults.work);$('repos').value=String(defaults.rest);$('cycles').value=String(defaults.cycles);}
- $('editorTitle').textContent=workout?'Configurer '+workout.name:'Nouvelle séance';
- const fixedMode=Boolean(workout&&['randori','golden','chrono','random','tabata'].includes(workout.id));
- $('workoutMode').disabled=fixedMode;
- $('workoutMode').closest('.field').hidden=fixedMode;
- $('workoutName').closest('.field').hidden=fixedMode;
- if(workout){
-   if(!trainingModes.isAvailable(workout.kind)){notice('Mode en cours d’analyse');return;}
-   $('workoutMode').value=workout.kind||'hiit';
-   $('workoutName').value=workout.name;
-   $('preparation').value=String(workout.prep);$('effort').value=String(workout.work);
-   $('repos').value=String(workout.rest);$('cycles').value=String(workout.cycles);
+ const kind=workout?.kind||requestedKind||'randori';
+ // Keep a deliberately personalized title for an existing saved session.
+ // Standard and automatically named Randori timers follow the settings.
+ const isBuiltIn=Boolean(workout&&standard.some(w=>w.id===workout.id));
+ autoRandoriName=kind==='randori'&&(!workout||isBuiltIn||
+   /^randori\s+\d+\s*[×x]\s*\d+/i.test(workout.name));
+ autoTabataName=kind==='tabata'&&(!workout||isBuiltIn||
+   /^tabata\s+\d+(?:\s*[×x]|\s+cycles?)/i.test(workout.name));
+ $('workoutMode').value=kind;
+ if(!workout){
+  const defaults=trainingModes.DEFAULTS[kind];
+  $('preparation').value=String(defaults.prep);$('effort').value=String(defaults.work);
+  $('repos').value=String(defaults.rest);$('cycles').value=String(defaults.cycles);
+  $('tabataExercises').value=String(defaults.exercises||8);
+  $('cycleRest').value=String(defaults.cycleRest||0);
+  $('workoutName').value=requestedKind?'Mon '+({randori:'randori',golden:'Golden Score',tabata:'Tabata',chrono:'chronomètre',random:'exercice à bips'}[kind]||'minuteur'):'';
  }
- $('randomFrequency').value=workout?.frequency||'medium';$('randomProgressive').checked=workout?.progressive!==false;applyMode();syncAllDurationPickers();updateConfigDuration();$('editorModal').classList.add('active');$('app').inert=true;$('workoutName').focus();
+ const isStandard=Boolean(workout&&standard.some(w=>w.id===workout.id));
+ const modeLocked=Boolean(isStandard||requestedKind);
+ $('editorTitle').textContent=workout?'Régler '+workout.name:'Préparer un minuteur';
+ $('workoutMode').disabled=modeLocked;$('workoutMode').closest('.field').hidden=modeLocked;
+ $('workoutName').closest('.field').hidden=isStandard;
+ $('saveWorkout').textContent=isStandard?'✓ Enregistrer':'✓ Enregistrer pour plus tard';
+ if(workout){
+  $('workoutName').value=workout.name;
+  $('preparation').value=String(workout.prep);$('effort').value=String(workout.work);
+  $('repos').value=String(workout.rest);$('cycles').value=String(workout.cycles);
+  $('tabataExercises').value=String(workout.kind==='tabata'?workout.exercises:8);
+  $('cycleRest').value=String(workout.kind==='tabata'?workout.cycleRest:0);
+ }
+ $('randomFrequency').value=workout?.frequency||'medium';
+ $('randomProgressive').checked=workout?.progressive!==false;
+ $('randoriRandomBips').checked=kind==='randori'&&workout?.randomBips===true;
+ $('randoriBipFrequency').value=['low','medium','high'].includes(workout?.randomBipFrequency)?
+   workout.randomBipFrequency:'medium';
+ applyMode();syncAllDurationPickers();updateConfigDuration();
+ modal.classList.add('active');
+ let nativeOpened=false;
+ if(typeof modal.showModal==='function'){
+   try{
+     // Prefer the native Safari top layer over application z-index.
+     modal.showModal();
+     nativeOpened=true;
+   }catch(nativeError){
+     console.warn('JSB: dialogue natif indisponible, repli visuel actif',nativeError);
+   }
+ }
+ if(!nativeOpened){
+   // Keep settings accessible even if iOS refuses the native top layer.
+   modal.setAttribute('open','');
+   $('app').inert=true;
+ }
+ // Do not auto-open the iOS keyboard or scroll below the dialog header.
+ $('closeEditor').focus({preventScroll:true});
+ } catch(error) {
+   console.error('JSB: impossible d’ouvrir les réglages',error);
+   modal.classList.remove('active');
+   if(modal.open&&typeof modal.close==='function')modal.close();
+   else modal.removeAttribute('open');
+   $('app').inert=false;
+   editorReturnFocus=null;
+   notice('Ouverture des réglages impossible. Actualise l’application.');
+ }
 }
-const durationLimits={preparation:600,effort:3600,repos:3600};
+const durationLimits={preparation:600,effort:3600,repos:3600,cycleRest:3600};
+function updateSimpleDisplays(){
+ for(const id of ['preparation','effort','repos','cycleRest']){
+  const target=$(id+'Display');
+  if(target)target.textContent=pretty(Number($(id).value)||0);
+ }
+}
+$('editorForm').addEventListener('click',event=>{
+ const button=event.target.closest('[data-step-field],[data-step-cycles],[data-step-exercises]');
+ if(!button)return;
+ if(button.dataset.stepCycles!==undefined){
+  const delta=Number(button.dataset.stepCycles);
+  const max=$('workoutMode').value==='tabata'?50:200;
+  const next=Math.max(1,Math.min(max,(Number($('cycles').value)||1)+delta));
+  $('cycles').value=String(next);updateConfigDuration();return;
+ }
+ if(button.dataset.stepExercises!==undefined){
+  const delta=Number(button.dataset.stepExercises);
+  const next=Math.max(1,Math.min(50,(Number($('tabataExercises').value)||1)+delta));
+  $('tabataExercises').value=String(next);updateConfigDuration();return;
+ }
+ const id=button.dataset.stepField,mode=$('workoutMode').value;
+ const step=id==='preparation'?5:id==='cycleRest'?15:id==='repos'?(mode==='randori'||mode==='boxe'?15:5):
+  mode==='randori'||mode==='boxe'?30:mode==='random'?15:5;
+ const min=id==='effort'?1:0;
+ const cur=Number($(id).value)||0;
+ const change=Number(button.dataset.step);
+ const value=Math.max(min,Math.min(durationLimits[id],cur+change*step));
+ $(id).value=String(value);syncDurationPickers(id);updateConfigDuration();
+});
 $('cycles').addEventListener('input',updateConfigDuration);
+$('tabataExercises').addEventListener('input',updateConfigDuration);
+$('editorForm').addEventListener('click',event=>{
+ const btn=event.target.closest('[data-chrono-prep]');
+ if(!btn)return;
+ $('preparation').value=btn.dataset.chronoPrep;
+ syncDurationPickers('preparation');
+ updateConfigDuration();
+});
 function syncDurationPickers(id){
  const max=durationLimits[id],parts=durationPresets.splitDuration(Number($(id).value),max);
  const minutes=$(id+'Minutes'),seconds=$(id+'Seconds');
@@ -630,23 +1089,49 @@ function updateDurationOptions(id){
  if(total===null){s.value='0';$(id).value=String(m*60)}else $(id).value=String(total);
  updateConfigDuration();
 }
-function syncAllDurationPickers(){for(const id of ['preparation','effort','repos'])syncDurationPickers(id)}
+function syncAllDurationPickers(){for(const id of ['preparation','effort','repos','cycleRest'])syncDurationPickers(id)}
 function applyMode(){
  const mode=$('workoutMode').value;
  const hints={randori:'Combats avec récupération et bips de début/fin.',golden:'Chronomètre croissant sans limite ; arrêt manuel.',chrono:'Chronomètre libre : temps croissant et arrêt manuel.',random:'Bips irréguliers pendant un temps de travail donné. Ex. : burpee à chaque bip.',tabata:'20 s effort et 10 s repos par défaut.',hiit:'Alternance effort / repos sans repos final.',boxe:'Rounds avec récupération.'};
  $('modeHint').textContent=hints[mode]||'Mode non disponible';
- $('restField').hidden=['golden','chrono','random'].includes(mode);
+ $('reposField').hidden=['golden','chrono','random'].includes(mode);
  $('effortField').hidden=['golden','chrono'].includes(mode);
  $('cyclesField').hidden=['golden','chrono','random'].includes(mode);
+ $('tabataExercisesField').hidden=mode!=='tabata';
+ $('tabataCycleRestField').hidden=mode!=='tabata';
+ document.querySelector('.simple-editor-fields').classList.toggle('tabata-fields',mode==='tabata');
+ $('cycles').max=mode==='tabata'?'50':'200';
  $('randomOptions').hidden=mode!=='random';
- $('effortLabel').textContent=mode==='random'?'Temps de travail':mode==='randori'?'Durée du randori':mode==='boxe'?'Durée du round':'Effort';
- $('cyclesLabel').textContent=mode==='randori'?'Nombre de randoris':mode==='boxe'?'Rounds':'Cycles';
+ $('randoriBipsField').hidden=mode!=='randori';
+ $('randoriBipFrequencyField').hidden=mode!=='randori'||!$('randoriRandomBips').checked;
+ $('randomProgressiveOption').hidden=mode!=='random';
+ $('chronoStartField').hidden=mode!=='chrono';
+ $('editorUnlimited').hidden=!['golden','chrono'].includes(mode);
+ $('effortLabel').textContent=mode==='random'?'Durée de l’exercice':mode==='randori'?'Durée du combat':mode==='boxe'?'Durée du round':'Durée d’effort';
+ $('cyclesLabel').textContent=mode==='randori'?'Nombre de combats':mode==='boxe'?'Rounds':'Nombre de cycles';
+ $('reposLabel').textContent=mode==='tabata'?'Repos entre exercices':'Temps de repos';
+ $('cycles').setAttribute('aria-label',mode==='tabata'?'Nombre de cycles':'Nombre de répétitions');
  $('cycles').disabled=['golden','chrono','random'].includes(mode);
  if(mode==='golden'||mode==='chrono'){$('effort').value='0';$('repos').value='0';$('cycles').value='1'}
  if(mode==='random'){$('repos').value='0';$('cycles').value='1'}
  syncAllDurationPickers();updateConfigDuration();renderQuickPresets();
 }
-function closeEditor(){$('editorModal').classList.remove('active');editingWorkoutId=null;$('workoutMode').disabled=false;$('workoutMode').closest('.field').hidden=false;$('workoutName').closest('.field').hidden=false;$('app').inert=false}
+function closeEditor(){
+ const modal=$('editorModal');
+ if(modal.open&&typeof modal.close==='function')modal.close();
+ else modal.removeAttribute('open');
+ modal.classList.remove('active');
+ editingWorkoutId=null;
+ $('workoutMode').disabled=false;
+ $('workoutMode').closest('.field').hidden=false;
+ $('workoutName').closest('.field').hidden=false;
+ $('app').inert=false;
+ if(editorReturnFocus?.isConnected){
+   try{editorReturnFocus.focus({preventScroll:true})}
+   catch{editorReturnFocus.focus()}
+ }
+ editorReturnFocus=null;
+}
 function renderQuickPresets(){
  const group=$('presetChips');if(!group)return;
  group.replaceChildren();
@@ -659,9 +1144,9 @@ function renderQuickPresets(){
   chrono:[['Direct',{prep:0}],['Prépa 10 s',{prep:10}],['Prépa 30 s',{prep:30}]],
   random:[['Espacés',{frequency:'low'}],['Modérés',{frequency:'medium'}],
           ['Fréquents',{frequency:'high'}]],
-  tabata:[['20 / 10',{work:20,rest:10,cycles:8}],
-          ['30 / 15',{work:30,rest:15,cycles:8}],
-          ['40 / 20',{work:40,rest:20,cycles:8}]],
+  tabata:[['1 × 8 · 20/10',{work:20,rest:10,cycles:1,exercises:8,cycleRest:60}],
+          ['3 × 5 · 30/10',{work:30,rest:10,cycles:3,exercises:5,cycleRest:60}],
+          ['4 × 4 · 40/20',{work:40,rest:20,cycles:4,exercises:4,cycleRest:90}]],
  };
  for(const [label,values] of presets[kind]||[]){
    const b=document.createElement('button');b.type='button';b.className='preset-chip';b.textContent=label;
@@ -670,6 +1155,8 @@ function renderQuickPresets(){
      if(values.work!==undefined)$('effort').value=String(values.work);
      if(values.rest!==undefined)$('repos').value=String(values.rest);
      if(values.cycles!==undefined)$('cycles').value=String(values.cycles);
+     if(values.exercises!==undefined)$('tabataExercises').value=String(values.exercises);
+     if(values.cycleRest!==undefined)$('cycleRest').value=String(values.cycleRest);
      if(values.frequency!==undefined)$('randomFrequency').value=values.frequency;
      syncAllDurationPickers();updateConfigDuration();
      for(const chip of group.children)chip.setAttribute('aria-pressed',String(chip===b));
@@ -681,12 +1168,18 @@ function configuredWorkout(){
  const kind=$('workoutMode').value;
  const name=$('workoutName').value.trim(),prep=Number($('preparation').value);
  const work=Number($('effort').value),rest=Number($('repos').value),cycles=Number($('cycles').value);
+ const exercises=Number($('tabataExercises').value),cycleRest=Number($('cycleRest').value);
  const minWork=['golden','chrono'].includes(kind)?0:1;
  if(!name||name.length>50||!trainingModes.isAvailable(kind)||
    ![prep,work,rest,cycles].every(Number.isSafeInteger)||
    prep<0||prep>600||work<minWork||work>3600||
-   rest<0||rest>3600||cycles<1||cycles>200){
+   rest<0||rest>3600||cycles<1||cycles>(kind==='tabata'?50:200)){
    notice('Vérifie les paramètres de la séance');return null;
+ }
+ if(kind==='tabata'&&(!Number.isSafeInteger(exercises)||exercises<1||exercises>50||
+    !Number.isSafeInteger(cycleRest)||cycleRest<0||cycleRest>3600||
+    cycles*exercises>200)){
+   notice('Tabata : vérifie les cycles et les exercices (200 efforts maximum).');return null;
  }
  const existing=customs.find(w=>w.id===editingWorkoutId);
  const original=standard.find(w=>w.id===editingWorkoutId);
@@ -694,17 +1187,38 @@ function configuredWorkout(){
    prep,work,rest:['golden','chrono','random'].includes(kind)?0:rest,
    cycles:['golden','chrono','random'].includes(kind)?1:cycles,kind,
    symbol:original?.symbol||existing?.symbol||kindSymbol[kind],
+   ...(kind==='tabata'?{exercises,cycleRest}:{}),
+   ...(kind==='randori'?{
+      randomBips:$('randoriRandomBips').checked,
+      randomBipFrequency:$('randoriBipFrequency').value
+   }:{}),
    ...(kind==='random'?{frequency:$('randomFrequency').value,
      progressive:$('randomProgressive').checked}:{})};
 }
 function updateConfigDuration(){
+ updateSimpleDisplays();
+ syncRandoriName();
+ syncTabataName();
+ syncChronoStartOptions();
  const output=$('configDuration');
  if(!output)return;
  const kind=$('workoutMode').value;
  const prep=Number($('preparation').value),work=Number($('effort').value),
    rest=Number($('repos').value),cycles=Number($('cycles').value);
+ const exercises=Number($('tabataExercises').value),cycleRest=Number($('cycleRest').value);
  if(![prep,work,rest,cycles].every(Number.isFinite)){output.textContent='—';return;}
- const total=trainingModes.workoutDuration({kind,prep,work,rest,cycles});
+ if(kind==='tabata'){
+   const count=cycles*exercises;
+   const valid=Number.isSafeInteger(cycles)&&cycles>=1&&cycles<=50&&
+     Number.isSafeInteger(exercises)&&exercises>=1&&exercises<=50&&count<=200&&
+     Number.isSafeInteger(cycleRest)&&cycleRest>=0&&cycleRest<=3600;
+   $('tabataPlanHint').textContent=valid?
+     count+' efforts · '+cycles+' cycle'+(cycles>1?'s':'')+
+       ' × '+exercises+' exercices · '+Math.max(0,cycles-1)+' repos entre cycles':
+     'Vérifie les quantités : 200 efforts maximum.';
+   if(!valid){output.textContent='—';return;}
+ }
+ const total=trainingModes.workoutDuration({kind,prep,work,rest,cycles,exercises,cycleRest});
  output.textContent=Number.isFinite(total)?pretty(total):'Sans limite';
 }
 function phases(w){return trainingModes.phasePlan(w)}
@@ -733,8 +1247,14 @@ function releaseWakeLock(){
 }
 function startWorkout(w){
  if(session||!trainingModes.isAvailable(w.kind)||!gate.allow('start-workout',600))return;
+ if(w.kind==='tabata')w=normalizedTabata(w);
  clearInterval(frame);frame=null;
  recentWorkout={...w};safeWrite('jsb_v2_recent_workout',recentWorkout);
+ // Remember the last timer actually started; do not auto-play at next launch.
+ const lastTimerTab=tabForTimer(w.kind);
+ safeWrite('jsb_v2_last_started_tab',lastTimerTab);
+ lastTrainingView=lastTimerTab;
+ renderLastUsed();
  if(['randori','golden','chrono','random','tabata'].includes(w.id)){
    modeSettings[w.id]={...w};safeWrite('jsb_v2_mode_settings',modeSettings);
  }
@@ -742,7 +1262,11 @@ function startWorkout(w){
  if(settings.audio&&settings.volume>0)void soundEngine.activateAndPlay(settings.sound,(w.prep>0?'prep':'effort'),settings.volume);
  const seq=phases(w);let acc=0;
  for(const p of seq){p.start=acc;acc+=p.ms;}
- const signals=w.kind==='random'?randomSignals.createSignals({workMs:w.work*1000,frequency:w.frequency||'medium',progressive:w.progressive!==false}).map(ms=>ms+w.prep*1000):[];
+ const signals=w.kind==='random'?
+   randomSignals.createSignals({workMs:w.work*1000,frequency:w.frequency||'medium',
+     progressive:w.progressive!==false}).map(ms=>ms+w.prep*1000):
+   w.kind==='randori'&&w.randomBips===true?
+     randomSignals.createSignalsForPhases(seq,{frequency:w.randomBipFrequency||'medium'}):[];
  const cueTimes=[...seq.map(p=>p.start),...signals];
  if(Number.isFinite(acc))cueTimes.push(acc);
  if(settings.countdown){for(let i=0;i<seq.length-1;i++){
@@ -758,6 +1282,7 @@ function startWorkout(w){
  $('amrapCounter').hidden=true;$('amrapCount').textContent='0';
  $('sessionSummary').classList.remove('active');$('sessionSummary').setAttribute('aria-hidden','true');
  $('timerTitle').textContent=w.name;$('timer').classList.add('active');$('timer').dataset.mode=w.kind;
+ $('adjustTimeBtn').hidden=true;
  $('app').inert=true;
  document.querySelector('.nav').style.visibility='hidden';
  requestWakeLock();updateTimer();frame=setInterval(updateTimer,75);
@@ -771,8 +1296,20 @@ function updateTimer(){
  let idx=session.seq.length-1;
  for(let i=0;i<session.seq.length;i++){if(t<session.seq[i].start+session.seq[i].ms){idx=i;break;}}
  const p=session.seq[idx];
+ // Indiquer textuellement chaque phase, en plus du changement de contraste.
+ // Les noms spécifiques (Randori, effort, repos inter-cycles) sont conservés.
+ const phaseText=p.kind==='rest'&&!p.label.startsWith('REPOS')
+   ?'REPOS · '+p.label
+   :p.kind==='effort'&&!['chrono','golden','random'].includes(session.workout.kind)
+     ?'ACTIVITÉ · '+p.label
+     :p.label;
  if(idx!==session.index){const previous=session.index;session.index=idx;
- $('phaseAnnouncement').textContent=p.label+(p.cycle?' '+p.cycle+' sur '+session.workout.cycles:'');
+ $('phaseAnnouncement').textContent=phaseText+
+   (session.workout.kind==='tabata'&&p.cycle?
+     ' · cycle '+p.cycle+' sur '+session.workout.cycles+
+       (p.restType==='cycle'?' · repos entre cycles':
+       ' · exercice '+p.exercise+' sur '+session.workout.exercises):
+     (p.cycle?' '+p.cycle+' sur '+session.workout.cycles:''));
  if(!session.paused&&!(previous<0&&session.initialAudio)&&(previous<0||t-p.start<=180))beep(p.kind);}
  if(settings.countdown&&settings.audio&&!session.paused){
   const due=audioCues.countdownCues(session.seq,session.lastCueMs,t);
@@ -780,7 +1317,8 @@ function updateTimer(){
   for(const cue of due)beep('countdown');
  }
  session.lastCueMs=t;
- if(session.workout.kind==='random'&&!session.paused){
+ if((session.workout.kind==='random'||
+    (session.workout.kind==='randori'&&session.workout.randomBips===true))&&!session.paused){
   while(session.nextSignal<session.signals.length&&t>=session.signals[session.nextSignal]){
    const target=session.signals[session.nextSignal++];
    if(t-target<=180){beep('random');session.signalsPlayed++;}
@@ -789,12 +1327,22 @@ function updateTimer(){
  const growing=['golden','chrono'].includes(session.workout.kind)&&p.kind==='effort';
  const remain=Math.max(0,p.ms-(t-p.start));
  $('timer').dataset.phase=p.kind;
- $('phaseLabel').textContent=p.label;
+ $('phaseLabel').textContent=phaseText;
  const display=growing?pretty((t-p.start)/1000):pretty(remain/1000);
  $('clockText').textContent=display;
  $('clockText').dataset.digits=String(display.length);
  $('clockText').setAttribute('aria-label',growing?'Temps écoulé '+display:'Temps restant '+display);
- $('cycleLabel').textContent=p.cycle?(session.workout.kind==='golden'?'Temps supplémentaire':session.workout.kind==='chrono'?'Chronomètre libre':session.workout.kind==='random'?'Réagis à chaque bip':session.workout.kind==='randori'?'Randori '+p.cycle+' / '+session.workout.cycles:session.workout.kind==='boxe'?'Round '+p.cycle+' / '+session.workout.cycles:'Cycle '+p.cycle+' / '+session.workout.cycles):'Préparation';
+ $('cycleLabel').textContent=p.cycle?
+   (session.workout.kind==='tabata'?
+     (p.restType==='cycle'?'Repos avant cycle '+(p.cycle+1)+' / '+session.workout.cycles:
+       'Cycle '+p.cycle+' / '+session.workout.cycles+
+       ' · Exercice '+p.exercise+' / '+session.workout.exercises):
+     session.workout.kind==='golden'?'Temps supplémentaire':
+     session.workout.kind==='chrono'?'Chronomètre libre':
+     session.workout.kind==='random'?'Réagis à chaque bip':
+     session.workout.kind==='randori'?'Randori '+p.cycle+' / '+session.workout.cycles:
+     session.workout.kind==='boxe'?'Round '+p.cycle+' / '+session.workout.cycles:
+     'Cycle '+p.cycle+' / '+session.workout.cycles):'Préparation';
  $('totalRemaining').textContent=['golden','chrono'].includes(session.workout.kind)?(growing?'Chronomètre libre':'Départ dans '+pretty(remain/1000)):pretty((session.total-t)/1000)+' restantes';
  const percent=growing?0:Math.min(100,Math.max(0,Math.round(100*(t-p.start)/p.ms)));
  $('progressBar').style.width=percent+'%';
@@ -804,8 +1352,65 @@ function updateTimer(){
  $('upNext').textContent=session.workout.kind==='random'?'Bips émis : '+session.signalsPlayed:next?'Ensuite : '+next.label:growing?'Arrêt manuel':'Dernière phase';
  $('pausedFlag').classList.toggle('on',session.paused);
  $('pauseBtn').textContent=session.paused?'▶  Reprendre':'❚❚  Pause';
+ $('adjustTimeBtn').hidden=!session.paused||!['randori','tabata','golden'].includes(session.workout.kind)||modalBusy;
 }
-function pauseResume(){if(!session||session.finished||modalBusy||!gate.allow('pause-toggle',400))return;if(session.paused){session.base=performance.now();session.paused=false;armAudio();nativeAudio?.reset();requestWakeLock()}else{session.elapsed=currentMs();session.paused=true;nativeAudio?.release();releaseWakeLock()}updateTimer()}
+function pauseResume(){
+ if(!session||session.finished||modalBusy||!gate.allow('pause-toggle',400))return;
+ if(session.paused){
+   session.base=performance.now();session.paused=false;armAudio();
+   nativeAudio?.reset();requestWakeLock();
+ }else{
+   session.elapsed=currentMs();session.paused=true;
+   nativeAudio?.release();releaseWakeLock();
+ }
+ updateTimer();
+}
+function pauseTimeInputs(prefix,seconds){
+ const clamped=Math.max(0,Math.floor(seconds));
+ $(prefix+'Min').value=String(Math.floor(clamped/60));
+ $(prefix+'Sec').value=String(clamped%60);
+}
+function readPauseTimeInputs(prefix){
+ const minutes=Number($(prefix+'Min').value);
+ const seconds=Number($(prefix+'Sec').value);
+ if(!Number.isSafeInteger(minutes)||!Number.isSafeInteger(seconds)||
+    minutes<0||seconds<0||seconds>=60)return NaN;
+ return minutes*60+seconds;
+}
+function openPauseTimeDialog(){
+ if(!session||!session.paused||session.finished||modalBusy||
+    !['randori','tabata','golden'].includes(session.workout.kind))return;
+ const t=session.elapsed;
+ const idx=window.JSBPauseAdjustments.locatePhase(session.seq,t);
+ const phase=session.seq[idx];
+ const countUp=session.workout.kind==='golden'&&phase.kind==='effort';
+ const current=countUp?Math.floor((t-phase.start)/1000):
+   Math.ceil(Math.max(0,(phase.start+phase.ms-t)/1000));
+ pauseTimeInputs('adjustCurrent',current);
+ pauseTimeInputs('adjustEffort',session.workout.work);
+ pauseTimeInputs('adjustRest',session.workout.rest);
+ $('adjustFutureFields').hidden=session.workout.kind==='golden';
+ $('adjustDisplayLabel').textContent=countUp?
+   'Temps écoulé actuel du Golden Score':
+   'Temps restant de la phase actuelle';
+ $('pauseTimeFeedback').hidden=true;$('pauseTimeFeedback').textContent='';
+ modalBusy=true;
+ $('timer').inert=true;
+ $('pauseTimeDialog').classList.add('active');
+ $('pauseTimeDialog').setAttribute('aria-hidden','false');
+ $('adjustCurrentMin').focus();
+}
+function closePauseTimeDialog(){
+ $('pauseTimeDialog').classList.remove('active');
+ $('pauseTimeDialog').setAttribute('aria-hidden','true');
+ $('timer').inert=false;
+ modalBusy=false;
+ if(session&&!session.finished){
+   updateTimer();
+   $('adjustTimeBtn').focus();
+ }
+}
+
 function finish(completed){
  if(!session||session.finished)return;
  session.finished=true;modalBusy=false;clearInterval(frame);frame=null;releaseWakeLock();
@@ -820,20 +1425,23 @@ function finish(completed){
    elapsed,completed,kind:current.workout.kind,cyclesDone:completedEfforts,
    workout:{...current.workout},
    ...(current.workout.kind==='random'?{signals:current.signalsPlayed}:{})};
- history.unshift(entry);history=history.slice(0,60);safeWrite('jsb_preview_history',history);
+ // No new history is collected: the Luc Léger tab replaces the former activity log.
  replayWorkout={...current.workout};
  $('timer').classList.remove('active');
  $('stopConfirm').classList.remove('active');$('stopConfirm').setAttribute('aria-hidden','true');
  $('timer').inert=false;
  document.querySelector('.nav').style.visibility='visible';
- session=null;renderHistory();
+ session=null;
+ $('adjustTimeBtn').hidden=true;
  $('summaryTitle').textContent=completed?'Séance terminée !':'Séance interrompue';
  $('summaryWorkout').textContent=entry.name;
  $('summaryDuration').textContent=pretty(entry.elapsed);
  $('summaryDetail').textContent=['golden','chrono'].includes(entry.kind)?'∞':
-   entry.kind==='random'?String(entry.signals):String(completedEfforts)+' / '+entry.workout.cycles;
+   entry.kind==='random'?String(entry.signals):String(completedEfforts)+' / '+
+    (entry.kind==='tabata'?entry.workout.cycles*entry.workout.exercises:entry.workout.cycles);
  $('summaryDetailLabel').textContent=entry.kind==='randori'?'Combats':
-   entry.kind==='random'?'Bips émis':['golden','chrono'].includes(entry.kind)?'Temps libre':'Cycles';
+   entry.kind==='random'?'Bips émis':['golden','chrono'].includes(entry.kind)?'Temps libre':
+   entry.kind==='tabata'?'Exercices':'Cycles';
  $('sessionSummary').classList.add('active');$('sessionSummary').setAttribute('aria-hidden','false');
  $('summaryReplay').focus();
 }
@@ -863,27 +1471,61 @@ $('workoutFilter').addEventListener('change',()=>{activeWorkoutFilter=$('workout
 $('favoritesOnly').addEventListener('change',()=>{favoritesOnly=$('favoritesOnly').checked;closeWorkoutMenus();renderWorkouts()});
 document.addEventListener('click',e=>{if(!e.target.closest('.workout-row'))closeWorkoutMenus()});
 document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;
+ if($('pauseTimeDialog').classList.contains('active')){e.preventDefault();closePauseTimeDialog();return;}
  if($('stopConfirm').classList.contains('active')){e.preventDefault();closeStopConfirmation(true);return;}
  if($('sessionSummary').classList.contains('active')){e.preventDefault();$('summaryHome').click();return;}
  if($('editorModal').classList.contains('active')){e.preventDefault();closeEditor();return;}
  closeWorkoutMenus();});
-for(const n of document.querySelectorAll('[data-nav]'))n.addEventListener('click',()=>navigate(n.dataset.nav));$('settingsQuick').addEventListener('click',()=>navigate('settings'));$('newWorkout').addEventListener('click',()=>openEditor());$('closeEditor').addEventListener('click',closeEditor);$('cancelEditor').addEventListener('click',closeEditor);$('editorModal').addEventListener('click',e=>{if(e.target===$('editorModal'))closeEditor()});for(const id of ['preparation','effort','repos']){
+for(const n of document.querySelectorAll('[data-nav]'))n.addEventListener('click',()=>navigate(n.dataset.nav));
+for(const button of document.querySelectorAll('[data-new-kind]'))button.addEventListener('click',()=>openEditor(null,button.dataset.newKind));
+$('settingsQuick').addEventListener('click',()=>{
+  navigate($('view-settings').classList.contains('active')?lastTrainingView:'settings');
+});$('newWorkout').addEventListener('click',()=>openEditor());$('closeEditor').addEventListener('click',closeEditor);$('cancelEditor').addEventListener('click',closeEditor);
+$('editorModal').addEventListener('cancel',e=>{e.preventDefault();closeEditor()});
+$('editorModal').addEventListener('click',e=>{if(e.target===$('editorModal'))closeEditor()});
+for(const id of ['preparation','effort','repos','cycleRest']){
   for(const suffix of ['Minutes','Seconds']){
     $(id+suffix).addEventListener('change',()=>updateDurationOptions(id));
   }
 }
-$('workoutMode').addEventListener('change',()=>{const mode=$('workoutMode').value;const {work,rest,cycles}=trainingModes.DEFAULTS[mode];$('effort').value=work;$('repos').value=rest;$('cycles').value=cycles;applyMode();});$('editorForm').addEventListener('submit',e=>{
+$('workoutMode').addEventListener('change',()=>{
+ const mode=$('workoutMode').value;
+ const {work,rest,cycles,prep,exercises,cycleRest}=trainingModes.DEFAULTS[mode];
+ $('preparation').value=prep;
+ $('effort').value=work;$('repos').value=rest;$('cycles').value=cycles;
+ $('tabataExercises').value=String(exercises||8);
+ $('cycleRest').value=String(cycleRest||0);
+ autoRandoriName=mode==='randori';
+ autoTabataName=mode==='tabata';
+ applyMode();
+});
+$('randoriRandomBips').addEventListener('change',()=>{
+ $('randoriBipFrequencyField').hidden=!$('randoriRandomBips').checked;
+});
+$('workoutName').addEventListener('input',()=>{
+ // Do not override names chosen by the user for custom sessions.
+ if(!$('workoutName').closest('.field').hidden){
+   if($('workoutMode').value==='randori')autoRandoriName=false;
+   if($('workoutMode').value==='tabata')autoTabataName=false;
+ }
+});$('editorForm').addEventListener('submit',e=>{
   e.preventDefault();
   const w=configuredWorkout();if(!w||!gate.allow('save-workout',600))return;
   const builtin=standard.some(x=>x.id===editingWorkoutId);
   const target=editingWorkoutId&&!builtin?editingWorkoutId:null;
-  if(target){customs=manager.upsertCustom(customs,w,target);}
-  else{
+  if(builtin){
+    // The built-in card must use the saved configuration immediately.
+    modeSettings[w.id]={...w};safeWrite('jsb_v2_mode_settings',modeSettings);
+  }else if(target){
+    customs=manager.upsertCustom(customs,w,target);
+    safeWrite('jsb_preview_customs',customs);
+  }else{
     w.id='custom-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
     customs=manager.upsertCustom(customs,w);
+    safeWrite('jsb_preview_customs',customs);
   }
-  safeWrite('jsb_preview_customs',customs);renderWorkouts();closeEditor();
-  notice(builtin?'Copie personnalisée enregistrée':target?'Séance modifiée':'Séance enregistrée');
+  closeEditor();renderWorkouts();
+  notice(builtin?'Réglages enregistrés : minuteur prêt':target?'Minuteur mis à jour':'Minuteur enregistré pour plus tard');
 });
 $('launchConfigured').addEventListener('click',()=>{
   const form=$('editorForm');
@@ -892,7 +1534,46 @@ $('launchConfigured').addEventListener('click',()=>{
   closeEditor();
   startWorkout(w);
 });
-$('amrapMinus').addEventListener('click',()=>{if(session&&session.workout.kind==='amrap'){session.rounds=Math.max(0,session.rounds-1);$('amrapCount').textContent=String(session.rounds)}});$('amrapPlus').addEventListener('click',()=>{if(session&&session.workout.kind==='amrap'){session.rounds++;$('amrapCount').textContent=String(session.rounds)}});$('pauseBtn').addEventListener('click',pauseResume);$('stopBtn').addEventListener('click',()=>{
+$('amrapMinus').addEventListener('click',()=>{if(session&&session.workout.kind==='amrap'){session.rounds=Math.max(0,session.rounds-1);$('amrapCount').textContent=String(session.rounds)}});$('amrapPlus').addEventListener('click',()=>{if(session&&session.workout.kind==='amrap'){session.rounds++;$('amrapCount').textContent=String(session.rounds)}});$('adjustTimeBtn').addEventListener('click',openPauseTimeDialog);
+$('cancelPauseTime').addEventListener('click',closePauseTimeDialog);
+$('pauseTimeForm').addEventListener('submit',event=>{
+ event.preventDefault();
+ if(!session||!session.paused)return;
+ const changes={
+   displaySeconds:readPauseTimeInputs('adjustCurrent'),
+   effortSeconds:readPauseTimeInputs('adjustEffort'),
+   restSeconds:readPauseTimeInputs('adjustRest')
+ };
+ try{
+   window.JSBPauseAdjustments.applyPausedEdit(session,changes,{countdown:settings.countdown});
+   if(session.workout.kind==='randori'&&session.workout.randomBips===true){
+     // Refresh only upcoming alerts after paused time changes; no catch-up audio.
+     session.signals=randomSignals.createSignalsForPhases(session.seq,{
+       frequency:session.workout.randomBipFrequency||'medium'
+     }).filter(at=>at>session.elapsed+1500);
+     session.nextSignal=0;
+     session.cueTimes=[...new Set([...session.cueTimes,...session.signals])].sort((a,b)=>a-b);
+   }
+   // No sound is triggered for changes made while paused.
+   closePauseTimeDialog();
+   notice('Temps modifiés · séance toujours en pause');
+ }catch(error){
+   $('pauseTimeFeedback').textContent=error?.message||'Vérifie les durées indiquées.';
+   $('pauseTimeFeedback').hidden=false;
+ }
+});
+for(const button of document.querySelectorAll('[data-time-delta]')){
+ button.addEventListener('click',()=>{
+   const current=readPauseTimeInputs('adjustCurrent');
+   if(!Number.isFinite(current))return;
+   const countUp=session?.workout.kind==='golden'&&
+     window.JSBPauseAdjustments.locatePhase(session.seq,session.elapsed)>0;
+   const lower=countUp?0:1,upper=countUp?21600:3600;
+   const next=Math.max(lower,Math.min(upper,current+Number(button.dataset.timeDelta)));
+   pauseTimeInputs('adjustCurrent',next);
+ });
+}
+$('pauseBtn').addEventListener('click',pauseResume);$('stopBtn').addEventListener('click',()=>{
  if(!session||session.finished||modalBusy||!gate.allow('stop-dialog',650))return;
  confirmWasPaused=session.paused;
  if(!session.paused){
@@ -913,14 +1594,13 @@ $('confirmStop').addEventListener('click',()=>{if(!session)return;
 });
 $('summaryHome').addEventListener('click',()=>{
  $('sessionSummary').classList.remove('active');$('sessionSummary').setAttribute('aria-hidden','true');
- $('app').inert=false;navigate('sessions');document.querySelector('[data-group="randori"] summary')?.focus();
+ $('app').inert=false;navigate(tabForTimer(replayWorkout?.kind));document.querySelector('[data-nav="'+tabForTimer(replayWorkout?.kind)+'"]')?.focus();
 });
 $('summaryReplay').addEventListener('click',()=>{
  const w=replayWorkout;if(!w)return;
  $('sessionSummary').classList.remove('active');$('sessionSummary').setAttribute('aria-hidden','true');
- $('app').inert=false;navigate('sessions');startWorkout(w);
+ $('app').inert=false;navigate(tabForTimer(w.kind));startWorkout(w);
 });
-$('clearHistory').addEventListener('click',()=>{if(history.length&&confirm('Effacer tout l’historique ?')){history=[];safeWrite('jsb_preview_history',history);renderHistory();notice('Historique effacé');}});
 
 const volumeRange=$('volumeRange'),volumeValue=$('volumeValue'),testBeep=$('testBeep');
 const testRestSound=$('testRestSound'),testRandomSound=$('testRandomSound'),testFinishSound=$('testFinishSound');
@@ -1069,29 +1749,15 @@ for(const [id,key] of [
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&session&&!session.paused){nativeAudio?.release();releaseWakeLock();}else if(!document.hidden&&session&&!session.paused){nativeAudio?.reset();requestWakeLock();updateTimer();}});
 // Open only one category at a time; keep the last-used category between sessions.
 // Native <details>/<summary> also works with keyboard and VoiceOver/TalkBack.
-const groups=[...document.querySelectorAll('#coreModes > details[data-group]')];
-const storedOpenGroup=read('jsb_v2_open_group','randori');
-const openGroup=['randori','tabata','chrono'].includes(storedOpenGroup)?storedOpenGroup:'randori';
-for(const group of groups){
- group.open=group.dataset.group===openGroup;
- group.addEventListener('toggle',()=>{
-   if(!group.open)return;
-   for(const other of groups)if(other!==group)other.open=false;
-   if(group.dataset.group!=='luc')safeWrite('jsb_v2_open_group',group.dataset.group);
- });
-}
-// Luc Léger cannot be started until its protocol and pacing signals are
-// verified. Even when explicitly revealed, the action remains disabled.
-const lucPreference=read('jsb_v2_show_luc_leger',false)===true;
-$('showLucLeger').checked=lucPreference;
-$('lucLegerCategory').hidden=!lucPreference;
-$('showLucLeger').addEventListener('change',()=>{
- const enabled=$('showLucLeger').checked;
- $('lucLegerCategory').hidden=!enabled;
- if(!enabled)$('lucLegerCategory').open=false;
- safeWrite('jsb_v2_show_luc_leger',enabled);
-});
-renderWorkouts();renderHistory();})();
+renderWorkouts();
+// Restore the space of the last STARTED timer, not an automatic running session.
+// New installs default to Randori; visits to Settings or Luc Léger never
+// replace the last actual training mode.
+const persistedTab=read('jsb_v2_last_started_tab',null);
+const initialTab=['randori','tabata','chrono'].includes(persistedTab)?persistedTab:
+  recentWorkout?tabForTimer(recentWorkout.kind):'randori';
+navigate(initialTab);
+})();
 </script>
 
 </body>
