@@ -213,6 +213,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
 </style>
 <link rel="stylesheet" href="./jsb_refinement.css" />
 <link rel="stylesheet" href="./jsb_interface_v4.css" />
+<link rel="stylesheet" href="./jsb_phase_immersive_v41.css" />
 </head>
 <body>
 <div class="app" id="app">
@@ -1380,6 +1381,12 @@ function updateTimer(){
  const growing=['golden','chrono'].includes(session.workout.kind)&&p.kind==='effort';
  const remain=Math.max(0,p.ms-(t-p.start));
  $('timer').dataset.phase=p.kind;
+ // Adapter aussi la barre système des navigateurs compatibles à la phase.
+ // Pas de changement toutes les 75 ms : la valeur n'est modifiée qu'en transition.
+ const chromeColor=p.kind==='rest'?'#D9B175':'#1F2839';
+ const themeColor=document.querySelector('meta[name="theme-color"]');
+ if(themeColor&&themeColor.getAttribute('content')!==chromeColor)
+   themeColor.setAttribute('content',chromeColor);
  $('phaseLabel').textContent=phaseText;
  const display=growing?pretty((t-p.start)/1000):pretty(remain/1000);
  $('clockText').textContent=display;
@@ -1481,6 +1488,8 @@ function finish(completed){
  // No new history is collected: the Luc Léger tab replaces the former activity log.
  replayWorkout={...current.workout};
  $('timer').classList.remove('active');
+ const phaseThemeColor=document.querySelector('meta[name="theme-color"]');
+ if(phaseThemeColor)phaseThemeColor.setAttribute('content','#1F2839');
  $('stopConfirm').classList.remove('active');$('stopConfirm').setAttribute('aria-hidden','true');
  $('timer').inert=false;
  document.querySelector('.nav').style.visibility='visible';
