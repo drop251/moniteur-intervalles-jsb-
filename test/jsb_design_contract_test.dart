@@ -12,6 +12,8 @@ void main() {
     expect(html, contains('tabataCycleRestField'));
     expect(html, contains('randoriRandomBips'));
     expect(html, contains('adjustTimeBtn'));
+    expect(html, contains("make('section','jsb-home-hero')"));
+    expect(html, contains("jsb_interface_v4.css"));
   });
 
   test('native audio bridge remains active without a service worker', () {
@@ -29,6 +31,11 @@ void main() {
     expect(css, contains('--jsb-gold:#D9B175'));
     expect(css, contains('#timer.timer[data-phase="rest"]'));
     expect(css, contains('grid-template-columns:repeat(3,minmax(0,1fr))'));
+    final home = File('assets/web/jsb_interface_v4.css').readAsStringSync();
+    expect(home, contains('.jsb-home-time'));
+    expect(home, contains('.jsb-home-start'));
+    expect(home, contains('.jsb-home-config'));
+    expect(home, contains('grid-template-columns:repeat(3,minmax(0,1fr))'));
     expect(html, contains("'ACTIVITÉ · '+p.label"));
     expect(html, contains("'REPOS · '+p.label"));
   });
