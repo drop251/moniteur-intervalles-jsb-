@@ -11,7 +11,7 @@ html,body{background:var(--jsb-navy);color:var(--jsb-ivory)}
 .app>header .brand-title{letter-spacing:.01em}
 .app>header .subbrand{color:#DFE5ED}
 .app>header .icon-btn{border-radius:14px;border-color:#8A744F}
-.nav{background:#192334f7;border-top-color:#9A8059}
+.nav{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;background:#192334f7;border-top-color:#9A8059}
 .nav button{min-height:48px}
 .nav button[aria-current=page]{color:#F2CE98}
 /* Luc Léger reste volontairement réservé à validation du protocole. */
