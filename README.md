@@ -10,16 +10,23 @@ L'interface affiche **trois minuteurs principaux** dans la barre inférieure : R
 
 L'espace expérimental **Luc Léger** est conservé dans le code, mais **masqué dans la navigation** tant que son protocole et ses signaux ne sont pas validés. Aucun test de cadence non validé n'est lancé.
 
-## Identité JSB et accessibilité (v3.9)
+## Nouvelle interface JSB v4.0
 
-- Couleurs fidèles au logo : **bleu marine `#1F2839`**, **doré `#D9B175`** et **blanc**.
-- **Activité** : fond bleu marine, grandes valeurs dorées ; **repos** : zone centrale dorée, valeurs bleu marine.
-- Les textes **ACTIVITÉ** et **REPOS** restent affichés pour ne jamais dépendre de la couleur seule ; les lecteurs d'écran sont avertis aux transitions.
-- Format paysage conservé avec le chronomètre agrandi et les boutons Pause / Arrêter en dessous.
-- Les réglages Tabata gardent les exercices par cycle, le nombre de cycles, effort, récupération et repos inter-cycles.
-- Les options avancées, les signaux sportifs et les modifications de durée pendant la pause sont préservés.
+Les anciens blocs de réglages et de lancement ont été remplacés par un **grand chronomètre central** sur chaque écran :
 
-L'application Flutter contient la même interface hors ligne sur la branche `feat/lot1-ui`, avec le pont audio natif conservé. Les changements du code mobile **nécessitent une compilation et une réinstallation** ; ils ne modifient pas automatiquement une app déjà installée.
+- **Randori** : temps principal, numéro du combat, un bouton Régler et un bouton Démarrer.
+- **Tabata** : temps d'effort, exercice/cycle en cours et accès au réglage complet des intervalles.
+- **Chronomètre** : affichage 00:00 et démarrage immédiat selon la préparation choisie.
+- **Golden Score** et **Bips aléatoires** : accessibles sous « Autre mode », sans surcharger l'écran.
+- **Mes séances enregistrées** : panneau repliable, avec accès aux presets personnels.
+
+La barre inférieure ne montre que Randori, Tabata et Chronomètre. Le test **Luc Léger** reste masqué et non exécutable tant que son protocole n'est pas validé.
+
+L'identité du logo JSB est appliquée : fond bleu marine `#1F2839`, doré `#D9B175`, blanc ; pendant un **effort**, les chiffres sont dorés sur bleu marine ; pendant le **repos**, la zone centrale devient dorée avec des chiffres bleu marine. Les mots ACTIVITÉ/REPOS et les annonces aux lecteurs d'écran restent présents. Les contrastes de cette combinaison atteignent environ 7,39:1.
+
+Les commandes Pause/Arrêter restent sous le temps en paysage, avec maintien des signaux réels, bips aléatoires Randori, Golden Score et cycles Tabata.
+
+La version web est enregistrée sur `main` et met à jour le cache PWA vers `moniteur-jsb-web-v40`. Le code de l'interface mobile hors ligne est actualisé sur `feat/lot1-ui` (Flutter `0.3.0+9`). **L'app native déjà installée sur iPhone ne reçoit pas automatiquement ces modifications : un nouveau build iOS doit être compilé et distribué.**
 
 Les **Réglages** sont accessibles uniquement par la roue dentée **⚙ en haut à droite**. Toucher la roue lorsque les réglages sont ouverts ramène à l'espace précédent.
 
@@ -54,7 +61,7 @@ Depuis GitHub Pages, ajouter le site à l'écran d'accueil si le navigateur le p
 ## Principaux fichiers
 
 - `index.html` : écrans et navigation.
-- `premium_v2.css` et `jsb_refinement.css` : identité JSB, mise en page responsive et distinction accessible entre activité et repos.
+- `premium_v2.css`, `jsb_refinement.css` et `jsb_interface_v4.css` : identité JSB, vraie nouvelle disposition, mise en page responsive et contraste activité/repos.
 - `training_modes.js` : phases et minuteurs.
 - `pause_adjustments.js` : modification des temps durant une pause.
 - `jsb_audio_samples.js`, `sound_engine.js`, `audio_cues.js` : lecture des sons sportifs.
