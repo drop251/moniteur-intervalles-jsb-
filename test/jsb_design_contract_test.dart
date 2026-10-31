@@ -15,6 +15,9 @@ void main() {
     expect(html, contains("make('section','jsb-home-hero')"));
     expect(html, contains("jsb_interface_v4.css"));
     expect(html, contains('jsb_phase_immersive_v41.css'));
+    expect(html, contains('jsb-option-c-inline-v42'));
+    expect(html, contains('Version 4.2, immersion'));
+    expect(html, contains("timerSurface.style.setProperty('background',bg,'important')"));
     expect(html, contains("const chromeColor=p.kind==='rest'?'#D9B175':'#1F2839'"));
   });
 
