@@ -38,7 +38,18 @@ class MoniteurApp extends StatelessWidget {
   const MoniteurApp({super.key});
   @override Widget build(BuildContext context)=> MaterialApp(
     title:'Moniteur JSB',debugShowCheckedModeBanner:false,
-    theme:ThemeData(colorScheme:ColorScheme.fromSeed(seedColor:const Color(0xFF0369A1),brightness:Brightness.dark),useMaterial3:true),
+    theme:ThemeData(
+      useMaterial3:true,
+      scaffoldBackgroundColor:const Color(0xFF1F2839),
+      colorScheme:const ColorScheme.dark(
+        primary:Color(0xFFD9B175),
+        onPrimary:Color(0xFF1F2839),
+        secondary:Color(0xFFEAC894),
+        onSecondary:Color(0xFF1F2839),
+        surface:Color(0xFF1F2839),
+        onSurface:Colors.white,
+      ),
+    ),
     home:const JsbWebHomeScreen(),
   );
 }
