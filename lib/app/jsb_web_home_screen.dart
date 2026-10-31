@@ -47,7 +47,7 @@ class _JsbWebHomeScreenState extends State<JsbWebHomeScreen>
   Future<void> _initializeWeb() async {
     try {
       await _web.setJavaScriptMode(JavaScriptMode.unrestricted);
-      await _web.setBackgroundColor(const Color(0xFF1F293B));
+      await _web.setBackgroundColor(const Color(0xFF1F2839));
       await _web.setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (_) {
@@ -150,13 +150,13 @@ class _JsbWebHomeScreenState extends State<JsbWebHomeScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1F293B),
+      backgroundColor: const Color(0xFF1F2839),
       body: Stack(
         children: [
           WebViewWidget(controller: _web),
           if (!_loaded && _fatalError == null)
             const Center(
-              child: CircularProgressIndicator(color: Color(0xFFDBAE6B)),
+              child: CircularProgressIndicator(color: Color(0xFFD9B175)),
             ),
           if (_fatalError != null)
             Center(
