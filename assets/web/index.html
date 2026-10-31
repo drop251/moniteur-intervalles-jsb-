@@ -214,6 +214,191 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
 <link rel="stylesheet" href="./jsb_refinement.css" />
 <link rel="stylesheet" href="./jsb_interface_v4.css" />
 <link rel="stylesheet" href="./jsb_phase_immersive_v41.css" />
+<style id="jsb-option-c-inline-v42">
+/* Moniteur JSB v4.1 — Option C : immersion intégrale par phase.
+ * Fond complet, en-tête, textes et commandes synchronisés avec l'effort/repos.
+ * Couleurs tirées du logo JSB ; informations jamais transmises par couleur seule.
+ * Ne touche pas aux dimensions du chronomètre ou à la logique des séances. */
+#timer.timer {
+  --jsb-immersive-bg:#1F2839;
+  --jsb-immersive-ink:#D9B175;
+  --jsb-immersive-title:#FFFFFF;
+  --jsb-immersive-muted:#E1E7F1;
+  --jsb-immersive-shade:rgba(10,17,30,.10);
+  --jsb-immersive-divider:rgba(217,177,117,.30);
+  --jsb-immersive-pill:rgba(217,177,117,.10);
+  --jsb-immersive-outline:#D9B175;
+  --jsb-immersive-track:rgba(239,244,251,.24);
+  --jsb-immersive-fill:#D9B175;
+  --jsb-immersive-action:#D9B175;
+  --jsb-immersive-action-ink:#1F2839;
+  --jsb-immersive-stop:rgba(255,255,255,.07);
+  --jsb-immersive-stop-ink:#FFFFFF;
+  --jsb-immersive-stop-outline:rgba(255,255,255,.66);
+  --jsb-immersive-focus:#FFE3B8;
+  background:var(--jsb-immersive-bg)!important;
+  color:var(--jsb-immersive-title)!important;
+  transition:background-color .30s ease,color .30s ease!important;
+}
+/* La préparation et le chronomètre libre gardent le mode sombre JSB. */
+#timer.timer[data-phase="prep"] {
+  --jsb-immersive-ink:#FFFFFF;
+  --jsb-immersive-pill:rgba(217,177,117,.12);
+}
+/* L'ensemble du viewport devient doré pendant TOUS les repos :
+   repos Randori, entre exercices Tabata, et entre cycles Tabata. */
+#timer.timer[data-phase="rest"] {
+  --jsb-immersive-bg:#D9B175;
+  --jsb-immersive-ink:#1F2839;
+  --jsb-immersive-title:#1F2839;
+  --jsb-immersive-muted:#263449;
+  --jsb-immersive-shade:rgba(255,255,255,.075);
+  --jsb-immersive-divider:rgba(31,40,57,.32);
+  --jsb-immersive-pill:rgba(31,40,57,.08);
+  --jsb-immersive-outline:#1F2839;
+  --jsb-immersive-track:rgba(31,40,57,.23);
+  --jsb-immersive-fill:#1F2839;
+  --jsb-immersive-action:#1F2839;
+  --jsb-immersive-action-ink:#FFFFFF;
+  --jsb-immersive-stop:rgba(255,255,255,.11);
+  --jsb-immersive-stop-ink:#1F2839;
+  --jsb-immersive-stop-outline:#1F2839;
+  --jsb-immersive-focus:#1F2839;
+}
+/* Fond continu : la zone centrale n'est plus une carte dorée isolée. */
+#timer .timer-main {
+  background:transparent!important;
+  color:var(--jsb-immersive-ink)!important;
+  border:none!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+#timer .timer-head {
+  color:var(--jsb-immersive-title)!important;
+  background:var(--jsb-immersive-shade)!important;
+  border-bottom:1px solid var(--jsb-immersive-divider);
+  border-radius:0;
+  padding:6px 4px 11px!important;
+  transition:background-color .30s ease,color .30s ease,border-color .30s ease;
+}
+#timer .timer-head strong {
+  color:var(--jsb-immersive-ink)!important;
+}
+#timer .timer-head #timerTitle {
+  color:var(--jsb-immersive-title)!important;
+}
+#timer .timer-head #totalRemaining,
+#timer .timer-head small {
+  color:var(--jsb-immersive-muted)!important;
+}
+#timer .timer-main .clock {
+  color:var(--jsb-immersive-ink)!important;
+  text-shadow:none!important;
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum";
+  transition:color .30s ease!important;
+}
+#timer .timer-main .phase-chip {
+  color:var(--jsb-immersive-ink)!important;
+  background:var(--jsb-immersive-pill)!important;
+  border:1.5px solid var(--jsb-immersive-outline)!important;
+  border-radius:100px;
+  transition:color .30s ease,background-color .30s ease,border-color .30s ease;
+}
+#timer .timer-main .cycle,
+#timer .timer-main .amrap-counter {
+  color:var(--jsb-immersive-muted)!important;
+}
+#timer .timer-main .paused {
+  color:var(--jsb-immersive-ink)!important;
+  background:var(--jsb-immersive-pill)!important;
+  border-color:var(--jsb-immersive-outline)!important;
+}
+#timer .timer-main .amrap-counter button {
+  background:var(--jsb-immersive-pill)!important;
+  border:1px solid var(--jsb-immersive-outline)!important;
+  color:var(--jsb-immersive-ink)!important;
+}
+#timer .timer-controls {
+  color:var(--jsb-immersive-title)!important;
+  background:transparent!important;
+  border-top:1px solid var(--jsb-immersive-divider);
+  padding-top:10px!important;
+}
+#timer .timer-controls .prog {
+  background:var(--jsb-immersive-track)!important;
+}
+#timer .timer-controls .prog>span,
+#timer.timer[data-phase="rest"] .timer-controls .prog>span {
+  background:var(--jsb-immersive-fill)!important;
+}
+#timer .timer-controls .next,
+#timer .timer-controls .caption {
+  color:var(--jsb-immersive-muted)!important;
+}
+#timer .timer-controls .timer-actions .primary,
+#timer .timer-controls .timer-actions #pauseBtn {
+  color:var(--jsb-immersive-action-ink)!important;
+  background:var(--jsb-immersive-action)!important;
+  border:1px solid var(--jsb-immersive-action)!important;
+  border-radius:16px;
+}
+#timer .timer-controls .timer-actions .danger,
+#timer .timer-controls .timer-actions #stopBtn {
+  color:var(--jsb-immersive-stop-ink)!important;
+  background:var(--jsb-immersive-stop)!important;
+  border:1.5px solid var(--jsb-immersive-stop-outline)!important;
+  border-radius:16px;
+}
+#timer .timer-controls .adjust-time-trigger {
+  background:var(--jsb-immersive-pill)!important;
+  color:var(--jsb-immersive-ink)!important;
+  border:1px solid var(--jsb-immersive-outline)!important;
+  border-radius:14px;
+}
+#timer button:focus-visible,
+#timer [tabindex]:focus-visible {
+  outline:3px solid var(--jsb-immersive-focus)!important;
+  outline-offset:3px;
+}
+#timer .timer-main .clock,
+#timer .timer-head strong,
+#timer .timer-head #timerTitle,
+#timer .timer-head small,
+#timer .timer-controls .timer-actions button,
+#timer .timer-controls .next,
+#timer .timer-controls .caption {
+  transition:color .30s ease,background-color .30s ease,border-color .30s ease;
+}
+@media screen and (orientation:landscape) and (min-width:500px) {
+  /* Les règles historiques en !important pour le paysage sont neutralisées,
+     sans toucher aux tailles, ni à la disposition du compteur / commandes. */
+  #timer.timer.active {background:var(--jsb-immersive-bg)!important}
+  #timer .timer-main {
+    background:transparent!important;
+    border-radius:0!important;
+    padding:0 8px!important;
+  }
+  #timer .timer-head {padding:3px 0 5px!important}
+  #timer .timer-controls {
+    background:transparent!important;
+    padding:5px 0 0!important;
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  #timer.timer,
+  #timer .timer-head,
+  #timer .timer-main .phase-chip,
+  #timer .timer-main .clock,
+  #timer .timer-controls .timer-actions button {
+    transition:none!important;
+  }
+}
+
+/* Version visible pour diagnostiquer les anciennes pages mises en cache. */
+#timer .jsb-build-version{display:inline-block;margin-left:9px;padding:3px 7px;border:1px solid currentColor;border-radius:20px;font-size:10px;font-weight:700;color:var(--jsb-immersive-ink);letter-spacing:.04em;vertical-align:middle}
+
+</style>
 </head>
 <body>
 <div class="app" id="app">
@@ -520,7 +705,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
   <div class="editor-actions"><button type="submit" class="secondary" id="saveWorkout">Enregistrer</button><button type="button" class="primary" id="launchConfigured">▶ Démarrer</button></div>
  </form></div>
 </dialog>
-<section class="timer" id="timer" data-phase="prep" aria-label="Séance en cours"><div class="timer-head"><div><strong>MONITEUR JSB</strong><div style="margin-top:5px;font-size:12px;color:#b4c8d1" id="timerTitle"></div></div><small id="totalRemaining">Temps total restant</small></div><div class="timer-main"><span class="phase-chip" id="phaseLabel">PRÉPARATION</span><span class="sr-only" id="phaseAnnouncement" aria-live="polite" role="status"></span><div class="clock" id="clockText" aria-label="Temps restant" aria-live="off">00:10</div><div class="cycle" id="cycleLabel">Cycle 1 / 8</div><div class="paused" id="pausedFlag">EN PAUSE</div><div id="amrapCounter" class="amrap-counter" hidden><span>Tours validés</span><div><button type="button" id="amrapMinus" aria-label="Retirer un tour">−</button><strong id="amrapCount" aria-live="polite">0</strong><button type="button" id="amrapPlus" aria-label="Ajouter un tour">+</button></div></div></div><div class="timer-controls"><div class="prog" role="progressbar" aria-label="Progression de la phase" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress"><span id="progressBar"></span></div><div class="next"><span id="upNext">Ensuite : EFFORT</span><span id="percentLabel">0 %</span></div><button type="button" class="secondary adjust-time-trigger" id="adjustTimeBtn" hidden aria-haspopup="dialog" aria-controls="pauseTimeDialog">✎ Modifier les temps</button><div class="timer-actions"><button class="primary" id="pauseBtn" type="button">❚❚ &nbsp; Pause</button><button class="secondary danger" id="stopBtn" type="button">■ &nbsp; Arrêter</button></div><div class="caption">Signaux du navigateur · pour la réduction automatique de Spotify, utilise l’app mobile.</div></div></section>
+<section class="timer" id="timer" data-phase="prep" aria-label="Séance en cours"><div class="timer-head"><div><strong>MONITEUR JSB</strong><span class="jsb-build-version" aria-label="Version 4.2, immersion">V4.2</span><div style="margin-top:5px;font-size:12px;color:#b4c8d1" id="timerTitle"></div></div><small id="totalRemaining">Temps total restant</small></div><div class="timer-main"><span class="phase-chip" id="phaseLabel">PRÉPARATION</span><span class="sr-only" id="phaseAnnouncement" aria-live="polite" role="status"></span><div class="clock" id="clockText" aria-label="Temps restant" aria-live="off">00:10</div><div class="cycle" id="cycleLabel">Cycle 1 / 8</div><div class="paused" id="pausedFlag">EN PAUSE</div><div id="amrapCounter" class="amrap-counter" hidden><span>Tours validés</span><div><button type="button" id="amrapMinus" aria-label="Retirer un tour">−</button><strong id="amrapCount" aria-live="polite">0</strong><button type="button" id="amrapPlus" aria-label="Ajouter un tour">+</button></div></div></div><div class="timer-controls"><div class="prog" role="progressbar" aria-label="Progression de la phase" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress"><span id="progressBar"></span></div><div class="next"><span id="upNext">Ensuite : EFFORT</span><span id="percentLabel">0 %</span></div><button type="button" class="secondary adjust-time-trigger" id="adjustTimeBtn" hidden aria-haspopup="dialog" aria-controls="pauseTimeDialog">✎ Modifier les temps</button><div class="timer-actions"><button class="primary" id="pauseBtn" type="button">❚❚ &nbsp; Pause</button><button class="secondary danger" id="stopBtn" type="button">■ &nbsp; Arrêter</button></div><div class="caption">Signaux du navigateur · pour la réduction automatique de Spotify, utilise l’app mobile.</div></div></section>
 <div class="dialog-layer" id="stopConfirm" role="dialog" aria-modal="true" aria-labelledby="stopConfirmTitle" aria-hidden="true"><div class="dialog-box">
   <h2 id="stopConfirmTitle">Terminer la séance ?</h2>
   <p id="stopConfirmText">Ta séance sera enregistrée comme interrompue.</p>
@@ -1335,7 +1520,7 @@ function startWorkout(w){
  session={workout:w,seq,total:acc,elapsed:0,base:performance.now(),paused:false,index:-1,finished:false,rounds:0,signals,nextSignal:0,signalsPlayed:0,initialAudio:settings.audio&&settings.volume>0,lastCueMs:0,cueTimes};
  $('amrapCounter').hidden=true;$('amrapCount').textContent='0';
  $('sessionSummary').classList.remove('active');$('sessionSummary').setAttribute('aria-hidden','true');
- $('timerTitle').textContent=w.name;$('timer').classList.add('active');$('timer').dataset.mode=w.kind;
+ $('timerTitle').textContent=w.name;$('timer').classList.add('active');$('timer').dataset.mode=w.kind;$('timer').dataset.phase='starting';
  $('adjustTimeBtn').hidden=true;
  $('app').inert=true;
  document.querySelector('.nav').style.visibility='hidden';
@@ -1380,6 +1565,14 @@ function updateTimer(){
  }
  const growing=['golden','chrono'].includes(session.workout.kind)&&p.kind==='effort';
  const remain=Math.max(0,p.ms-(t-p.start));
+ // Rafraîchir uniquement quand la phase change, jamais à chaque tick de 75 ms.
+ if($('timer').dataset.phase!==p.kind){
+   const bg=p.kind==='rest'?'#D9B175':'#1F2839';
+   const timerSurface=$('timer');
+   timerSurface.style.setProperty('background',bg,'important');
+   document.documentElement.style.backgroundColor=bg;
+   document.body.style.backgroundColor=bg;
+ }
  $('timer').dataset.phase=p.kind;
  // Adapter aussi la barre système des navigateurs compatibles à la phase.
  // Pas de changement toutes les 75 ms : la valeur n'est modifiée qu'en transition.
@@ -1488,6 +1681,9 @@ function finish(completed){
  // No new history is collected: the Luc Léger tab replaces the former activity log.
  replayWorkout={...current.workout};
  $('timer').classList.remove('active');
+ $('timer').style.removeProperty('background');
+ document.documentElement.style.backgroundColor='#1F2839';
+ document.body.style.backgroundColor='#1F2839';
  const phaseThemeColor=document.querySelector('meta[name="theme-color"]');
  if(phaseThemeColor)phaseThemeColor.setAttribute('content','#1F2839');
  $('stopConfirm').classList.remove('active');$('stopConfirm').setAttribute('aria-hidden','true');
