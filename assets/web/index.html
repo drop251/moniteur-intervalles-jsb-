@@ -212,6 +212,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
 }
 </style>
 <link rel="stylesheet" href="./jsb_refinement.css" />
+<link rel="stylesheet" href="./jsb_interface_v4.css" />
 </head>
 <body>
 <div class="app" id="app">
@@ -784,38 +785,78 @@ function modeOptionMeta(key,w) {
    description:'Réactivité · '+({low:'bips espacés',medium:'bips normaux',high:'bips fréquents'}[w.frequency]||'bips normaux'),
  };
 }
+/* JSB v4 — écran simplifié, réellement différent des anciennes cartes.
+ * Le moteur de séance et les réglages existants sont réutilisés sans copie.
+ */
 function buildModeOption(key) {
  const base=standard.find(w=>w.id===key);
  if(!base)return null;
- const w=primaryWorkout(base),info=modeOptionMeta(key,w);
- const row=document.createElement('div');row.className='mode-option';row.dataset.kind=key;
- const configure=document.createElement('button');
- configure.type='button';configure.className='mode-option-configure';
- configure.setAttribute('aria-label','Configurer '+info.title);
- configure.setAttribute('aria-haspopup','dialog');
- configure.setAttribute('aria-controls','editorModal');
- const labels=document.createElement('span');labels.className='mode-option-info';
- const heading=document.createElement('strong');heading.textContent=info.title;
- const description=document.createElement('small');description.textContent=info.description;
- const duration=document.createElement('span');duration.className='mode-option-duration';
- duration.textContent=['golden','chrono'].includes(key)?'∞ Temps libre':pretty(w.work);
- duration.setAttribute('aria-label',['golden','chrono'].includes(key)?'Chronomètre sans limite':'Durée de travail '+pretty(w.work));
- labels.append(heading,description,duration);
- configure.classList.add('mode-option-content');
- configure.append(labels);
- configure.addEventListener('click',()=>openEditor(primaryWorkout(base)));
- const controls=document.createElement('div');controls.className='mode-option-actions';
- const edit=document.createElement('button');edit.type='button';
- edit.className='mode-option-settings secondary';edit.textContent='⚙ Régler';
+ const w=primaryWorkout(base);
+ const info=modeOptionMeta(key,w);
+ const primary=['randori','tabata','chrono'].includes(key);
+ const make=(tag,cls,text)=>{
+   const el=document.createElement(tag);
+   if(cls)el.className=cls;
+   if(text!==undefined)el.textContent=text;
+   return el;
+ };
+ const open=()=>openEditor(primaryWorkout(base));
+ const launch=()=>startWorkout(primaryWorkout(base));
+ if(!primary){
+   const row=make('div','jsb-secondary-option');
+   row.dataset.kind=key;
+   const details=make('div','jsb-secondary-details');
+   details.append(make('strong','',info.title),make('small','',info.description));
+   const actions=make('div','jsb-secondary-actions');
+   const edit=make('button','jsb-secondary-edit','⚙ Régler');
+   edit.type='button';
+   edit.setAttribute('aria-label','Régler '+info.title);
+   edit.setAttribute('aria-haspopup','dialog');
+   edit.setAttribute('aria-controls','editorModal');
+   edit.addEventListener('click',open);
+   const play=make('button','jsb-secondary-play','▶ Démarrer');
+   play.type='button';
+   play.setAttribute('aria-label','Démarrer '+info.title);
+   play.addEventListener('click',launch);
+   actions.append(edit,play);
+   row.append(details,actions);
+   return row;
+ }
+ const hero=make('section','jsb-home-hero');
+ hero.dataset.kind=key;
+ hero.setAttribute('aria-label','Minuteur '+(key==='chrono'?'Chronomètre':key==='tabata'?'Tabata':'Randori'));
+ const top=make('div','jsb-home-top');
+ const status=make('div','jsb-home-status');
+ status.append(make('span','jsb-home-status-dot','●'),make('span','','PRÊT À DÉMARRER'));
+ const edit=make('button','jsb-home-config');
+ edit.type='button';
+ edit.append(make('span','','⚙'),make('span','','Régler'));
  edit.setAttribute('aria-label','Ouvrir les réglages de '+info.title);
- edit.setAttribute('aria-haspopup','dialog');edit.setAttribute('aria-controls','editorModal');
- edit.addEventListener('click',()=>openEditor(primaryWorkout(base)));
- const play=document.createElement('button');
- play.type='button';play.className='mode-option-play';
- play.textContent='▶ Démarrer';play.setAttribute('aria-label','Démarrer '+info.title);
- play.addEventListener('click',()=>startWorkout(primaryWorkout(base)));
- controls.append(edit,play);row.append(configure,controls);
- return row;
+ edit.setAttribute('aria-haspopup','dialog');
+ edit.setAttribute('aria-controls','editorModal');
+ edit.addEventListener('click',open);
+ top.append(status,edit);
+ const heading=make('div','jsb-home-heading');
+ heading.append(make('strong','',info.title),make('small','',info.description));
+ const face=make('div','jsb-home-face');
+ const infinite=key==='chrono';
+ const clock=make('div','jsb-home-time',infinite?'00:00':pretty(w.work));
+ clock.setAttribute('role','img');
+ clock.setAttribute('aria-label',infinite?'Chronomètre libre, départ à zéro':'Durée de travail '+pretty(w.work));
+ const caption=make('div','jsb-home-subphase',
+   key==='randori'?'Combat 1 sur '+w.cycles:
+   key==='tabata'?'Exercice 1 sur '+w.exercises+' · Cycle 1 sur '+w.cycles:
+   'Temps écoulé');
+ const track=make('span','jsb-home-track');
+ track.setAttribute('aria-hidden','true');
+ face.append(clock,caption,track);
+ const play=make('button','jsb-home-start');
+ play.type='button';
+ play.append(make('span','','▶'),make('span','','Démarrer'));
+ play.setAttribute('aria-label','Démarrer '+info.title);
+ play.addEventListener('click',launch);
+ hero.append(top,heading,face,play);
+ return hero;
 }
 function savedWorkoutCard(w){
  const row=document.createElement('div');row.className='mode-option saved-mode-option';
@@ -890,9 +931,21 @@ function renderWorkouts(){
  ]) {
    const group=$(containerId);
    group.replaceChildren();
-   for(const key of keys){
-     const row=buildModeOption(key);
-     if(row)group.append(row);
+   // L'écran principal n'affiche qu'un grand minuteur.
+   // Golden Score et bips aléatoires sont préservés sous "Autres modes".
+   const main=buildModeOption(keys[0]);
+   if(main)group.append(main);
+   if(keys.length>1){
+     const extras=document.createElement('details');
+     extras.className='jsb-home-extra';
+     const summary=document.createElement('summary');
+     summary.textContent=keys[0]==='randori'?'Golden Score · Autre mode':'Bips aléatoires · Autre mode';
+     extras.append(summary);
+     for(const key of keys.slice(1)){
+       const row=buildModeOption(key);
+       if(row)extras.append(row);
+     }
+     group.append(extras);
    }
  }
  // Backward compatibility: custom HIIT/boxe presets remain in the library.
