@@ -237,7 +237,7 @@ html,body{background:var(--jsb-v4-navy)}
 @media(orientation:portrait){
  .mode-screen .jsb-home-hero{padding-block:17px 21px}
  .mode-screen .jsb-home-face{gap:7px}
- .mode-screen .jsb-home-time{font-size:clamp(77px,20vw,145px)}
+ .mode-screen .jsb-home-time{font-size:clamp(84px,25vw,145px)}
 }
 @media(orientation:landscape) and (min-width:500px){
  :root{--jsb-header-height:64px;--nav:50px}
