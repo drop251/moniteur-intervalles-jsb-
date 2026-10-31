@@ -10,6 +10,14 @@ L'interface affiche **trois minuteurs principaux** dans la barre inférieure : R
 
 L'espace expérimental **Luc Léger** est conservé dans le code, mais **masqué dans la navigation** tant que son protocole et ses signaux ne sont pas validés. Aucun test de cadence non validé n'est lancé.
 
+## Vérification d'une version périmée (v4.2)
+
+Si l'ancienne interface reste affichée, ouvrir directement **[Moniteur JSB v4.2](https://drop251.github.io/moniteur-intervalles-jsb-/v42.html)** dans Safari. Cette nouvelle adresse n'existait pas dans les anciens caches. Pendant une séance, l'en-tête doit afficher **V4.2** à côté de « MONITEUR JSB ».
+
+Dans la version 4.2, la feuille de style de l'immersion est également intégrée directement dans le HTML : un ancien CSS externe ne doit plus empêcher la coloration plein écran. La couleur d'arrière-plan du minuteur est forcée sur la racine pendant les transitions et restaurée en fin de séance.
+
+**Si V4.2 ne s'affiche pas :** l'utilisateur n'a pas reçu le nouveau HTML (publication non terminée, URL incorrecte ou app native iPhone encore sur un ancien build). Une modification du dépôt n'installe jamais une nouvelle version Flutter sur un appareil.
+
 ## Option C — immersion complète activité/repos (v4.1)
 
 Quand un Randori ou un Tabata est en cours, **tout l'écran du minuteur** suit la phase :
@@ -23,7 +31,7 @@ Quand un Randori ou un Tabata est en cours, **tout l'écran du minuteur** suit l
 
 Les modes Chronomètre et Golden Score gardent le thème bleu marine pendant le comptage, et la préparation reste sombre. Le moteur audio, les bips et les préréglages ne sont pas modifiés.
 
-**Publication :** version web dans le dépôt sur \`main\` avec cache PWA \`moniteur-jsb-web-v41\`. Paquet Flutter hors ligne sur \`feat/lot1-ui\`, version \`0.3.1+10\`. La version native déjà installée sur l'iPhone doit être recompilée et réinstallée ; modifier les fichiers GitHub ne suffit pas à la remplacer.
+**Publication :** version web dans le dépôt sur \`main\` avec cache PWA \`moniteur-jsb-web-v42\`. Paquet Flutter hors ligne sur \`feat/lot1-ui\`, version \`0.3.1+10\`. La version native déjà installée sur l'iPhone doit être recompilée et réinstallée ; modifier les fichiers GitHub ne suffit pas à la remplacer.
 
 ## Nouvelle interface JSB v4.0
 
