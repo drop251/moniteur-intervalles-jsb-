@@ -222,7 +222,7 @@ test('the four real sports alert WAV files are distinct, loud, and local',()=>{
 });
 
 test('offline cache includes all new interface and timer dependencies',()=>{
- assert.ok(serviceWorker.includes('moniteur-jsb-web-v41'));
+ assert.ok(serviceWorker.includes('moniteur-jsb-web-v42'));
  assert.ok(serviceWorker.includes('jsb_interface_v4.css?v=40'));
  assert.ok(html.includes('jsb_interface_v4.css?v=40'));
  for(const file of ['premium_v2.css','pause_adjustments.js',
@@ -621,4 +621,19 @@ test('v4.1 navy-on-gold phase contrast exceeds WCAG AA',()=>{
  const a=luminance('#1F2839'),b=luminance('#D9B175');
  const contrast=(Math.max(a,b)+.05)/(Math.min(a,b)+.05);
  assert.ok(contrast>=7, 'JSB phase contrast is insufficient');
+});
+
+test('v4.2 embeds immersive fallback so stale external CSS cannot keep old colors',()=>{
+ assert.ok(html.includes('<style id="jsb-option-c-inline-v42">'));
+ assert.ok(html.includes('aria-label="Version 4.2, immersion"'));
+ assert.ok(html.includes("timerSurface.style.setProperty('background',bg,'important')"));
+ assert.ok(html.includes("document.documentElement.style.backgroundColor=bg"));
+ assert.ok(html.includes("document.body.style.backgroundColor=bg"));
+ assert.ok(html.includes("dataset.phase='starting'"));
+ assert.ok(html.includes("document.body.style.backgroundColor='#1F2839'"));
+ assert.ok(serviceWorker.includes("./v42.html"));
+ assert.ok(fs.existsSync(path.join(root,'v42.html')));
+ const page=get('v42.html');
+ assert.ok(page.includes('jsb-option-c-inline-v42'));
+ assert.ok(page.includes('aria-label="Version 4.2, immersion"'));
 });
