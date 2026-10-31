@@ -2,7 +2,7 @@
 // Une nouvelle version de cache évite de conserver l'ancienne interface.
 const CACHE = 'moniteur-jsb-web-v39';
 const ASSETS = [
-  './','./index.html','./premium_v2.css?v=38','./jsb_refinement.css?v=39',
+  './','./index.html','./premium_v2.css?v=39','./jsb_refinement.css?v=39',
   './manifest.webmanifest','./icon.svg',
   './interaction_gate.js','./workout_manager.js','./workout_library.js',
   './duration_presets.js','./training_modes.js','./random_signals.js',
