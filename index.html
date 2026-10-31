@@ -213,6 +213,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#f3c
   }
 }
 </style>
+<link rel="stylesheet" href="./jsb_refinement.css?v=39" />
 </head>
 <body>
 <div class="app" id="app">
@@ -1296,8 +1297,15 @@ function updateTimer(){
  let idx=session.seq.length-1;
  for(let i=0;i<session.seq.length;i++){if(t<session.seq[i].start+session.seq[i].ms){idx=i;break;}}
  const p=session.seq[idx];
+ // Indiquer textuellement chaque phase, en plus du changement de contraste.
+ // Les noms spécifiques (Randori, effort, repos inter-cycles) sont conservés.
+ const phaseText=p.kind==='rest'&&!p.label.startsWith('REPOS')
+   ?'REPOS · '+p.label
+   :p.kind==='effort'&&!['chrono','golden','random'].includes(session.workout.kind)
+     ?'ACTIVITÉ · '+p.label
+     :p.label;
  if(idx!==session.index){const previous=session.index;session.index=idx;
- $('phaseAnnouncement').textContent=p.label+
+ $('phaseAnnouncement').textContent=phaseText+
    (session.workout.kind==='tabata'&&p.cycle?
      ' · cycle '+p.cycle+' sur '+session.workout.cycles+
        (p.restType==='cycle'?' · repos entre cycles':
@@ -1320,7 +1328,7 @@ function updateTimer(){
  const growing=['golden','chrono'].includes(session.workout.kind)&&p.kind==='effort';
  const remain=Math.max(0,p.ms-(t-p.start));
  $('timer').dataset.phase=p.kind;
- $('phaseLabel').textContent=p.label;
+ $('phaseLabel').textContent=phaseText;
  const display=growing?pretty((t-p.start)/1000):pretty(remain/1000);
  $('clockText').textContent=display;
  $('clockText').dataset.digits=String(display.length);
