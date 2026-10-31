@@ -10,6 +10,21 @@ L'interface affiche **trois minuteurs principaux** dans la barre inférieure : R
 
 L'espace expérimental **Luc Léger** est conservé dans le code, mais **masqué dans la navigation** tant que son protocole et ses signaux ne sont pas validés. Aucun test de cadence non validé n'est lancé.
 
+## Option C — immersion complète activité/repos (v4.1)
+
+Quand un Randori ou un Tabata est en cours, **tout l'écran du minuteur** suit la phase :
+- **Effort/activité :** écran bleu marine JSB, chiffres dorés, libellés blancs et boutons adaptés.
+- **Repos :** écran intégralement doré, chiffres et textes bleu marine, commandes inversées.
+- **En-tête et zone des commandes :** nuances discrètes de la couleur dominante, sans carte centrale séparée.
+- **Transitions :** 300 ms sans clignotement, sauf si l'utilisateur a activé « Réduire les animations ».
+- **A11y :** libellés ACTIVITÉ/REPOS, annonce des phases par lecteur d'écran, contraste des couleurs de marque d'environ 7,39:1.
+- **Portrait et paysage :** les commandes restent au même emplacement et le chronomètre conserve son grand format.
+- **Barre système du navigateur :** synchronisation de la couleur lorsque prise en charge par la plateforme.
+
+Les modes Chronomètre et Golden Score gardent le thème bleu marine pendant le comptage, et la préparation reste sombre. Le moteur audio, les bips et les préréglages ne sont pas modifiés.
+
+**Publication :** version web dans le dépôt sur \`main\` avec cache PWA \`moniteur-jsb-web-v41\`. Paquet Flutter hors ligne sur \`feat/lot1-ui\`, version \`0.3.1+10\`. La version native déjà installée sur l'iPhone doit être recompilée et réinstallée ; modifier les fichiers GitHub ne suffit pas à la remplacer.
+
 ## Nouvelle interface JSB v4.0
 
 Les anciens blocs de réglages et de lancement ont été remplacés par un **grand chronomètre central** sur chaque écran :
@@ -61,7 +76,7 @@ Depuis GitHub Pages, ajouter le site à l'écran d'accueil si le navigateur le p
 ## Principaux fichiers
 
 - `index.html` : écrans et navigation.
-- `premium_v2.css`, `jsb_refinement.css` et `jsb_interface_v4.css` : identité JSB, vraie nouvelle disposition, mise en page responsive et contraste activité/repos.
+- `premium_v2.css`, `jsb_refinement.css`, `jsb_interface_v4.css` et `jsb_phase_immersive_v41.css` : identité JSB, vraie nouvelle disposition, mise en page responsive et contraste activité/repos.
 - `training_modes.js` : phases et minuteurs.
 - `pause_adjustments.js` : modification des temps durant une pause.
 - `jsb_audio_samples.js`, `sound_engine.js`, `audio_cues.js` : lecture des sons sportifs.
