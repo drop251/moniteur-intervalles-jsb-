@@ -12,6 +12,7 @@ const html=get('index.html');
 const css=get('premium_v2.css');
 const refinement=get('jsb_refinement.css');
 const homeUI=get('jsb_interface_v4.css');
+const immersive=get('jsb_phase_immersive_v41.css');
 const serviceWorker=get('sw.js');
 const manifest=JSON.parse(get('manifest.webmanifest'));
 
@@ -221,7 +222,7 @@ test('the four real sports alert WAV files are distinct, loud, and local',()=>{
 });
 
 test('offline cache includes all new interface and timer dependencies',()=>{
- assert.ok(serviceWorker.includes('moniteur-jsb-web-v40'));
+ assert.ok(serviceWorker.includes('moniteur-jsb-web-v41'));
  assert.ok(serviceWorker.includes('jsb_interface_v4.css?v=40'));
  assert.ok(html.includes('jsb_interface_v4.css?v=40'));
  for(const file of ['premium_v2.css','pause_adjustments.js',
@@ -586,4 +587,38 @@ test('v4 actually replaces the old timer cards with one full-screen hero and sec
  assert.ok(homeUI.includes('.mode-screen .mode-page-intro,'));
  assert.ok(homeUI.includes('grid-template-columns:repeat(3,minmax(0,1fr))'));
  assert.ok(homeUI.includes('.nav [data-nav="luc-leger"]{display:none!important}'));
+});
+
+test('v4.1 option C covers the full timer viewport, not only the time card',()=>{
+ assert.ok(html.includes('jsb_phase_immersive_v41.css?v=41'));
+ assert.ok(serviceWorker.includes('jsb_phase_immersive_v41.css?v=41'));
+ assert.match(immersive,/#timer\.timer\s*\{/);
+ assert.match(immersive,/#timer\.timer\[data-phase="rest"\]\s*\{/);
+ assert.ok(immersive.includes('--jsb-immersive-bg:#1F2839'));
+ assert.ok(immersive.includes('--jsb-immersive-bg:#D9B175'));
+ assert.ok(immersive.includes('#timer .timer-main {\n  background:transparent!important;'));
+ assert.ok(immersive.includes('background:var(--jsb-immersive-bg)!important'));
+ assert.ok(immersive.includes('background:var(--jsb-immersive-shade)!important'));
+ assert.ok(immersive.includes('#timer .timer-controls {\n  color:var(--jsb-immersive-title)!important;\n  background:transparent!important;'));
+ assert.ok(immersive.includes('color:var(--jsb-immersive-title)!important;'));
+ assert.ok(immersive.includes('color:var(--jsb-immersive-ink)!important;'));
+ assert.ok(immersive.includes('background:var(--jsb-immersive-action)!important'));
+ assert.ok(immersive.includes('background:var(--jsb-immersive-stop)!important'));
+ assert.ok(immersive.includes('@media screen and (orientation:landscape) and (min-width:500px)'));
+ assert.ok(immersive.includes('@media (prefers-reduced-motion:reduce)'));
+ assert.ok(html.includes("const chromeColor=p.kind==='rest'?'#D9B175':'#1F2839'"));
+ assert.ok(html.includes("phaseThemeColor.setAttribute('content','#1F2839')"));
+ assert.ok(html.includes("const phaseText=p.kind==='rest'"));
+ assert.ok(html.includes("$('phaseAnnouncement').textContent=phaseText+"));
+});
+
+test('v4.1 navy-on-gold phase contrast exceeds WCAG AA',()=>{
+ const luminance=hex=>{
+   const channel=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255)
+     .map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);
+   return channel[0]*.2126+channel[1]*.7152+channel[2]*.0722;
+ };
+ const a=luminance('#1F2839'),b=luminance('#D9B175');
+ const contrast=(Math.max(a,b)+.05)/(Math.min(a,b)+.05);
+ assert.ok(contrast>=7, 'JSB phase contrast is insufficient');
 });
