@@ -11,6 +11,7 @@ const get=name=>fs.readFileSync(path.join(root,name),'utf8');
 const html=get('index.html');
 const css=get('premium_v2.css');
 const refinement=get('jsb_refinement.css');
+const homeUI=get('jsb_interface_v4.css');
 const serviceWorker=get('sw.js');
 const manifest=JSON.parse(get('manifest.webmanifest'));
 
@@ -220,7 +221,9 @@ test('the four real sports alert WAV files are distinct, loud, and local',()=>{
 });
 
 test('offline cache includes all new interface and timer dependencies',()=>{
- assert.ok(serviceWorker.includes('moniteur-jsb-web-v39'));
+ assert.ok(serviceWorker.includes('moniteur-jsb-web-v40'));
+ assert.ok(serviceWorker.includes('jsb_interface_v4.css?v=40'));
+ assert.ok(html.includes('jsb_interface_v4.css?v=40'));
  for(const file of ['premium_v2.css','pause_adjustments.js',
    'jsb_audio_samples.js','sound_engine.js','audio_cues.js']){
    assert.ok(serviceWorker.includes(file),file);
@@ -565,4 +568,20 @@ test('JSB official navy and gold contrast differentiates activity, recovery and 
  assert.ok(html.includes("'REPOS · '+p.label"));
  assert.ok(html.includes("$('phaseAnnouncement').textContent=phaseText+"));
  assert.ok(html.includes("$('phaseLabel').textContent=phaseText;"));
+});
+
+test('v4 actually replaces the old timer cards with one full-screen hero and secondary modes',()=>{
+ assert.ok(html.includes("make('section','jsb-home-hero')"));
+ assert.ok(html.includes("const primary=['randori','tabata','chrono'].includes(key)"));
+ assert.ok(html.includes("const main=buildModeOption(keys[0])"));
+ assert.ok(html.includes("extras.className='jsb-home-extra'"));
+ assert.ok(html.includes("'Golden Score · Autre mode'"));
+ assert.ok(html.includes("'Bips aléatoires · Autre mode'"));
+ assert.ok(homeUI.includes('.mode-screen .jsb-home-hero'));
+ assert.ok(homeUI.includes('.jsb-home-time'));
+ assert.ok(homeUI.includes('.jsb-home-start'));
+ assert.ok(homeUI.includes('.jsb-home-config'));
+ assert.ok(homeUI.includes('.mode-screen .mode-page-intro,'));
+ assert.ok(homeUI.includes('grid-template-columns:repeat(3,minmax(0,1fr))'));
+ assert.ok(homeUI.includes('.nav [data-nav="luc-leger"]{display:none!important}'));
 });
