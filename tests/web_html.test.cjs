@@ -225,8 +225,8 @@ test('offline cache includes all new interface and timer dependencies',()=>{
    'jsb_audio_samples.js','sound_engine.js','audio_cues.js']){
    assert.ok(serviceWorker.includes(file),file);
  }
- assert.equal(manifest.theme_color,'#1F293B');
- assert.equal(manifest.background_color,'#1F293B');
+ assert.equal(manifest.theme_color,'#1F2839');
+ assert.equal(manifest.background_color,'#1F2839');
 });
 
 test('Randori random beep settings are accessible, saved and remain optional',()=>{
