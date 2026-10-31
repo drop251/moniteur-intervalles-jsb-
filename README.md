@@ -6,20 +6,26 @@ Minuteur sportif pour les entraînements de judo et de préparation physique. Di
 
 ## Navigation simplifiée
 
-La version HTML propose **quatre espaces accessibles dans la barre inférieure** :
+L'interface affiche **trois minuteurs principaux** dans la barre inférieure : Randori, Tabata et Chronomètre. Golden Score et les bips aléatoires restent accessibles dans leurs minuteurs respectifs.
 
-1. **Randori** — Randori classique et Golden Score.
-2. **Tabata** — Entraînement par intervalles et récupération.
-3. **Chronomètre** — Temps libre et bips aléatoires.
-4. **Luc Léger** — Espace distinct réservé au test navette de 20 m.
+L'espace expérimental **Luc Léger** est conservé dans le code, mais **masqué dans la navigation** tant que son protocole et ses signaux ne sont pas validés. Aucun test de cadence non validé n'est lancé.
 
-Le test **Luc Léger** possède sa page, mais son lancement reste désactivé jusqu'à validation du protocole, des paliers et des signaux de cadence. Il n'est plus mélangé aux minuteurs récurrents.
+## Identité JSB et accessibilité (v3.9)
+
+- Couleurs fidèles au logo : **bleu marine `#1F2839`**, **doré `#D9B175`** et **blanc**.
+- **Activité** : fond bleu marine, grandes valeurs dorées ; **repos** : zone centrale dorée, valeurs bleu marine.
+- Les textes **ACTIVITÉ** et **REPOS** restent affichés pour ne jamais dépendre de la couleur seule ; les lecteurs d'écran sont avertis aux transitions.
+- Format paysage conservé avec le chronomètre agrandi et les boutons Pause / Arrêter en dessous.
+- Les réglages Tabata gardent les exercices par cycle, le nombre de cycles, effort, récupération et repos inter-cycles.
+- Les options avancées, les signaux sportifs et les modifications de durée pendant la pause sont préservés.
+
+L'application Flutter contient la même interface hors ligne sur la branche `feat/lot1-ui`, avec le pont audio natif conservé. Les changements du code mobile **nécessitent une compilation et une réinstallation** ; ils ne modifient pas automatiquement une app déjà installée.
 
 Les **Réglages** sont accessibles uniquement par la roue dentée **⚙ en haut à droite**. Toucher la roue lorsque les réglages sont ouverts ramène à l'espace précédent.
 
 ### Dernier minuteur utilisé
 
-Moniteur JSB mémorise localement **le dernier minuteur effectivement démarré**. À la prochaine ouverture, l'application affiche son espace (Randori, Tabata ou Chronomètre) et place ce minuteur dans un encart « Dernier minuteur utilisé », avec ses paramètres et les actions **Régler** et **Démarrer**.
+Moniteur JSB mémorise localement **le dernier minuteur effectivement démarré**. À la prochaine ouverture, l'application affiche son espace (Randori, Tabata ou Chronomètre) et conserve ses paramètres ; l'interface privilégie les commandes immédiates **Régler** et **Démarrer**.
 
 **Aucune séance ne démarre automatiquement** après une fermeture ou une actualisation. Lors d'une première utilisation, Randori est l'espace initial.
 
@@ -48,7 +54,7 @@ Depuis GitHub Pages, ajouter le site à l'écran d'accueil si le navigateur le p
 ## Principaux fichiers
 
 - `index.html` : écrans et navigation.
-- `premium_v2.css` : identité JSB et mise en page accessible.
+- `premium_v2.css` et `jsb_refinement.css` : identité JSB, mise en page responsive et distinction accessible entre activité et repos.
 - `training_modes.js` : phases et minuteurs.
 - `pause_adjustments.js` : modification des temps durant une pause.
 - `jsb_audio_samples.js`, `sound_engine.js`, `audio_cues.js` : lecture des sons sportifs.
