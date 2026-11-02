@@ -1,0 +1,162 @@
+/* JSB v3.9 — finitions visuelles : identité de Judo Sans Barrière.
+   Activité = fond bleu marine / chiffres or. Repos = fond or / chiffres marine.
+   Chaque phase reste identifiée par son texte : la couleur n'est jamais le seul indice. */
+:root{
+  --jsb-navy:#1F2839;--jsb-gold:#D9B175;--jsb-ivory:#FFFFFF;
+  --bg:#1F2839;--surface:#253349;--surface2:#2D3A50;
+  --line:#91774F;--text:#FFFFFF;--muted:#D8DEE8;--cyan:#D9B175;
+}
+html,body{background:var(--jsb-navy);color:var(--jsb-ivory)}
+.app>header{background:#1F2839;border-bottom:1px solid #D9B17533}
+.app>header .brand-title{letter-spacing:.01em}
+.app>header .subbrand{color:#DFE5ED}
+.app>header .icon-btn{border-radius:14px;border-color:#8A744F}
+.nav{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;background:#192334f7;border-top-color:#9A8059}
+.nav button{min-height:48px}
+.nav button[aria-current=page]{color:#F2CE98}
+/* Luc Léger reste volontairement réservé à validation du protocole. */
+.nav [data-nav="luc-leger"]{display:none!important}
+.mode-screen .mode-page-intro h1{font-weight:800;letter-spacing:-.035em}
+.mode-screen .mode-page-intro .eyebrow{color:#EDC58A}
+.mode-page-body .mode-option,
+.mode-screen .mode-option{border-radius:21px;border-color:#8D774F;background:linear-gradient(155deg,#2B3B52,#232F43);box-shadow:0 5px 24px #050B151d}
+.mode-page-body .mode-option:focus-within{outline:2px solid #E7C18A;outline-offset:2px}
+.mode-option-actions button{border-radius:13px}
+.mode-option-play,.primary,.quick-action{background:#D9B175;color:#1F2839;border-color:#D9B175}
+.mode-option-play:active,.primary:active{filter:brightness(1.08)}
+.saved-workouts{border-radius:18px}
+#editorModal .sheet{background:#1F2B3E;border-color:#A88B5E}
+#editorModal .sheet>header{background:#1F2B3E}
+#editorModal .field input,
+#editorModal .field select{border-radius:14px;border-color:#866E4F;min-height:48px}
+#editorModal .editor-actions button{border-radius:15px;min-height:52px}
+/* Les champs avancés sont toujours présents, mais regroupés et repliés. */
+#editorModal .editor-more{border-radius:15px}
+#editorModal .editor-more>summary{min-height:48px}
+button,select,input,summary{touch-action:manipulation}
+button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible{
+  outline:3px solid #FFE0AC;outline-offset:3px;
+}
+/* Affichage de séance : les barres restent marine et la zone centrale change de couleur. */
+#timer.timer{
+  --phase-ink:#D9B175;
+  --phase-secondary:#EDF0F4;
+  --phase-background:radial-gradient(ellipse at 50% 42%,#34425B 0%,#1F2839 72%);
+  --phase-pill:rgba(217,177,117,.12);
+  --phase-pill-stroke:#D9B175;
+  --phase-progress:#D9B175;
+  background:#1F2839!important;
+  color:#FFFFFF;
+  transition:none;
+}
+#timer.timer[data-phase="rest"]{
+  --phase-ink:#1F2839;
+  --phase-secondary:#26374D;
+  --phase-background:linear-gradient(145deg,#F1D09C,#D9B175 70%,#CEA36C);
+  --phase-pill:rgba(31,40,57,.10);
+  --phase-pill-stroke:#1F2839;
+  --phase-progress:#1F2839;
+}
+#timer.timer[data-phase="prep"]{
+  --phase-ink:#FFFFFF;
+  --phase-secondary:#DDE5EF;
+  --phase-background:radial-gradient(ellipse at 50% 42%,#34425B,#1F2839 70%);
+  --phase-pill:rgba(217,177,117,.13);
+}
+#timer.timer[data-phase="end"]{--phase-ink:#FFFFFF}
+#timer .timer-head{
+  color:#FFFFFF;
+  flex-shrink:0;
+  background:#1F2839;
+}
+#timer .timer-head small,
+#timer .timer-head #timerTitle{color:#DDE5ED!important}
+#timer .timer-main{
+  background:var(--phase-background)!important;
+  color:var(--phase-ink)!important;
+  width:100%;
+  border-radius:22px;
+  padding:clamp(8px,2.2vh,18px) 8px;
+  transition:background-color .28s ease,color .28s ease;
+}
+#timer .timer-main .clock{
+  color:var(--phase-ink)!important;
+  text-shadow:none;
+  font-feature-settings:"tnum";
+}
+#timer .timer-main .phase-chip{
+  background:var(--phase-pill)!important;
+  color:var(--phase-ink)!important;
+  border:1px solid var(--phase-pill-stroke)!important;
+  border-radius:50px;
+  letter-spacing:.1em;
+}
+#timer .timer-main .cycle,
+#timer .timer-main .amrap-counter{color:var(--phase-secondary)!important}
+#timer .timer-main .paused{
+  border:1px solid currentColor!important;
+  color:var(--phase-ink)!important;
+  background:var(--phase-pill)!important;
+}
+#timer .timer-controls{background:#1F2839;color:#FFFFFF}
+#timer .timer-controls .prog{background:#576478}
+#timer .timer-controls .prog>span{
+  background:#D9B175!important;
+  transition:width .1s linear,background-color .2s;
+}
+#timer[data-phase="rest"] .timer-controls .prog>span{background:#F1C991!important}
+#timer .timer-controls .next{color:#F2F4F7}
+#timer .timer-controls .timer-actions .primary{
+  background:#D9B175!important;color:#1F2839!important;border:1px solid #D9B175;
+  border-radius:15px;font-weight:800;
+}
+#timer .timer-controls .timer-actions .danger{
+  background:#344256!important;
+  color:#FFFFFF!important;
+  border:1px solid #8B93A1!important;
+  border-radius:15px;
+}
+#timer .timer-controls .adjust-time-trigger{
+  border-radius:14px;
+  background:#2D3A50;
+  border:1px solid #C7A676;
+  color:#FFFFFF;
+}
+#timer .timer-controls .caption{color:#CBD2DD}
+#timer .timer-main .clock[data-digits="6"],
+#timer .timer-main .clock[data-digits="7"],
+#timer .timer-main .clock[data-digits="8"]{letter-spacing:-.045em}
+@media (orientation:portrait){
+  #timer.timer{gap:10px}
+  #timer .timer-main{flex:1;min-height:0}
+  #timer .timer-controls{flex:none}
+  #timer .timer-main .clock{
+    font-size:clamp(64px,19vw,142px);
+    letter-spacing:-.06em;
+    line-height:1.05;
+    max-width:100%;
+    white-space:nowrap;
+  }
+  #timer .timer-actions button{min-height:56px}
+}
+@media screen and (orientation:landscape) and (min-width:500px){
+  #timer.timer.active{background:#1F2839!important}
+  #timer .timer-main{
+    border-radius:17px!important;
+    padding:3px 8px!important;
+    min-height:0;
+  }
+  #timer .timer-main .phase-chip{
+    font-weight:800;
+  }
+  #timer .timer-controls{
+    background:#1F2839;
+    padding-bottom:0!important;
+  }
+}
+@media(max-height:360px) and (orientation:landscape){
+  #timer .timer-main{padding:1px 8px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  #timer .timer-main,#timer .timer-controls .prog>span{transition:none!important}
+}

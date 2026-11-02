@@ -1,0 +1,72 @@
+name: Flutter validation
+
+on:
+  push:
+    branches: [main, feat/lot1-ui]
+  pull_request:
+    branches: [main]
+
+# Keep only the most recent validation for a branch, across pushes and PRs.
+# This avoids a queue of obsolete macOS simulator builds during iteration.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Fetch dependencies
+        run: flutter pub get
+      - name: Analyze sources
+        run: flutter analyze
+      - name: Run tests
+        run: flutter test
+      - name: Install Node for offline interface checks
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test native audio bridge and web UI scripts
+        run: node --test test_js/*.test.cjs
+
+  android-native:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Generate missing Flutter platform scaffolding
+        run: flutter create --platforms=android,ios --org com.example .
+      - name: Restore dependencies
+        run: flutter pub get
+      - name: Build Android debug APK with native audio
+        run: flutter build apk --debug
+
+  ios-native:
+    # Compile Swift/Flutter on macOS; this is not an iPhone/TestFlight build.
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Generate iOS project
+        run: flutter create --platforms=ios --org com.example .
+      - name: Resolve dependencies
+        run: flutter pub get
+      - name: Build iOS simulator without signing
+        run: flutter build ios --simulator --debug
+      - name: Upload simulator build
+        uses: actions/upload-artifact@v4
+        with:
+          name: moniteur-jsb-ios-simulator
+          path: build/ios/iphonesimulator/Runner.app
+          retention-days: 7

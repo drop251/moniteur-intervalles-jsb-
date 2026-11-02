@@ -1,0 +1,167 @@
+import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+/// Signaux adaptés aux arts martiaux et aux séances de Taïso.
+///
+/// Une valeur unique est transmise aux implémentations iOS et Android.
+enum TrainingCue { preparation, effort, recovery, countdown, finish }
+
+/// Volume de la SEULE alerte Moniteur JSB, et demande facultative de ducking.
+///
+/// Aucun réglage de l'application ne contrôle directement le gain Spotify /
+/// Apple Music. L'OS choisit l'atténuation des autres sources.
+class NativeAudioSettings {
+  const NativeAudioSettings({
+    this.alertVolume = 90,
+    this.duckExternalMusic = true,
+  }) : assert(alertVolume >= 0 && alertVolume <= 100);
+
+  final int alertVolume;
+  final bool duckExternalMusic;
+
+  static const volumeKey = 'native_audio_alert_volume';
+  static const duckKey = 'native_audio_duck_external';
+
+  NativeAudioSettings copyWith({
+    int? alertVolume,
+    bool? duckExternalMusic,
+  }) =>
+      NativeAudioSettings(
+        alertVolume: alertVolume ?? this.alertVolume,
+        duckExternalMusic: duckExternalMusic ?? this.duckExternalMusic,
+      );
+
+  static Future<NativeAudioSettings> load() async {
+    final preferences = await SharedPreferences.getInstance();
+    return NativeAudioSettings(
+      alertVolume: (preferences.getInt(volumeKey) ?? 90).clamp(0, 100),
+      duckExternalMusic: preferences.getBool(duckKey) ?? true,
+    );
+  }
+
+  Future<void> save() async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setInt(volumeKey, alertVolume);
+    await preferences.setBool(duckKey, duckExternalMusic);
+  }
+}
+
+class NativeAudioPlayback {
+  const NativeAudioPlayback({
+    required this.played,
+    required this.duckRequested,
+    required this.focusGranted,
+    this.message,
+    this.duckConfigured,
+    this.otherAudioPlaying,
+    this.outputRoute,
+  });
+
+  final bool played;
+
+  /// L'utilisateur a choisi l'atténuation, mais elle n'est pas quantifiée.
+  final bool duckRequested;
+
+  /// Autorisation audio locale du système, pas preuve d'un ratio 90/10.
+  final bool focusGranted;
+
+  final String? message;
+  final bool? duckConfigured;
+  final bool? otherAudioPlaying;
+  final String? outputRoute;
+
+  factory NativeAudioPlayback.fromResponse(
+    Map<dynamic, dynamic>? response, {
+    required bool requestedDuck,
+  }) {
+    return NativeAudioPlayback(
+      played: response?['played'] == true,
+      duckRequested: requestedDuck,
+      focusGranted: response?['focusGranted'] == true,
+      message: response?['message'] as String?,
+      duckConfigured: response?['duckConfigured'] as bool?,
+      otherAudioPlaying: response?['otherAudioPlaying'] as bool?,
+      outputRoute: response?['outputRoute'] as String?,
+    );
+  }
+}
+
+/// Pont vers le mixage natif. L'API n'est pas disponible dans la PWA.
+class NativeAudioService {
+  NativeAudioService({MethodChannel? channel})
+      : _channel = channel ?? const MethodChannel('jsb/native_audio');
+
+  final MethodChannel _channel;
+
+  /// Pre-activate the native ducking session before a scheduled cue.
+  /// iOS maintains a short failsafe; each cue extends ducking to 3 seconds
+  /// after its end, and the controller prepares it 3 seconds beforehand.
+  Future<void> prepareDuck({required NativeAudioSettings settings}) async {
+    if (!settings.duckExternalMusic || settings.alertVolume == 0) return;
+    try {
+      await _channel.invokeMethod<dynamic>('prepareDuck',
+          <String, Object>{'duckOthers': true});
+    } on MissingPluginException {
+      // Platform without the anticipatory native implementation.
+    } on PlatformException {
+      // Audio must never block the clock or prevent a cue.
+    }
+  }
+
+  Future<void> releaseDuck() async {
+    try {
+      await _channel.invokeMethod<dynamic>('releaseDuck');
+    } on MissingPluginException {
+      // Legacy build: no preparatory session is present.
+    } on PlatformException {
+      // Best-effort cleanup; iOS also has a native watchdog.
+    }
+  }
+
+  Future<NativeAudioPlayback> playCue(
+    TrainingCue cue, {
+    required NativeAudioSettings settings,
+    bool preview = false,
+    String? wavBase64,
+  }) async {
+    if (settings.alertVolume == 0) {
+      return const NativeAudioPlayback(
+        played: false,
+        duckRequested: false,
+        focusGranted: false,
+        message: 'Signaux désactivés : volume à zéro.',
+      );
+    }
+
+    try {
+      final response = await _channel.invokeMapMethod<dynamic, dynamic>(
+        'playCue',
+        <String, Object>{
+          'cue': cue.name,
+          'volume': settings.alertVolume,
+          'duckOthers': settings.duckExternalMusic,
+          'preview': preview,
+          if (wavBase64 != null) 'wavBase64': wavBase64,
+        },
+      );
+      return NativeAudioPlayback.fromResponse(
+        response,
+        requestedDuck: settings.duckExternalMusic,
+      );
+    } on MissingPluginException {
+      return const NativeAudioPlayback(
+        played: false,
+        duckRequested: false,
+        focusGranted: false,
+        message: 'Pont audio natif non installé sur cet appareil.',
+      );
+    } on PlatformException catch (error) {
+      return NativeAudioPlayback(
+        played: false,
+        duckRequested: settings.duckExternalMusic,
+        focusGranted: false,
+        message: error.message ?? 'Lecture audio indisponible.',
+      );
+    }
+  }
+}

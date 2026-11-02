@@ -1,0 +1,296 @@
+/* JSB v4.0 — Refonte réelle de l'écran d'accueil des minuteurs.
+ * Interface : choisir (barre 3 onglets), régler (cog), démarrer (CTA).
+ * Conserve le moteur des séances, les presets, l'audio et les accès a11y.
+ */
+:root{
+ --jsb-v4-navy:#1F2839;
+ --jsb-v4-gold:#D9B175;
+ --jsb-v4-ink:#FFFFFF;
+ --jsb-v4-muted:#DCE4EF;
+}
+html,body{background:var(--jsb-v4-navy)}
+.app>header{
+ background:#1B2536!important;
+ box-shadow:0 5px 25px #050A1522;
+ border-bottom:1px solid #D9B17530;
+}
+.app>header .mark{
+ border-color:var(--jsb-v4-gold);
+ box-shadow:0 2px 9px #0003;
+}
+.app>header .brand-title{font-weight:840;letter-spacing:-.03em}
+.app>header .subbrand{letter-spacing:.11em}
+.app>header .icon-btn{border-radius:15px;background:#2C3A50}
+.app>main{min-height:calc(100dvh - var(--nav) - var(--safe))}
+.view.mode-screen.active{
+ display:flex!important;
+ flex-direction:column!important;
+ width:100%;
+ min-height:calc(100dvh - var(--jsb-header-height) - var(--nav) - var(--safe));
+ padding:10px 16px 14px!important;
+ margin:0;
+}
+.mode-screen .mode-page-intro,
+.mode-screen .recent-timer,
+.mode-screen .mode-page-tip{display:none!important}
+.mode-screen .mode-page-body{
+ display:flex!important;
+ flex-direction:column!important;
+ flex:1 1 auto!important;
+ width:100%;
+ min-height:0!important;
+ height:auto!important;
+ gap:9px!important;
+ margin:0!important;
+ padding:0!important;
+ grid-template-columns:none!important;
+ grid-template-rows:none!important;
+}
+.mode-screen .jsb-home-hero{
+ width:100%;
+ min-height:clamp(390px,calc(100dvh - var(--jsb-header-height) - var(--nav) - var(--safe) - 120px),680px);
+ flex:1 1 auto;
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ justify-content:space-between;
+ text-align:center;
+ gap:15px;
+ padding:20px 15px 22px;
+ border:1px solid #6D644F;
+ border-radius:24px;
+ background:radial-gradient(ellipse 85% 65% at 50% 52%,#D9B17518 0%,transparent 92%),linear-gradient(160deg,#26354B,#1F2839 78%);
+ box-shadow:0 12px 35px #060C1A26;
+ color:#FFFFFF;
+}
+.jsb-home-top{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:12px;width:100%;flex-shrink:0;
+}
+.jsb-home-status{
+ display:inline-flex;align-items:center;gap:9px;
+ background:#D9B17512;
+ border:1px solid #D9B17583;
+ color:#F5D7A8;
+ padding:8px 12px;
+ min-height:40px;
+ border-radius:100px;
+ font-size:11px;font-weight:830;letter-spacing:.045em;
+ white-space:nowrap;
+}
+.jsb-home-status-dot{font-size:15px}
+.jsb-home-config{
+ display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ min-width:48px;min-height:48px;
+ border:1px solid #A38A64;
+ border-radius:15px;
+ color:#FFFFFF;
+ background:#34435A;
+ font-size:13px;
+ font-weight:750;
+ padding:0 12px;
+}
+.jsb-home-config:active{background:#4B5C75}
+.jsb-home-heading{display:flex;flex-direction:column;gap:7px;max-width:100%;align-items:center}
+.jsb-home-heading strong{
+ color:#FFFFFF;
+ font-size:clamp(18px,4vw,25px);
+ font-weight:820;line-height:1.2;letter-spacing:-.035em;
+ overflow-wrap:anywhere;
+}
+.jsb-home-heading small{
+ color:#DCE4EF;
+ font-size:clamp(12px,2.6vw,14px);
+ line-height:1.45;
+ font-weight:530;
+ max-width:520px;
+}
+.jsb-home-face{
+ width:100%;flex:1 1 auto;min-height:0;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:11px;padding:5px 0;
+}
+.jsb-home-time{
+ color:var(--jsb-v4-gold);
+ font-size:clamp(81px,min(21vw,15dvh),158px);
+ font-weight:780;
+ line-height:1.02;
+ letter-spacing:-.065em;
+ font-variant-numeric:tabular-nums;
+ font-feature-settings:"tnum";
+ padding-right:.05em;
+ white-space:nowrap;
+}
+.jsb-home-subphase{color:#FFFFFF;font-size:14px;font-weight:680}
+.jsb-home-track{
+ display:block;
+ width:min(59%,310px);
+ height:5px;border-radius:20px;background:#58647788;
+ margin-top:10px;
+ position:relative;overflow:hidden;
+}
+.jsb-home-track:before{
+ content:"";display:block;width:0;height:100%;
+ background:var(--jsb-v4-gold);border-radius:20px;
+}
+.jsb-home-start{
+ width:min(100%,340px);
+ min-height:60px;
+ flex:none;
+ border:1px solid #E5C793;
+ border-radius:17px;
+ background:var(--jsb-v4-gold);
+ color:#1F2839;
+ font-size:18px;
+ font-weight:850;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ gap:12px;
+ box-shadow:0 7px 18px #0002;
+}
+.jsb-home-start:active{background:#F1D09B}
+.jsb-home-extra{
+ width:100%;
+ flex:none;
+ border:1px solid #655D50;
+ border-radius:16px;
+ background:#253449;
+ overflow:hidden;
+ margin:0;
+}
+.jsb-home-extra>summary{
+ display:flex;
+ min-height:49px;
+ align-items:center;
+ justify-content:space-between;
+ gap:10px;
+ padding:8px 15px;
+ cursor:pointer;
+ color:#E9D2AD;
+ font-size:14px;font-weight:750;
+ list-style:none;
+}
+.jsb-home-extra>summary::-webkit-details-marker{display:none}
+.jsb-home-extra>summary:after{content:"⌄";font-size:24px;line-height:1;color:#F1CD96}
+.jsb-home-extra[open]>summary:after{content:"⌃"}
+.jsb-home-extra .jsb-secondary-option{
+ display:flex;flex-wrap:wrap;
+ align-items:center;justify-content:space-between;
+ gap:12px;
+ padding:13px 14px 16px;
+ border-top:1px solid #6B6B68;
+}
+.jsb-secondary-details{display:flex;flex-direction:column;gap:5px;flex:1;min-width:130px}
+.jsb-secondary-details strong{font-size:16px;font-weight:790}
+.jsb-secondary-details small{font-size:12px;color:#D3DCE8;line-height:1.4}
+.jsb-secondary-actions{display:flex;gap:7px;align-items:center}
+.jsb-secondary-actions button{
+ min-height:48px;
+ padding:0 13px;
+ border-radius:12px;
+ font-size:13px;
+ font-weight:750;
+}
+.jsb-secondary-edit{color:#FFFFFF;background:#34465F;border:1px solid #A58F6E}
+.jsb-secondary-play{color:#1F2839;background:var(--jsb-v4-gold);border:1px solid var(--jsb-v4-gold)}
+.mode-screen .saved-workouts{
+ background:#253449;
+ border:1px solid #716A5D;
+ border-radius:15px;
+ margin:8px 0 0!important;
+ padding:0!important;
+ flex:none;
+}
+.mode-screen .saved-workouts>summary{
+ padding:9px 15px!important;
+ min-height:48px;
+ color:#F0D1A2;
+ font-size:13px;
+}
+.mode-screen .saved-workouts-count{font-size:11px}
+.nav{
+ max-width:650px;
+ display:grid!important;
+ grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ background:#182336f8;
+ border-top:1px solid #A88C613b;
+}
+.nav button{
+ min-width:0!important;
+ min-height:48px!important;
+ color:#DFE5ED;
+ transition:color .15s ease;
+}
+.nav button[aria-current=page]{
+ color:#F2D39F;
+ background:#D9B1750d;
+ box-shadow:inset 0 3px 0 #D9B175;
+}
+.nav [data-nav="luc-leger"]{display:none!important}
+.nav .ni{font-size:20px}
+.nav .nl{font-size:12px}
+/* Le minuteur en cours reste prioritaire, indépendant de la vue d'accueil. */
+#timer .timer-main{border-radius:20px}
+#timer .timer-main .clock{font-weight:780}
+/* Plus d'espace central et commandes à portée de pouce en portrait. */
+@media(orientation:portrait){
+ .mode-screen .jsb-home-hero{padding-block:17px 21px}
+ .mode-screen .jsb-home-face{gap:7px}
+ .mode-screen .jsb-home-time{font-size:clamp(84px,25vw,145px)}
+}
+@media(orientation:landscape) and (min-width:500px){
+ :root{--jsb-header-height:64px;--nav:50px}
+ .app>header{
+   height:64px!important;min-height:64px!important;
+   padding:4px max(16px,env(safe-area-inset-right,0px)) 4px max(16px,env(safe-area-inset-left,0px))!important;
+ }
+ .app>header .mark{width:39px;height:39px}
+ .app>header .brand-title{font-size:16px}
+ .app>header .subbrand{font-size:9px}
+ .app>header .icon-btn{min-height:44px;min-width:44px}
+ .app>main{padding-top:64px!important}
+ .nav .ni{display:none}
+ .nav .nl{font-size:13px}
+ .view.mode-screen.active{
+   padding:5px 16px 6px!important;
+   min-height:calc(100dvh - 64px - 50px - var(--safe));
+ }
+ .mode-screen .jsb-home-hero{
+   min-height:170px!important;
+   flex:1!important;
+   border-radius:16px;
+   padding:5px 14px!important;
+   gap:3px;
+ }
+ .jsb-home-status{min-height:29px;font-size:10px;padding:3px 11px}
+ .jsb-home-config{min-height:40px;min-width:40px}
+ .jsb-home-heading{gap:2px}
+ .jsb-home-heading strong{font-size:clamp(14px,3.4vh,21px)}
+ .jsb-home-heading small{display:none}
+ .jsb-home-face{gap:3px;padding:0}
+ .jsb-home-time{font-size:clamp(67px,min(22vw,29dvh),128px);line-height:.92}
+ .jsb-home-subphase{font-size:12px}
+ .jsb-home-track{display:none}
+ .jsb-home-start{min-height:46px;font-size:15px}
+ .jsb-home-extra>summary{min-height:41px}
+ .mode-screen .saved-workouts>summary{min-height:41px}
+}
+@media(max-height:320px) and (orientation:landscape){
+ .app>header{height:51px!important;min-height:51px!important}
+ :root{--jsb-header-height:51px;--nav:44px}
+ .app>main{padding-top:51px!important}
+ .view.mode-screen.active{min-height:calc(100dvh - 51px - 44px - var(--safe))}
+ .jsb-home-heading{display:none}
+ .jsb-home-time{font-size:clamp(58px,26dvh,105px)}
+ .jsb-home-extra>summary,.mode-screen .saved-workouts>summary{min-height:36px}
+}
+@media(max-width:380px){
+ .jsb-home-time{font-size:clamp(69px,20vw,85px)}
+ .jsb-home-status{font-size:10px}
+ .jsb-home-config span{display:none}
+ .jsb-home-config{min-width:48px}
+}
+@media(prefers-reduced-motion:reduce){
+ .nav button,.mode-screen .jsb-home-hero{transition:none!important}
+}
